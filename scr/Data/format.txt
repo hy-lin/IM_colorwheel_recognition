@@ -1,0 +1,14 @@
+Each row represents one trial. The definition of columns are following:
+1) Participant ID (1-20)
+2) Session (1-3)
+3) Trial index (1-420)
+4) Set size (1-6)
+5, 7, 9, 11, 13, 15) Colors of the stimuli in angle (1-360)
+6, 8, 10, 12, 14, 16) Location of the stimuli (1-30)
+17) Probe type (1: positive probe; 2: new probe; 3: intrusion probe)
+18) Probe color (1-360)
+19) Participant's response (1: left key, rejection; 2: right key, acceptance)
+20) RT in seconds
+21) Correctness (0: incorrect; 1: correct)
+
+Probe always presented at the location of the first stimulus
