@@ -55,6 +55,10 @@ class BasicParser(object):
                 
                 trial.addStimulus(color, location)
                 
+            target_color = int(val[self.data_format.color[0]])
+            target_location = int(val[self.data_format.locations[0]])
+            
+            trial.addTarget(target_color, target_location)
             
             probe_type = int(val[self.data_format.probe_type])
             probe = int(val[self.data_format.probe])
@@ -104,6 +108,9 @@ class BasicTrial(object):
         else:
             return False
         
+    def addTarget(self, color, location):
+        self.target = Stimulus(color, location)
+        
     def addProbe(self, color, location, probe_type):
         self.probe = Stimulus(color, location)
         if probe_type == 1:
@@ -134,6 +141,9 @@ class BasicTrial(object):
                 break
             
         return passed
+    
+    def getPFocus(self):
+        return 1.0/self.set_size
         
 class Participant(object):
     def __init__(self, pID):
@@ -178,7 +188,7 @@ class Participant(object):
                 
         return numpy.mean(corrects)
     
-    def getDistances(self, constraints):
+    def getDistances(self, constraints, unit = 'radian'):
         trials = self.getTrialsMetConstraints(constraints)
         distance = []
         
@@ -188,6 +198,9 @@ class Participant(object):
                 dist = dist - 360
             if dist < -179:
                 dist = dist + 360
+            
+            if unit == 'radian':
+                dist = dist * numpy.pi / 180.0    
                 
             if trial.response == 2:
                 distance.append(dist)

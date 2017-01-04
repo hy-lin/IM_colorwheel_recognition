@@ -13,7 +13,7 @@ import numpy
 def plotYesDistribution(participants):
     plot_data = {}
     n_bins = 15
-    x_label = numpy.linspace(-179, 180, n_bins)
+    x_label = numpy.linspace(-numpy.pi, numpy.pi, n_bins)
     for set_size in range(1, 7):
         distances = []
         
