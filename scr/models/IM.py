@@ -113,5 +113,5 @@ class IM(object):
 #     line_figure.show()
 #     
 if __name__ == '__main__':
-    test()
+#     test()
     pass
