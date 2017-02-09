@@ -86,10 +86,8 @@ class LineFigure(BaseFigure):
         # google a way to clean figure
         self.fid.clf()
         self.resetLineCycle(False)
-        print(self.data.keys())
         sorted_keys = sorted(self.data.keys())
         
-        print(sorted_keys)
         for key in sorted_keys:
             if self.data[key].ndim == 1:
                 plt.plot(self.data[key], self.getLineStyle(), label = key) 

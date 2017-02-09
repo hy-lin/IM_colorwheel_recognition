@@ -58,7 +58,7 @@ class BasicParser(object):
             target_color = int(val[self.data_format.color[0]])
             target_location = int(val[self.data_format.locations[0]])
             
-            trial.addTarget(target_color, target_location)
+            trial.addTarget(target_color, target_location, 0)
             
             probe_type = int(val[self.data_format.probe_type])
             probe = int(val[self.data_format.probe])
@@ -97,6 +97,10 @@ class BasicTrial(object):
         self.participant = participant
         self.stimuli = []
         self.set_size = 0
+        self.simulation = {}
+        
+    def __str__(self):
+        return 'set size: {}, target: {}, probe: {}, probe type: {}, correctness {}'.format(self.set_size, self.target.color, self.probe.color, self.probe_type, self.correctness)
         
     def addStimulus(self, color, location):
         self.stimuli.append(Stimulus(color, location))
@@ -108,8 +112,9 @@ class BasicTrial(object):
         else:
             return False
         
-    def addTarget(self, color, location):
+    def addTarget(self, color, location, serial_position):
         self.target = Stimulus(color, location)
+        self.serial_position = serial_position
         
     def addProbe(self, color, location, probe_type):
         self.probe = Stimulus(color, location)

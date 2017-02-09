@@ -33,6 +33,15 @@ class IM(object):
         self.model_name = 'Interference Model'
         self.n_parameters = 6
         
+        self.xmax = [1.0, 1.0, 20.0, 100.0, 100.0, 1.0]
+        self.xmin = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        
+    def getInitialParameters(self):
+        return [.15, .21, 7.7, 7.19, 40.14, 0.12]
+    
+    def getParametersAsVector(self):
+        return [self.b, self.a, self.s, self.kappa, self.kappa_f, self.r]
+        
     def getPrediction(self, trial):
         A = self._getActivationA(trial)
         B = self._getActivationB(trial)
@@ -44,24 +53,32 @@ class IM(object):
         
         activation = (A + B + C) * (1-p_focus) + ((A+B) * self.r + C_f) * p_focus
         
-        pred = self._getPred(activation)
         
-        return pred
+        pred = self._getPred(activation)
+        return numpy.squeeze(pred)
+    
+    def updateParameters(self, x):
+        self.b = x[0]
+        self.a = x[1]
+        self.s = x[2]
+        self.kappa = x[3]
+        self.kappa_f = x[4]
+        self.r= x[5]
         
     def _getEmptyActivation(self):
         return numpy.zeros((1, 360))
     
     def _getActivation(self, mu, kappa):
-        angs = numpy.arange(1, 360)
+        angs = numpy.arange(0, 360)
         rads = angs * numpy.pi / 180.0
         
         mu_rads = mu * numpy.pi / 180.0
         
         difference = rads - mu_rads
         pdf = scipy.stats.vonmises(kappa).pdf(difference)
-        pdf = pdf/numpy.sum(pdf)
+#         pdf = pdf/numpy.sum(pdf)
         
-        return pdf
+        return numpy.squeeze(pdf)
 
         
     def _getDistance(self, location1, location2):
@@ -73,17 +90,16 @@ class IM(object):
         
     def _getActivationA(self, trial):
         activation_A = self._getEmptyActivation()
-        
         for stimulus in trial.stimuli:
             activation_A += self._getActivation(stimulus.color, self.kappa)
-        
-        return activation_A * self.a
+            
+        return numpy.squeeze(activation_A * self.a)
     
     def _getActivationB(self, trial):
         activation_B = self._getEmptyActivation()
         activation_B += trial.set_size / len(activation_B)
 
-        return activation_B * self.b
+        return numpy.squeeze(activation_B * self.b)
     
     def _getWeighting(self, location1, location2):
         dist = self._getDistance(location1, location2)
@@ -96,12 +112,12 @@ class IM(object):
             weighting = self._getWeighting(trial.probe.location, stimulus.location)
             activation_C += self._getActivation(stimulus.color, self.kappa) * weighting
             
-        return activation_C * self.c
+        return numpy.squeeze(activation_C * self.c)
     
     def _getActivationC_f(self, trial):
         activation_C_f = self._getActivation(trial.target.color, self.kappa_f)
         
-        return activation_C_f * self.c
+        return numpy.squeeze(activation_C_f * self.c)
     
     def _getPred(self, activation):
         return activation / numpy.sum(activation)

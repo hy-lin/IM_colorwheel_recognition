@@ -7,7 +7,7 @@ Each row represents one trial. The definition of columns are following:
 6, 8, 10, 12, 14, 16) Location of the stimuli (1-30)
 17) Probe type (1: positive probe; 2: new probe; 3: intrusion probe)
 18) Probe color (1-360)
-19) Participant's response (1: left key, rejection; 2: right key, acceptance)
+19) Participant's response (1: left key, rejection, change; 2: right key, acceptance, no change)
 20) RT in seconds
 21) Correctness (0: incorrect; 1: correct)
 
