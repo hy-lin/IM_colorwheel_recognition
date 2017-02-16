@@ -181,19 +181,25 @@ class Participant(object):
             
         return numpy.mean(RT)
     
-    def getPC(self, constraints):
+    def getPC(self, constraints, model_name = None):
         trials = self.getTrialsMetConstraints(constraints)
                 
         corrects = []
         for trial in trials:
-            if trial.correctness and trial.RT <= 5.0:
-                corrects.append(1.0)
+            if model_name is None:
+                if trial.correctness and trial.RT <= 5.0:
+                    corrects.append(1.0)
+                else:
+                    corrects.append(0.0)
             else:
-                corrects.append(0.0)
+                if trial.probe_type == 'positive':
+                    corrects.append(1-trial.simulation[model_name])
+                else:
+                    corrects.append(trial.simulation[model_name])
                 
         return numpy.mean(corrects)
     
-    def getDistances(self, constraints, unit = 'radian'):
+    def getDistances(self, constraints, model_name = None, unit = 'radian'):
         trials = self.getTrialsMetConstraints(constraints)
         distance = []
         
@@ -206,9 +212,12 @@ class Participant(object):
             
             if unit == 'radian':
                 dist = dist * numpy.pi / 180.0    
-                
-            if trial.response == 2:
-                distance.append(dist)
+            
+            if model_name is None:
+                if trial.response == 2:
+                    distance.append(dist)
+            else:
+                distance.append((dist, trial.simulation[model_name]))
 
             
         return distance

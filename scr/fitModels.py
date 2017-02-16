@@ -73,7 +73,7 @@ class Wrapper(object):
         return ll + 2*self.model.n_parameters
     
 def fit(participant):
-    imbayes = IMBayes.IMBayes()
+    imbayes = IMBayes.IMBayesDual()
     wrapper = Wrapper(participant, imbayes)
     wrapper.fit()
     
@@ -84,7 +84,7 @@ def fit(participant):
 def fitExp1():
     participants = loadExp1()
     
-    with Pool(1) as p:
+    with Pool(20) as p:
         p.map(fit, [participants[pID] for pID in participants.keys()])
     
 #     imbayes = IMBayes.IMBayes()
