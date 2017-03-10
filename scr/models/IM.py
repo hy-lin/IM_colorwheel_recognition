@@ -30,8 +30,14 @@ class IM(object):
         
         self.c = 1.0 # fixed
         
-        self.model_name = 'Interference Model'
+        self.model_name_prefix = 'Interference Model'
+        self.major_version = 1
+        self.middle_version = 1
+        self.minor_version = 1
+        self.model_name = self.updateModelName()
         self.n_parameters = 6
+
+        self.description = 'This is the vanilla IM model.'
         
         self.xmax = [1.0, 1.0, 20.0, 100.0, 100.0, 1.0]
         self.xmin = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -64,6 +70,9 @@ class IM(object):
         self.kappa = x[3]
         self.kappa_f = x[4]
         self.r= x[5]
+        
+    def updateModelName(self):
+        return self.model_name_prefix + ' v{}.{:02d}.{:02d}'.format(self.major_version, self.middle_version, self.minor_version)
         
     def _getEmptyActivation(self):
         return numpy.zeros((1, 360))
@@ -101,15 +110,26 @@ class IM(object):
 
         return numpy.squeeze(activation_B * self.b)
     
-    def _getWeighting(self, location1, location2):
-        dist = self._getDistance(location1, location2)
+    def _getWeighting(self, location1, location2, max_distance = 7.0):
+        dist = self._getDistance(location1, location2) * 7.0 / max_distance
         
         return numpy.exp(-dist*self.s)
     
+    def _getMaxDistance(self, trial):
+        max_distance = 1.0
+        for stimulus1 in trial.stimuli:
+            for stimulus2 in trial.stimuli:
+                dist = self._getDistance(stimulus1.location, stimulus2.location)
+                if dist > max_distance:
+                    max_distance = dist
+                    
+        return max_distance
+    
     def _getActivationC(self, trial):
         activation_C = self._getEmptyActivation()
+        max_distance = self._getMaxDistance(trial)
         for stimulus in trial.stimuli:
-            weighting = self._getWeighting(trial.probe.location, stimulus.location)
+            weighting = self._getWeighting(trial.probe.location, stimulus.location, max_distance)
             activation_C += self._getActivation(stimulus.color, self.kappa) * weighting
             
         return numpy.squeeze(activation_C * self.c)

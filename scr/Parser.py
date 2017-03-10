@@ -87,6 +87,19 @@ class Stimulus(object):
         self.location = location
         self.serial_position = serial_position
         self.output_position = output_position
+        
+    def __eq__(self, target):
+        eq = False
+        try:
+            if target.color == self.color and\
+            target.location == self.location and\
+            target.serial_position == self.serial_position and\
+            target.output_position == self.output_position:
+                eq = True
+        except:
+            eq = False
+            
+        return eq
 
 class BasicTrial(object):
     '''
@@ -101,7 +114,7 @@ class BasicTrial(object):
         
     def __str__(self):
         return 'set size: {}, target: {}, probe: {}, probe type: {}, correctness {}'.format(self.set_size, self.target.color, self.probe.color, self.probe_type, self.correctness)
-        
+
     def addStimulus(self, color, location):
         self.stimuli.append(Stimulus(color, location))
         self.set_size += 1

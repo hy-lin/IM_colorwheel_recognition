@@ -7,13 +7,13 @@ Created on Jan 3, 2017
 import Parser
 import figures
 import shelve
+import matplotlib.pyplot
 
 import numpy
 
 import sys
 sys.path.insert(0, 'models\\')
 import IMBayes
-
 
 def plotYesDistribution(participants, model_name = None):
     plot_data = {}
@@ -50,20 +50,15 @@ def plotPC(participants, model_name = None):
         plot_data[probe_type] = numpy.array(plot_data[probe_type])
         
     PC_plot = figures.LineFigure(plot_data)
-    PC_plot.show()
+    PC_plot.setTitle(model_name, True)
 
 def loadSimulationData():
     file_path = 'Data/fitting result/Exp1/'
-    pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    file_name = '{}fitting_results.dat'.format(file_path)
+    fitting_results = shelve.open(file_name)
+    participants = fitting_results['participants']
+    fitting_results.close()
 
-    participants ={}
-    
-    for pID in pID_list:
-        file_name = '{}fitting_result_{}.dat'.format(file_path, pID)
-        fitting_result = shelve.open(file_name)
-        participants[pID] = fitting_result['participant']
-        fitting_result.close()
-        
     return participants
 
 def loadParticipants():
@@ -77,8 +72,12 @@ def loadParticipants():
     return participants
 
 def outputParameters(participants, model_name):
+    AIC = 0
     for pID in participants.keys():
-        print(participants[pID].fitting_result[model_name].fun, participants[pID].fitting_result[model_name].x)
+#         print(participants[pID].fitting_result[model_name].fun, participants[pID].fitting_result[model_name].x)
+        AIC += participants[pID].fitting_result[model_name].fun
+    
+    print('Model Name: {}, AIC: {}'.format(model_name, AIC))
 
 def simulateWithDefault(participants, model):
     for pID in participants.keys():
@@ -86,20 +85,14 @@ def simulateWithDefault(participants, model):
             trial.simulation[model.model_name] = model.getPrediction(trial)   
             
 
-def main():
-#     participants = loadSimulationData()
-    participants = loadParticipants()
-    
-    model_name = 'Interference Model with Bayes'
-    model = IMBayes.IMBayes()
-    simulateWithDefault(participants, model)
+def main():    participants = loadSimulationData()
+#     participants = loadParticipants()
 
-    print(participants[1].trials[1].simulation)
-
-#     plotYesDistribution(participants, model_name)
-    plotPC(participants, model_name)
-    outputParameters(participants, model_name)
+    for model_name in participants[1].fitting_result.keys():
+        plotPC(participants, model_name)
+        outputParameters(participants, model_name)
     
+    matplotlib.pyplot.show()
 
 if __name__ == '__main__':
     main()

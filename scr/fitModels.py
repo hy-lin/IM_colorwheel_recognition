@@ -36,8 +36,8 @@ class Wrapper(object):
         
     def fit(self):
         bnds = [(self.model.xmin[i], self.model.xmax[i]) for i in range(len(self.model.xmax))]
-#         result = scipy.optimize.minimize(self._wrapper, self.model.getInitialParameters(), bounds = bnds)
         result = scipy.optimize.differential_evolution(self._wrapper, bounds = bnds)
+        result.model_description = self.model.description
         self.participant.fitting_result[self.model.model_name] = result
     
     def _wrapper(self, x):
@@ -73,13 +73,55 @@ class Wrapper(object):
         return ll + 2*self.model.n_parameters
     
 def fit(participant):
-    imbayes = IMBayes.IMBayesDual()
+    imbayes = IMBayes.IMBayes()
+    imbayes.major_version = 1
+    imbayes.middle_version = 3
+    imbayes.minor_version = 1
+    imbayes.model_name = imbayes.updateModelName()
+    imbayes.description = 'No pfocus in the inference process (pfocus = zero)'
+    
     wrapper = Wrapper(participant, imbayes)
     wrapper.fit()
     
-    d = shelve.open('fitting_result_{}.dat'.format(participant.pID))
+    file_path = 'Data/fitting result/tmp/'
+    file_name = '{}fitting_result_{}.dat'.format(file_path, participant.pID)
+    d = shelve.open(file_name)
     d['participant'] = participant
     d.close()
+    
+def loadTmpData():
+    file_path = 'Data/fitting result/tmp/'
+    pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+
+    participants ={}
+    
+    for pID in pID_list:
+        file_name = '{}fitting_result_{}.dat'.format(file_path, pID)
+        fitting_result = shelve.open(file_name)
+        participants[pID] = fitting_result['participant']
+        fitting_result.close()
+        
+    return participants
+
+def loadSimulationData():
+    file_path = 'Data/fitting result/Exp1/'
+    file_name = '{}fitting_results.dat'.format(file_path)
+    fitting_results = shelve.open(file_name)
+    participants = fitting_results['participants']
+    fitting_results.close()
+
+    return participants
+    
+def merge(simulationData, tmpData):
+    for pID in simulationData.keys():
+        for model in tmpData[pID].fitting_result.keys():
+            simulationData[pID].fitting_result[model] = tmpData[pID].fitting_result[model]
+            
+            for i, trial in enumerate(simulationData[pID].trials):
+                trial.simulation[model] = tmpData[pID].trials[i].simulation[model]
+                
+    return simulationData
+
 
 def fitExp1():
     participants = loadExp1()
@@ -87,17 +129,12 @@ def fitExp1():
     with Pool(20) as p:
         p.map(fit, [participants[pID] for pID in participants.keys()])
     
-#     imbayes = IMBayes.IMBayes()
-#     
-#     
-#     for pID in participants.keys():
-#         wrapper = Wrapper(participants[pID], imbayes)
-#         wrapper.fit()
-#         print(participants[pID].fitting_result)
-#     
-#     d = shelve.open('fitting_result_test.dat')
-#     d['participants'] = participants
-#     d.close()
+    participants = merge(loadSimulationData(), loadTmpData())
+    
+    d = shelve.open('Data/fitting result/Exp1/fitting_results.dat')
+    d['participants'] = participants
+    d.close()
+    
 if __name__ == '__main__':
     fitExp1()
     pass

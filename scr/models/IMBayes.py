@@ -14,16 +14,22 @@ class IMBayes(IM.IM):
     '''
 
 
-    def __init__(self, b = .05, a = .21, s = 2.0, kappa = 7.19, kappa_f = 40.14, r = 0.12):
+    def __init__(self, b = .05, a = .01, s = 2.5, kappa = 7.19, kappa_f = 40.14, r = 0.12):
         '''
         Constructor
         '''
         super(IMBayes, self).__init__(b = b, a = a, s = s, kappa = kappa, kappa_f = kappa_f, r = r)
-        self.model_name = 'Interference Model with Bayes'
+        self.model_name_prefix = 'Interference Model with Bayes'
+        
+        self.major_version = 1
+        self.middle_version = 1
+        self.minor_version = 1
+
+        self.model_name = self.updateModelName()
         
         
     def getInitialParameters(self):
-        return [.05, .21, 7.7, 7.19, 40.14, 0.12]
+        return [.05, .21, .5, 7.19, 40.14, 0.12]
     
     def getPRecall(self, trial):
         A = self._getActivationA(trial)
@@ -40,21 +46,22 @@ class IMBayes(IM.IM):
     def getPrediction(self, trial):
         p_recall_f, p_recall_no_f = self.getPRecall(trial)
 
-        P_S1 = self._getPS1(trial)
-        d_f = self._getD(trial, self.kappa_f, P_S1)
-        d_no_f = self._getD(trial, self.kappa, P_S1)
+        P_S1_f = self._getPS1(trial, self.r)
+        P_S1_no_f = self._getPS1(trial, 0)
+        d_f = self._getD(trial, self.kappa_f, P_S1_f)
+        d_no_f = self._getD(trial, self.kappa, P_S1_no_f)
         
-        p_change = trial.getPFocus() * numpy.sum((d_f > 0) * p_recall_f) + (1.0-trial.getPFocus()) * numpy.sum((d_no_f > 0) * p_recall_no_f)
-        
+        # p_change = trial.getPFocus() * numpy.sum((d_f > 0) * p_recall_f) + (1.0-trial.getPFocus()) * numpy.sum((d_no_f > 0) * p_recall_no_f)
+        p_change = numpy.sum((d_no_f > 0) * p_recall_no_f)
         
         return p_change
         
-    def _getPS1(self, trial):
+    def _getPS1(self, trial, r):
         weighting = numpy.zeros(trial.set_size)
         for i, stimulus in enumerate(trial.stimuli):
-            weighting[i] = self._getWeighting(trial.probe.location, stimulus.location)
+            weighting[i] = self._getWeighting(trial.probe.location, stimulus.location) + (self.a * r)
             
-        weighting /= numpy.sum(weighting)
+        weighting /= (numpy.sum(weighting) + self.b * trial.set_size * r)
         return weighting[trial.serial_position]
         
     def _getD(self, trial, kappa, P_S1):
@@ -77,7 +84,14 @@ class IMBayesDual(IM.IM):
         self.xmax = [1.0, 1.0, 20.0, 100.0, 100.0, 1.0, 1.0]
         self.xmin = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         
-        self.model_name = 'Interference Model with Bayes'
+        self.model_name_prefix = 'Interference Model with Bayes Dual Process'
+        self.n_parameters = 7
+        
+        self.major_version = 1
+        self.middle_version = 1
+        self.minor_version = 1
+
+        self.model_name = self.updateModelName()
         
     def getInitialParameters(self):
         return [.05, .21, 2.0, 7.19, 40.14, 0.12, .5]
