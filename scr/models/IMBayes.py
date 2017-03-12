@@ -46,17 +46,24 @@ class IMBayes(IM.IM):
     def getPrediction(self, trial):
         p_recall_f, p_recall_no_f = self.getPRecall(trial)
 
-        P_S1_f = self._getPS1(trial, self.r)
-        P_S1_no_f = self._getPS1(trial, 0)
+        P_S1_f = self._getPS(trial, self.r)
+        P_S1_no_f = self._getPS(trial, 0)
         d_f = self._getD(trial, self.kappa_f, P_S1_f)
         d_no_f = self._getD(trial, self.kappa, P_S1_no_f)
         
-        # p_change = trial.getPFocus() * numpy.sum((d_f > 0) * p_recall_f) + (1.0-trial.getPFocus()) * numpy.sum((d_no_f > 0) * p_recall_no_f)
-        p_change = numpy.sum((d_no_f > 0) * p_recall_no_f)
+        p_change = trial.getPFocus() * numpy.sum((d_f > 0) * p_recall_f) + (1.0-trial.getPFocus()) * numpy.sum((d_no_f > 0) * p_recall_no_f)
+#         p_change = numpy.sum((d_no_f > 0) * p_recall_no_f)
         
+        print(p_change)
+        if p_change >= 1.0:
+            print('warning, p > 1.0')
+            p_change = 0.999999999
+        elif p_change <= 0.0:
+            print('warning, p < 0')
+            p_change = 0.000000001
         return p_change
         
-    def _getPS1(self, trial, r):
+    def _getPS(self, trial, r):
         weighting = numpy.zeros(trial.set_size)
         for i, stimulus in enumerate(trial.stimuli):
             weighting[i] = self._getWeighting(trial.probe.location, stimulus.location) + (self.a * r)
@@ -64,10 +71,50 @@ class IMBayes(IM.IM):
         weighting /= (numpy.sum(weighting) + self.b * trial.set_size * r)
         return weighting[trial.serial_position]
         
-    def _getD(self, trial, kappa, P_S1):
+    def _getD(self, trial, kappa, P_S):
         act = self._getActivation(trial.probe.color, kappa)
         
-        return -numpy.log(2.0 * numpy.pi * (P_S1 * act + (1-P_S1) / (2.0*numpy.pi)))
+        return -numpy.log(2.0 * numpy.pi * (P_S * act + (1-P_S) / (2.0*numpy.pi)))
+    
+class IMBayesSwap(IMBayes):
+    
+    def __init__(self, b = .05, a = .01, s = 2.5, kappa = 7.19, kappa_f = 40.14, r = 0.12):
+        '''
+        Constructor
+        '''
+        super(IMBayesSwap, self).__init__(b = b, a = a, s = s, kappa = kappa, kappa_f = kappa_f, r = r)
+        self.model_name_prefix = 'Interference Model with Bayes and Swap'
+        
+    def _getPS(self, trial, r):
+        weighting = numpy.zeros(trial.set_size)
+        for i, stimulus in enumerate(trial.stimuli):
+            weighting[i] = self._getWeighting(trial.probe.location, stimulus.location) + (self.a * r)
+            
+        weighting /= (numpy.sum(weighting) + self.b * trial.set_size * r)
+        return weighting
+    
+    def _getD(self, trial, kappa, P_S):
+        act = self._getActivation(trial.probe.color, kappa)
+        
+        if len(P_S) == 1:
+            D = -numpy.log(2.0 * numpy.pi * (P_S[0] * act + (1-P_S[0]) / (2.0*numpy.pi)))
+        else:
+            numerator = 0
+            for i in range(1, len(P_S)):
+                numerator += (P_S[i] * act + (1-P_S[i] / (2.0*numpy.pi)))
+            
+            numerator /= trial.set_size
+            
+            numerator += 1.0/(2.0*numpy.pi)
+            
+            numerator /= 2.0
+            
+            D = numpy.log(numerator) - numpy.log(P_S[0] * act + (1-P_S[0]) / (2.0*numpy.pi))
+            
+        return D
+        
+        
+        return -numpy.log(2.0 * numpy.pi * (P_S * act + (1-P_S) / (2.0*numpy.pi)))
     
 class IMBayesDual(IM.IM):
     '''
@@ -115,7 +162,7 @@ class IMBayesDual(IM.IM):
         d_f_fam = self._getD(trial, self.kappa_f, P_S1_fam)
         d_no_f_fam = self._getD(trial, self.kappa, P_S1_fam)
         
-        P_S1_rec = self._getPS1(trial)
+        P_S1_rec = self._getPS(trial)
         d_f_rec = self._getD(trial, self.kappa_f, P_S1_rec)
         d_no_f_rec = self._getD(trial, self.kappa, P_S1_rec)
         
@@ -126,7 +173,7 @@ class IMBayesDual(IM.IM):
         
         return p_change
         
-    def _getPS1(self, trial):
+    def _getPS(self, trial):
         weighting = numpy.zeros(trial.set_size)
         for i, stimulus in enumerate(trial.stimuli):
             weighting[i] = self._getWeighting(trial.probe.location, stimulus.location)

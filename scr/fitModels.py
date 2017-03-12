@@ -73,14 +73,14 @@ class Wrapper(object):
         return ll + 2*self.model.n_parameters
     
 def fit(participant):
-    imbayes = IMBayes.IMBayes()
-    imbayes.major_version = 1
-    imbayes.middle_version = 3
-    imbayes.minor_version = 1
-    imbayes.model_name = imbayes.updateModelName()
-    imbayes.description = 'No pfocus in the inference process (pfocus = zero)'
+    imbayesswap = IMBayes.IMBayesSwap()
+    imbayesswap.major_version = 1
+    imbayesswap.middle_version = 1
+    imbayesswap.minor_version = 1
+    imbayesswap.updateModelName()
+    imbayesswap.description = 'Vanilla IMBaysSwap, the probability of swapping is considered in the "change"'
     
-    wrapper = Wrapper(participant, imbayes)
+    wrapper = Wrapper(participant, imbayesswap)
     wrapper.fit()
     
     file_path = 'Data/fitting result/tmp/'
@@ -125,10 +125,11 @@ def merge(simulationData, tmpData):
 
 def fitExp1():
     participants = loadExp1()
-    
-    with Pool(20) as p:
-        p.map(fit, [participants[pID] for pID in participants.keys()])
-    
+    fit(participants[1])
+#     
+#     with Pool(1) as p:
+#         p.map(fit, [participants[pID] for pID in participants.keys()])
+#     
     participants = merge(loadSimulationData(), loadTmpData())
     
     d = shelve.open('Data/fitting result/Exp1/fitting_results.dat')

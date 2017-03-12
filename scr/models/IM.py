@@ -72,7 +72,8 @@ class IM(object):
         self.r= x[5]
         
     def updateModelName(self):
-        return self.model_name_prefix + ' v{}.{:02d}.{:02d}'.format(self.major_version, self.middle_version, self.minor_version)
+        self.model_name =  self.model_name_prefix + ' v{}.{:02d}.{:02d}'.format(self.major_version, self.middle_version, self.minor_version)
+        return self.model_name
         
     def _getEmptyActivation(self):
         return numpy.zeros((1, 360))
