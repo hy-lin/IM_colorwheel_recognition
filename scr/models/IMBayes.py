@@ -101,7 +101,7 @@ class IMBayesSwap(IMBayes):
         else:
             numerator = 0
             for i in range(1, len(P_S)):
-                numerator += (P_S[i] * act + (1-P_S[i] / (2.0*numpy.pi)))
+                numerator += (P_S[i] * act + (1-P_S[i]) / (2.0*numpy.pi))
             
             numerator /= trial.set_size
             

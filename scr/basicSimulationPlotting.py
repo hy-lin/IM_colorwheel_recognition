@@ -19,19 +19,46 @@ def plotYesDistribution(participants, model_name = None):
     plot_data = {}
     n_bins = 15
     x_label = numpy.linspace(-numpy.pi, numpy.pi, n_bins)
+    bnds = numpy.linspace(-numpy.pi, numpy.pi, n_bins+1)
     for set_size in range(1, 7):
         distances = []
         
         constraints = {'set_size': [set_size]}
         
+        bin_count = [[] for i in range(n_bins)]
+        
         for pID in participants.keys():
-            distances, pYes = participants[pID].getDistances(constraints)
-            
-        bin_count, _ = numpy.histogram(distances, n_bins)
-        plot_data['set size {}'.format(set_size)] = numpy.concatenate(([x_label], [bin_count]))
+            trials = participants[pID].getTrialsMetConstraints(constraints)
+            for trial in trials:
+                dist = trial.target.color - trial.probe.color
+                if dist >= 180:
+                    dist = dist - 360
+                if dist < -179:
+                    dist = dist + 360
+
+                dist = dist * numpy.pi / 180.0
+                
+                bin_index = numpy.extract(dist>bnds, numpy.arange(n_bins))
+                bin_index = bin_index[-1]
+                
+                if model_name is None:
+                    bin_count[bin_index] += [trial.response == 1]
+                else:
+                    bin_count[bin_index] += [trial.simulation[model_name]]
+
+#         print(bin_count)
+        distribution = [1-numpy.mean(bin_count[i]) for i in range(n_bins)]
+        plot_data['set size {}'.format(set_size)] = numpy.array([x_label, distribution ])
         
     distribution_plot = figures.LineFigure(plot_data)
-    distribution_plot.show()
+    distribution_plot.setXLabel('displacement', update = False)
+    distribution_plot.setYLabel('Proportion of "No Change"', update = False)
+    if model_name is None:
+        distribution_plot.setTitle('Data', True)
+    else:
+        distribution_plot.setTitle(model_name, True)
+
+    
 
 def plotPC(participants, model_name = None):
     plot_data = {}
@@ -50,7 +77,14 @@ def plotPC(participants, model_name = None):
         plot_data[probe_type] = numpy.array(plot_data[probe_type])
         
     PC_plot = figures.LineFigure(plot_data)
-    PC_plot.setTitle(model_name, True)
+    PC_plot.setXLabel('Set sizes', False)
+    PC_plot.setYLabel('Proportion of Correct', False)
+    PC_plot.setYLim((0.55, 1.00), False)
+    
+    if model_name is None:
+        PC_plot.setTitle('Data', True)
+    else:
+        PC_plot.setTitle(model_name, True)
 
 def loadSimulationData():
     file_path = 'Data/fitting result/Exp1/'
@@ -87,9 +121,15 @@ def simulateWithDefault(participants, model):
 
 def main():    participants = loadSimulationData()
 #     participants = loadParticipants()
-
-    for model_name in participants[1].fitting_result.keys():
+    
+    plotPC(participants)
+    plotYesDistribution(participants)
+    
+    models = ['Interference Model with Bayes v1.02.01', 'Interference Model with Bayes v1.01.01', 'Interference Model with Bayes and Swap v1.01.01'] 
+    
+    for model_name in models:
         plotPC(participants, model_name)
+        plotYesDistribution(participants, model_name)
         outputParameters(participants, model_name)
     
     matplotlib.pyplot.show()

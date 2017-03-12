@@ -217,7 +217,7 @@ class Participant(object):
         distance = []
         
         for trial in trials:
-            dist = trial.stimuli[0].color - trial.probe.color
+            dist = trial.target.color - trial.probe.color
             if dist >= 180:
                 dist = dist - 360
             if dist < -179:

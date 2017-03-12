@@ -6,6 +6,8 @@ Created on Jan 3, 2017
 
 import Parser
 import figures
+import matplotlib.pyplot
+
 
 import numpy
 
@@ -23,10 +25,13 @@ def plotYesDistribution(participants):
             distances += participants[pID].getDistances(constraints)
             
         bin_count, _ = numpy.histogram(distances, n_bins)
+        print ( numpy.concatenate(([x_label], [bin_count])))
         plot_data['set size {}'.format(set_size)] = numpy.concatenate(([x_label], [bin_count]))
         
     distribution_plot = figures.LineFigure(plot_data)
-    distribution_plot.show()
+    distribution_plot.setXLabel('displacement', update = False)
+    distribution_plot.setYLabel('Proportion of "No Change"', update = True)
+    
 
 def plotPC(participants):
     plot_data = {}
@@ -45,7 +50,8 @@ def plotPC(participants):
         plot_data[probe_type] = numpy.array(plot_data[probe_type])
         
     PC_plot = figures.LineFigure(plot_data)
-    PC_plot.show()
+    PC_plot.setXLabel('Set sizes', False)
+    PC_plot.setYLabel('Proportion of Correct', True)
 
 def plotRT(participants):
     plot_data = {}
@@ -64,7 +70,8 @@ def plotRT(participants):
         plot_data[probe_type] = numpy.array(plot_data[probe_type])
         
     PC_plot = figures.LineFigure(plot_data)
-    PC_plot.show()
+    PC_plot.setXLabel('Set sizes', False)
+    PC_plot.setYLabel('Reaction Time', True)
 
 def loadParticipants():
     data_file = open('Data\\colorwheelr1.dat')
@@ -83,6 +90,8 @@ def main():
     plotYesDistribution(participants)
     plotPC(participants)
     plotRT(participants)
+    
+    matplotlib.pyplot.show()
 
 if __name__ == '__main__':
     main()

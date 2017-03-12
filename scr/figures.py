@@ -75,7 +75,9 @@ class LineFigure(BaseFigure):
             [ '-ko'\
             , ':ks'\
             , '-.kv'\
-            , '--k^']
+            , '--k^'\
+            , '-k<'\
+            , ':k>']
             
         self.resetLineCycle()
         self.update()
