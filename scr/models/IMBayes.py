@@ -54,7 +54,6 @@ class IMBayes(IM.IM):
         p_change = trial.getPFocus() * numpy.sum((d_f > 0) * p_recall_f) + (1.0-trial.getPFocus()) * numpy.sum((d_no_f > 0) * p_recall_no_f)
 #         p_change = numpy.sum((d_no_f > 0) * p_recall_no_f)
         
-        print(p_change)
         if p_change >= 1.0:
             print('warning, p > 1.0')
             p_change = 0.999999999
@@ -76,6 +75,57 @@ class IMBayes(IM.IM):
         
         return -numpy.log(2.0 * numpy.pi * (P_S * act + (1-P_S) / (2.0*numpy.pi)))
     
+class IMBayesKappaD(IMBayes):
+    '''
+    The IMBayes model with separate precision for decision rule. 
+    '''
+    
+    def __init__(self, b = .05, a = .01, s = 2.5, kappa = 7.19, kappa_f = 40.14, kappa_d = 7.19, r = 0.12):
+
+        super(IMBayesKappaD, self).__init__(b = b, a = a, s = s, kappa = kappa, kappa_f = kappa_f, r = r)
+        self.kappa_d = kappa_d
+        
+        self.model_name_prefix = 'Interference Model with additional precision for Bayes'
+        self.n_parameters = 7
+        
+        self.xmax = [1.0, 1.0, 20.0, 100.0, 100.0, 100.0, 1.0]
+        self.xmin = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        
+    def getInitialParameters(self):
+        return [.05, .21, .5, 7.19, 40.14, 7.19, 0.12]
+    
+    def getParametersAsVector(self):
+        return [self.b, self.a, self.s, self.kappa, self.kappa_f, self.kappa_d, self.r]
+    
+    def updateParameters(self, x):
+        self.b = x[0]
+        self.a = x[1]
+        self.s = x[2]
+        self.kappa = x[3]
+        self.kappa_f = x[4]
+        self.kappa_d = x[5]
+        self.r= x[6]
+        
+    def getPrediction(self, trial):
+        p_recall_f, p_recall_no_f = self.getPRecall(trial)
+
+        P_S1_f = self._getPS(trial, self.r)
+        P_S1_no_f = self._getPS(trial, 0)
+        d_f = self._getD(trial, self.kappa_d, P_S1_f)
+        d_no_f = self._getD(trial, self.kappa_d, P_S1_no_f)
+        
+        p_change = trial.getPFocus() * numpy.sum((d_f > 0) * p_recall_f) + (1.0-trial.getPFocus()) * numpy.sum((d_no_f > 0) * p_recall_no_f)
+#         p_change = numpy.sum((d_no_f > 0) * p_recall_no_f)
+        
+        if p_change >= 1.0:
+            print('warning, p > 1.0')
+            p_change = 0.999999999
+        elif p_change <= 0.0:
+            print('warning, p < 0')
+            p_change = 0.000000001
+        return p_change
+        
+        
 class IMBayesSwap(IMBayes):
     
     def __init__(self, b = .05, a = .01, s = 2.5, kappa = 7.19, kappa_f = 40.14, r = 0.12):

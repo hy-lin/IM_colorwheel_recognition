@@ -37,6 +37,7 @@ class Wrapper(object):
     def fit(self):
         bnds = [(self.model.xmin[i], self.model.xmax[i]) for i in range(len(self.model.xmax))]
         result = scipy.optimize.differential_evolution(self._wrapper, bounds = bnds)
+#         result = scipy.optimize.fmin_tnc(self._wrapper, self.model.getInitialParameters(), bounds = bnds)
         result.model_description = self.model.description
         self.participant.fitting_result[self.model.model_name] = result
     
@@ -73,12 +74,12 @@ class Wrapper(object):
         return ll + 2*self.model.n_parameters
     
 def fit(participant):
-    imbayesswap = IMBayes.IMBayesSwap()
+    imbayesswap = IMBayes.IMBayesKappaD()
     imbayesswap.major_version = 1
     imbayesswap.middle_version = 1
     imbayesswap.minor_version = 1
     imbayesswap.updateModelName()
-    imbayesswap.description = 'Vanilla IMBaysSwap, the probability of swapping is considered in the "change"'
+    imbayesswap.description = 'Vanilla IMBayesKappaD'
     
     wrapper = Wrapper(participant, imbayesswap)
     wrapper.fit()
@@ -125,11 +126,11 @@ def merge(simulationData, tmpData):
 
 def fitExp1():
     participants = loadExp1()
-    fit(participants[1])
-#     
-#     with Pool(1) as p:
-#         p.map(fit, [participants[pID] for pID in participants.keys()])
-#     
+#     fit(participants[1])
+     
+    with Pool(1) as p:
+        p.map(fit, [participants[pID] for pID in participants.keys()])
+     
     participants = merge(loadSimulationData(), loadTmpData())
     
     d = shelve.open('Data/fitting result/Exp1/fitting_results.dat')
