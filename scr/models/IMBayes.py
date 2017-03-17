@@ -6,8 +6,6 @@ Created on 06.02.2017
 import IM
 import numpy
 
-
-
 class IMBayes(IM.IM):
     '''
     classdocs
