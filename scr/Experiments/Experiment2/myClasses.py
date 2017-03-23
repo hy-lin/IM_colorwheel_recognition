@@ -60,7 +60,7 @@ class Trial(object):
 
     '''
 
-    def __init__(self, exp_parameters, set_size, display=None):
+    def __init__(self, exp_parameters, set_size, probe_type):
         '''
         exp_parameters contains the setting for the experiment.
         display is the display interface for the experiment.
@@ -68,11 +68,11 @@ class Trial(object):
 
         self.exp_parameters = exp_parameters
         self.set_size = self.set_size
-        if display is not None:
-            self.display = display
+        self.probe_type = probe_type
 
         self.stimuli = None
         self._createStimuli()
+        self._setupProbe()
 
         self.pressed, self.correctness, self.t = None, None, None
 
@@ -91,18 +91,19 @@ class Trial(object):
 
         return probe_color
 
-    def setupTrial(probe_type):
+    def _setupProbe(self):
         '''
         Setup the probe of the trial.
         The probe color in change condition is selected randomly from a uniform distribution.
         '''
-        self.probe_type = probe_type
-        if probe_type == 'no change':
+        if probe_type == 'same':
             self.probe = self.target
+            self.correct_response = 0
 
         elif probe_type == 'change':
             probe_color = self._pickChangeProbeColor()
             self.probe = Stimulus(probe_color, self.target.position)
+            self.correct_response = 1
 
         else:
             raise(NameError('Wrong probe type'))
@@ -164,3 +165,39 @@ class Trial(object):
         output_line += '{}\t{}\t{}'.format(self.pressed, self.correctness, self.t)
 
         return output_line
+    def displayTrial(self, display):
+        '''
+        Learning/retention/recognition part of trials.
+        The schedule is: 
+        500ms Blank ITI
+        500ms Stimuli onset
+        500ms Blank interval
+        probe onset, waiting response.
+        '''
+        display.clear(refresh = True)
+        display.wait(500)
+              
+        display.clear()
+        for stimulus in self.stimulus:
+            stimulus.draw(display)
+            
+        display.refresh()
+        display.wait(500)
+    
+        display.clear(refresh = True)
+        display.wait(500)
+    
+        display.clear()
+        for stimulus in self.stimulus:
+            stimulus.drawThinFrame(display)
+        probe.draw(display)
+        display.refresh()
+        
+    def getResponse(self, recorder):
+        _, pressed_button, self.t = recorder.recordMouse() 
+        self.pressed = self.exp_parameters.recognition_keys.index(pressed_button)
+            
+        if self.correct_response == self.pressed:
+            self.correctness = 1
+        else:
+            self.correctness = 0
