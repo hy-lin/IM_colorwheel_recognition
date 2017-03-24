@@ -14,6 +14,7 @@ import sdl2.sdlgfx
 import sdl2.surface
 import sdl2.sdlttf
 import sdl2.timer
+import numpy
 
 
 class Display(object):
@@ -28,16 +29,18 @@ class Display(object):
         waitFPS(self)   Wait until next frame update
         drawThickLine(self, x0, y0, x1, y1, thickness, color=sdl2.ext.Color(0, 0, 0))
         drawThickFrame(self, x0, y0, x1, y1, thickness, color=sdl2.ext.Color(0, 0, 0))
+        drawFilledRect(self, x0, y0, x1, y1, color)
+        getStimulusRect(self, position)
         getString(self, recorder, display_text, x=None, y=None, text_color=sdl2.SDL_Color(0, 0, 0))
         drawText(self, text, x=None, y=None, text_color=sdl2.SDL_Color(0, 0, 0), align='center-center', font_size=60)
         drawSurface(self, src_surface, dst_rect)
     '''
 
-    def __init__(self, RESOURCES, exp_parameters):
+    def __init__(self, exp_parameters):
         '''
         Constructor
         '''
-        self.RESOURCES = RESOURCES
+        self.RESOURCES = sdl2.ext.Resources('.', 'resources')
         self.exp_parameters = exp_parameters
 
         sdl2.ext.init()
@@ -56,7 +59,7 @@ class Display(object):
 
         sdl2.sdlttf.TTF_Init()
         self.font = None
-        self.font_size = self.exp_parameters.font_size
+        self.font_size = 20
 
         self.running = True
 
@@ -103,6 +106,25 @@ class Display(object):
                                   x1, y1, thickness, color.r, color.g, color.b, color.a)
         sdl2.sdlgfx.thickLineRGBA(self.renderer.renderer, x0, y1,
                                   x1, y1, thickness, color.r, color.g, color.b, color.a)
+
+    def drawFilledRect(self, x0, y0, x1, y1, color):
+        if type(color) is not sdl2.SDL_Color:
+            color = sdl2.SDL_Color(
+                color[0], color[1], color[2])
+
+        x0, y0, x1, y1 = int(x0), int(y0), int(x1), int(y1)
+        sdl2.sdlgfx.boxRGBA(self.renderer.renderer, x0, y0, x1, y1, color.r, color.g, color.b, color.a)
+
+    def getStimulusRect(self, position):
+        cx, cy = self.w/2, self.h/2
+        ang = 2 * numpy.pi * position / self.exp_parameters.n_positions
+        x = cx + self.exp_parameters.stimulus_radius * numpy.cos(ang)
+        y = cy + self.exp_parameters.stimulus_radius * numpy.sin(ang)
+        
+        x0, y0 = x - self.exp_parameters.stimulus_size/2, y - self.exp_parameters.stimulus_size/2
+        x1, y1 = x + self.exp_parameters.stimulus_size/2, y + self.exp_parameters.stimulus_size/2
+        
+        return (x0, y0, x1, y1)
 
     def getString(self, recorder, display_text, x=None, y=None, text_color=sdl2.SDL_Color(0, 0, 0)):
         if type(text_color) is not sdl2.SDL_Color:
@@ -181,6 +203,13 @@ class Display(object):
             msg.contents, None, self.window_surface, msg_rect)
         sdl2.SDL_FreeSurface(msg)
 
+    def showMessage(self, message, advance_key, recorder):
+        self.clear()
+        self.drawText(message)
+        self.refresh()
+        recorder.recordKeyboard(advance_key)
+
     def drawSurface(self, src_surface, dst_rect):
         sdl2.surface.SDL_BlitSurface(
             src_surface, None, self.window_surface, dst_rect)
+

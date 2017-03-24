@@ -12,30 +12,31 @@ class ExpParameters(object):
     This is the class of experiment parameters. 
     You can adjust severl aspects in here, but the sequence can't be readjusted.
     '''
+    def __init__(self):
 
-    self.recognition_keys = ['left', 'right'] # left key is "same', right key is "change"
+        self.recognition_keys = ['left', 'right'] # left key is "same', right key is "change"
 
-    # setup for color stimulus
-    self.color_center = (70.0, 20.0, 38.0)
-    self.color_radius = 70
+        # setup for color stimulus
+        self.color_center = (70.0, 20.0, 38.0)
+        self.color_radius = 70
 
-    # setup for physical look of stimulus
-    self.stimulus_radius_unscale = 150
-    self.stimulus_size_unscale = 30
-    self.thin_line_unscale = 2
-    self.thick_line_unscale = 5
-    self.font_size_unscaled = 24
+        # setup for physical look of stimulus
+        self.stimulus_radius_unscale = 150
+        self.stimulus_size_unscale = 30
+        self.thin_line_unscale = 1
+        self.thick_line_unscale = 5
+        self.font_size_unscaled = 24
 
-    # setup trial profile
-    self.n_colors = 360
-    self.n_positions = 13
+        # setup trial profile
+        self.n_colors = 360
+        self.n_positions = 13
 
-    self.set_size = [1, 2, 3, 4, 5, 6]
+        self.set_sizes = [1, 2, 3, 4, 5, 6]
 
-    # setup experiment profile
-    self.n_trials = len(self.size_size) * 80 # 40 * 6 = 240
-    self.n_practice = 10
-    self.n_breaks = 20
+        # setup experiment profile
+        self.n_trials = len(self.set_sizes) * 80 # 40 * 6 = 240
+        self.n_practice = 10
+        self.n_breaks = 20
 
     def updateDisplayScale(self, display):
         '''
