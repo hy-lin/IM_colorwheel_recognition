@@ -25,4 +25,4 @@ exe = EXE(pyz,
           debug=False,
           strip=False,
           upx=True,
-          console=True , icon='src\\resources\\uzh.ico')
+          console=True , icon='src\\Experiments\\Experiment2\\resources\\uzh.ico')
