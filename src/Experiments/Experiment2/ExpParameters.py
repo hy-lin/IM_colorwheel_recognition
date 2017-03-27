@@ -31,10 +31,10 @@ class ExpParameters(object):
         self.n_colors = 360
         self.n_positions = 13
 
-        self.set_sizes = [1, 2, 3, 4, 5, 6]
+        self.set_sizes = [1, 2, 3, 4, 5, 6, 7, 8]
 
         # setup experiment profile
-        self.n_trials = len(self.set_sizes) * 80 # 40 * 6 = 240
+        self.n_trials = len(self.set_sizes) * 50 # 50 * 8 = 400
         self.n_practice = 10
         self.n_breaks = 20
 
