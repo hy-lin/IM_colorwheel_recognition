@@ -13,7 +13,7 @@ import time
 
 import sys
 sys.path.insert(0, 'models\\')
-import IMBayes
+import IMMBayes
 
 def loadExp1():
     data_file = open('Data\\colorwheelr1.dat')
@@ -45,7 +45,7 @@ class Wrapper(object):
             fun += result.fun
             xs.append(result.x)
             
-            
+        result.model_description = self.model.description
         self.participant.fitting_result[self.model.model_name] = result
         self.participant.fitting_result[self.model.model_name].x = xs
         self.participant.fitting_result[self.model.model_name].fun = fun
@@ -83,8 +83,14 @@ class Wrapper(object):
         return ll + 2*self.model.n_parameters
     
 def fit(participant):
-    imbayes = IMBayes.IMBayes()
-    wrapper = Wrapper(participant, imbayes)
+    immbayes = IMMBayes.IMMBayes()
+    immbayes.major_version = 1
+    immbayes.middle_version = 1
+    immbayes.minor_version = 1
+    immbayes.updateModelName()
+    immbayes.description = 'Vanilla immbayes ABs'
+
+    wrapper = Wrapper(participant, immbayes)
     wrapper.fit()
     
     file_path = 'Data/fitting result/tmp/'
