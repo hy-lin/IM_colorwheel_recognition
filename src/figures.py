@@ -12,10 +12,14 @@ import matplotlib.pyplot as plt
 import itertools
 
 class BaseFigure(object):
-    def __init__(self, data = {}):
+    def __init__(self, data = {}, ax = None):
         
         self.data = data
-        self.fid = plt.figure()
+        if ax is None:
+            _, self.ax = plt.subplots()
+        else:
+            self.ax = ax
+
         self.title = None
         self.ylim = None
         self.xlim = None
@@ -58,6 +62,20 @@ class BaseFigure(object):
     
     def show(self):
         plt.show()
+
+    def _update(self):
+        if self.xlim != None:
+            self.ax.set_xlim(self.xlim)
+        if self.ylim != None:
+            self.ax.set_ylim(self.ylim)
+        if self.xlabel != None:
+            self.ax.set_xlabel(self.xlabel)
+        if self.ylabel != None:
+            self.ax.set_ylabel(self.ylabel)
+        if self.title != None:
+            self.ax.set_title(self.title)
+        if self.legend:
+            self.ax.legend(loc = 'best')
         
     def saveFigure(self, file_path, filename):
         try:
@@ -67,9 +85,9 @@ class BaseFigure(object):
             raise
 
 class LineFigure(BaseFigure):
-    def __init__(self, data={}):
+    def __init__(self, data={}, ax = None):
         
-        BaseFigure.__init__(self, data)
+        BaseFigure.__init__(self, data, ax)
 
         self.line_styles = \
             [ '-ko'\
@@ -86,28 +104,17 @@ class LineFigure(BaseFigure):
 #         plt.figure(self.fid.number)
         
         # google a way to clean figure
-        self.fid.clf()
+        self.ax.cla()
         self.resetLineCycle(False)
         sorted_keys = sorted(self.data.keys())
         
         for key in sorted_keys:
             if self.data[key].ndim == 1:
-                plt.plot(self.data[key], self.getLineStyle(), label = key) 
+                self.ax.plot(self.data[key], self.getLineStyle(), label = key) 
             if self.data[key].ndim == 2:
-                plt.plot(self.data[key][0], self.data[key][1], self.getLineStyle(), label = key)
+                self.ax.plot(self.data[key][0], self.data[key][1], self.getLineStyle(), label = key)
             
-        if self.xlim != None:
-            plt.xlim(self.xlim)
-        if self.ylim != None:
-            plt.ylim(self.ylim)
-        if self.xlabel != None:
-            plt.xlabel(self.xlabel)
-        if self.ylabel != None:
-            plt.ylabel(self.ylabel)
-        if self.title != None:
-            plt.title(self.title)
-        if self.legend:
-            plt.legend(loc = 'best')
+        self._update()
 
     def setLineCycle(self, line_styles, update = False):
         self.line_styles = line_styles
@@ -122,40 +129,28 @@ class LineFigure(BaseFigure):
         return next(self.line_cyclor)
 
 class BoxplotFigure(BaseFigure):
-    def __init__(self, data = {}):
-        BaseFigure.__init__(self, data)
+    def __init__(self, data = {}, ax = None):
+        BaseFigure.__init__(self, data, ax)
         
         self.legend = False
         
         self.update()
         
     def update(self):
-        self.fid.clf()
+        self.ax.cla()
         sorted_keys = sorted(self.data.keys())
             
         box_data = []
         for key in sorted_keys:
             box_data.append(self.data[key])
             
-        plt.boxplot(box_data, labels = sorted_keys, sym = 'k+')
+        self.ax.boxplot(box_data, labels = sorted_keys, sym = 'k+')
             
-            
-        if self.xlim != None:
-            plt.xlim(self.xlim)
-        if self.ylim != None:
-            plt.ylim(self.ylim)
-        if self.xlabel != None:
-            plt.xlabel(self.xlabel)
-        if self.ylabel != None:
-            plt.ylabel(self.ylabel)
-        if self.title != None:
-            plt.title(self.title)
-        if self.legend:
-            plt.legend(loc = 'best')
+        self._update()
         
 class ScatterFigure(BaseFigure):
-    def __init__(self, data = {}):
-        BaseFigure.__init__(self, data)
+    def __init__(self, data = {}, ax = None):
+        BaseFigure.__init__(self, data, ax)
         
         self.dot_styles = \
             [ 'r'\
@@ -168,7 +163,7 @@ class ScatterFigure(BaseFigure):
         
     def update(self):
         # google a way to clean figure
-        self.fid.clf()
+        self.ax.cla()
         self.resetDotCycle(False)
         sorted_keys = sorted(self.data.keys())
         for key in sorted_keys:
@@ -179,21 +174,10 @@ class ScatterFigure(BaseFigure):
                 y0.append(y)
                 
             print(x0, y0)
-            plt.scatter(x0, y0, c = self.getDotStyle(), marker = 'o', label = key) 
+            self.ax.scatter(x0, y0, c = self.getDotStyle(), marker = 'o', label = key) 
             # have to think of a way to sent x axis.
             
-        if self.xlim != None:
-            plt.xlim(self.xlim)
-        if self.ylim != None:
-            plt.ylim(self.ylim)
-        if self.xlabel != None:
-            plt.xlabel(self.xlabel)
-        if self.ylabel != None:
-            plt.ylabel(self.ylabel)
-        if self.title != None:
-            plt.title(self.title)
-        if self.legend:
-            plt.legend(loc = 'best')
+        self._update()
         
     def setDotCycle(self, dot_styles, update = False):
         self.dot_styles = dot_styles
@@ -206,3 +190,20 @@ class ScatterFigure(BaseFigure):
             
     def getDotStyle(self):
         return next(self.dot_cyclor)
+
+class MultiLineFigures(BaseFigure):
+    def __init__(self, data, ax = None):
+        BaseFigure.__init__(self, data)
+
+
+        if len(data) == 0:
+            raise(ValueError("MultiLineFigures does not accept empty data."))
+
+        _, self.ax = plt.subplots(len(data))
+
+        figures = {}
+        for i, key in enumerate(self.data.keys()):
+            print(key, data[key])
+            sub_data = {key: self.data[key]}
+            figures[key] = LineFigure(sub_data, self.ax[i])
+            figures[key].setTitle(key, True)

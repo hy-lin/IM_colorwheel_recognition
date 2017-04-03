@@ -8,12 +8,12 @@ import numpy
 
 class IMMBayes(IMM.IMM):
     '''
-    classdocs
+    The vanila IMM Bayes
     '''
 
     def __init__(self, b = .15, a = .21, s = 7.7, kappa = 7.19):
         '''
-        Constructor
+        Vanila IMM Bayes
         '''
         super(IMMBayes, self).__init__(b = b, a = a, s = s, kappa = kappa)
         self.model_name_prefix = 'Interference Measurement Model with Bayes'
@@ -61,3 +61,49 @@ class IMMBayes(IMM.IMM):
         act = self._getActivation(trial.probe.color, kappa)
         
         return -numpy.log(2.0 * numpy.pi * (P_S1 * act + (1-P_S1) / (2.0*numpy.pi)))
+
+class IMMABBayes(IMMBayes):
+    '''
+    IMMAB model. only A and B parameters (and precision) are allowed to vary.
+    '''
+    def __init__(self, b = .15, a = .21, s = 20.0, kappa = 7.19):
+        super(IMMABBayes, self).__init__(b = b, a = a, s = s, kappa = kappa)
+
+        self.model_name_prefix = 'Interference Measurement Model with Bayes AB'
+
+        self.xmax = [1.0, 1.0, 20.0, 100.0]
+        self.xmin = [0.0, 0.0, 20.0, 0.0]
+        
+    def getInitialParameters(self):
+        return [.15, .21, 20.0, 7.19]
+
+class IMMBsBayes(IMMBayes):
+    '''
+    IMMBs model. only B and s parameters (and precision) are allowed to vary.
+    '''
+    def __init__(self, b = .15, a = 0.0, s = 7.7, kappa = 7.19):
+        super(IMMABBayes, self).__init__(b = b, a = a, s = s, kappa = kappa)
+
+        self.model_name_prefix = 'Interference Measurement Model with Bayes Bs'
+
+        self.xmax = [1.0, 0.0, 20.0, 100.0]
+        self.xmin = [0.0, 0.0, 0.0, 0.0]
+        
+    def getInitialParameters(self):
+        return [.15, .0, 7.7, 7.19]
+
+class IMMBBayes(IMMBayes):
+    '''
+    IMMB model. only B is allowed to vary.
+    '''
+
+    def __init__(self, b = .15, a = 0.0, s = 20.7, kappa = 7.19):
+        super(IMMABBayes, self).__init__(b = b, a = a, s = s, kappa = kappa)
+
+        self.model_name_prefix = 'Interference Measurement Model with Bayes B'
+
+        self.xmax = [1.0, 0.0, 20.0, 100.0]
+        self.xmin = [0.0, 0.0, 20.0, 0.0]
+        
+    def getInitialParameters(self):
+        return [.15, .0, 20.0, 7.19]

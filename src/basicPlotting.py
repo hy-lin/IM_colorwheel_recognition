@@ -8,9 +8,7 @@ import Parser
 import figures
 import matplotlib.pyplot
 
-
 import numpy
-
 
 def plotYesDistribution(participants):
     plot_data = {}

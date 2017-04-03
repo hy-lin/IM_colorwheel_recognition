@@ -83,12 +83,12 @@ class Wrapper(object):
         return ll + 2*self.model.n_parameters
     
 def fit(participant):
-    immbayes = IMMBayes.IMMBayes()
+    immbayes = IMMBayes.IMMABBayes()
     immbayes.major_version = 1
     immbayes.middle_version = 1
     immbayes.minor_version = 1
     immbayes.updateModelName()
-    immbayes.description = 'Vanilla immbayes ABs'
+    immbayes.description = 'Vanilla immbayes AB'
 
     wrapper = Wrapper(participant, immbayes)
     wrapper.fit()
@@ -136,7 +136,7 @@ def merge(simulationData, tmpData):
 def fitExp1():
     participants = loadExp1()
     
-    with Pool(1) as p:
+    with Pool(20) as p:
         p.map(fit, [participants[pID] for pID in participants.keys()])
     
     participants = merge(loadSimulationData(), loadTmpData())

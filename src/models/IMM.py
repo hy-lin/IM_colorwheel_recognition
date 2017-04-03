@@ -122,7 +122,7 @@ class IMM(object):
         activation_C = self._getEmptyActivation()
         max_distance = self._getMaxDistance(trial)
         for stimulus in trial.stimuli:
-            weighting = self._getWeighting(trial.probe.location, stimulus.location, max_distance)
+            weighting = self._getWeighting(trial.probe.location, stimulus.location, 7)
             activation_C += self._getActivation(stimulus.color, self.kappa) * weighting
             
         return numpy.squeeze(activation_C * self.c)
