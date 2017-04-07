@@ -102,24 +102,30 @@ class Experiment(object):
         self.log('creating experiment trials')
 
         self.experiment_trials = []
-        for i in range(self.exp_parameters.n_trials):
-            condition_key = i % (len(self.exp_parameters.set_sizes) * 2)
-            self.experiment_trials.append(self._createTrial(condition_key))
+        for sz_ind, sz in enumerate(self.exp_parameters.set_sizes):
+            for i in range(self.exp_parameters.n_trials[sz_ind]):
+                condition_key = i
+                self.experiment_trials.append(self._createTrial(condition_key))
 
         random.shuffle(self.experiment_trials)
 
         self.log('finished generating experiment trials')
 
-    def _createTrial(self, condition):
+    def _createTrial(self, condition, set_size = None):
         '''
         this function accepts condition and translates it into set size and probe type.
         '''
-        set_size_index = condition % len(self.exp_parameters.set_sizes)
-        set_size = self.exp_parameters.set_sizes[set_size_index]
+        if set_size == None:
+            set_size_index = condition % len(self.exp_parameters.set_sizes)
+            set_size = self.exp_parameters.set_sizes[set_size_index]
 
-        probe_types = ['change', 'same']
-        probe_type_index = condition // len(self.exp_parameters.set_sizes)
-        probe_type = probe_types[probe_type_index]
+            probe_types = ['change', 'same']
+            probe_type_index = condition // len(self.exp_parameters.set_sizes)
+            probe_type = probe_types[probe_type_index]
+        else:
+            probe_types = ['change', 'same']
+            probe_type_index = condition % 2
+            probe_type = probe_types[probe_type_index]
 
         return myClasses.Trial(self.exp_parameters, set_size, probe_type)
 
