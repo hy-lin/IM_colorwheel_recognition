@@ -105,7 +105,7 @@ class Experiment(object):
         for sz_ind, sz in enumerate(self.exp_parameters.set_sizes):
             for i in range(self.exp_parameters.n_trials[sz_ind]):
                 condition_key = i
-                self.experiment_trials.append(self._createTrial(condition_key))
+                self.experiment_trials.append(self._createTrial(condition_key, sz))
 
         random.shuffle(self.experiment_trials)
 
@@ -121,6 +121,7 @@ class Experiment(object):
 
             probe_types = ['change', 'same']
             probe_type_index = condition // len(self.exp_parameters.set_sizes)
+            print(probe_type_index)
             probe_type = probe_types[probe_type_index]
         else:
             probe_types = ['change', 'same']

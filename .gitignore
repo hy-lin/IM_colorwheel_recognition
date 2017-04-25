@@ -2,3 +2,5 @@
 *.dat
 *.bak
 *.dir
+build/
+dist/
