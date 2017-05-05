@@ -34,7 +34,7 @@ class ExpParameters(object):
         self.set_sizes = [1, 2, 3, 4, 5, 6]
 
         # setup experiment profile
-        self.n_trials = [75, 150, 150, 75, 75, 75]
+        self.n_trials = [80, 170, 170, 80, 80, 80]
         self.n_practice = 10
         self.n_breaks = 20
 
