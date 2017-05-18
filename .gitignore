@@ -1,6 +1,6 @@
 *.pyc
-*.dat
 *.bak
 *.dir
 build/
 dist/
+src/Data/fitting result/
