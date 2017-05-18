@@ -1,0 +1,14 @@
+Columns:
+    1: pID (1-10, for now)
+    2: Trial Index 
+    3: Set size
+    4: Probe type: Change, same
+    5: Target color (1-360)
+    6: Target location (1-13)
+    7, 9, 11, 13, 15, 17: Non-target colors
+    8, 10, 12, 14, 16, 18: Non-target locations
+    19: Probe color
+    20: Probe location
+    21: response (0: same, 1: change)
+    22: correctness (1: correct, 0: incorrect)
+    23: RT (ms)
