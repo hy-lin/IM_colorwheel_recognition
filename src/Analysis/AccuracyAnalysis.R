@@ -62,6 +62,13 @@ exp2.data <- classifyProbeType(exp2.data)
 data <- data.frame(aggregate(list(exp2.data$Correctness, exp2.data$RT), list(exp2.data$ID, exp2.data$ProbeType, exp2.data$Setsize), mean))
 names(data) <- c('ID', 'ProbeType', 'Setsize', 'PC', 'RT')
 
-data <- data.frame(aggregate(list(data$PC, data$RT), list(data$ProbeType, data$Setsize), mean))
-names(data) <- c('ProbeType', 'Setsize', 'PC', 'RT')
-ggplot(data=data) + aes(x=Setsize, y = PC,linetype = ProbeType) + geom_line()
+tmp_data <- data.frame(aggregate(list(data$PC, data$RT), list(data$ProbeType, data$Setsize), mean))
+tmp_data_sd <- data.frame(aggregate(list(data$PC, data$RT), list(data$ProbeType, data$Setsize), sd))
+tmp_data[, 5] <- tmp_data_sd[, 3] / sqrt(10)
+tmp_data[, 6] <- tmp_data_sd[, 4] / sqrt(10)
+names(tmp_data) <- c('ProbeType', 'Setsize', 'PC', 'RT', 'PC_SE', 'RT_SE')
+pd <- position_dodge(.1)
+ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = ProbeType, gropu = ProbeType) + 
+  geom_line(position = pd) + 
+  geom_errorbar(aes(ymin=PC-PC_SE, ymax=PC+PC_SE), width=.1, position = pd) + 
+  geom_point(position = pd)
