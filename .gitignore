@@ -1,0 +1,6 @@
+*.pyc
+*.bak
+*.dir
+build/
+dist/
+src/Data/fitting result/
