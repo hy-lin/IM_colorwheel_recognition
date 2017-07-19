@@ -5,11 +5,8 @@ Created on 06.02.2017
 '''
 import IM
 import numpy
+import scipy.stats
 
-<<<<<<< HEAD:scr/models/IMBayes.py
-
-=======
->>>>>>> 81f8bd228e891686312db989c0119d012b2efe4b:src/models/IMBayes.py
 class IMBayes(IM.IM):
     '''
     classdocs
@@ -179,29 +176,53 @@ class IMBayesDual(IM.IM):
     This is the dual process version of IMBayes, unfortunately the IMBayes doesn't work well.
     '''
 
-    def __init__(self, b=.05, a=.21, s=2.0, kappa=7.19, kappa_f=40.14, r=0.12, w=.5):
+    def __init__(self, b=.05, a=.21, s=2.0, kappa=7.19, kappa_f=40.14, r=0.12, color_similairy = 1.0, familiarity_scale = 1, threshold = .7, noise = .5):
         '''
         Constructor
         '''
         super(IMBayesDual, self).__init__(
             b=b, a=a, s=s, kappa=kappa, kappa_f=kappa_f, r=r)
 
-        self.w = w
+        self.color_similairy = color_similairy
+        self.familiarity_scale = familiarity_scale
+        self.threshold = threshold
+        self.noise = noise
 
-        self.xmax = [1.0, 1.0, 20.0, 100.0, 100.0, 1.0, 1.0]
-        self.xmin = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self.xmax = [1.0, 1.0, 20.0, 100.0, 100.0, 1.0, 20.0, 50.0, 20.0, 5.0]
+        self.xmin = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1]
 
         self.model_name_prefix = 'Interference Model with Bayes Dual Process'
-        self.n_parameters = 7
+        self.n_parameters = 10
 
-        self.major_version = 1
-        self.middle_version = 1
+        self.color_similarity_mode = 'exp' # can be choice between exp or von Mises
+
+        self.major_version = 3
+        self.middle_version = 2
         self.minor_version = 1
 
         self.model_name = self.updateModelName()
 
     def getInitialParameters(self):
-        return [.05, .21, 2.0, 7.19, 40.14, 0.12, .5]
+        if self.color_similarity_mode == 'exp':
+            return [.05, .21, 2.0, 7.19, 40.14, 0.12, 1.0, 15, .5, 1.0]
+        else:
+            return [.05, .21, 2.0, 7.19, 40.14, 0.12, 7.2, 15, .5, 1.0]
+
+    def getParametersAsVector(self):
+        return [self.b, self.a, self.s, self.kappa, self.kappa_f, self.r, self.color_similairy, self.familiarity_scale, self.threshold, self.noise]
+
+
+    def updateParameters(self, x):
+        self.b = x[0]
+        self.a = x[1]
+        self.s = x[2]
+        self.kappa = x[3]
+        self.kappa_f = x[4]
+        self.r = x[5]
+        self.color_similairy = x[6]
+        self.familiarity_scale = x[7]
+        self.threshold = x[8]
+        self.noise = x[9]
 
     def getPRecall(self, trial):
         A = self._getActivationA(trial)
@@ -215,40 +236,51 @@ class IMBayesDual(IM.IM):
 
         return (p_recall_f, p_recall_no_f)
 
+
     def getPrediction(self, trial):
+        angs = numpy.arange(0, 360)
+        rads = angs * numpy.pi / 180
+
         p_recall_f, p_recall_no_f = self.getPRecall(trial)
 
-        P_S1_fam = 1.0 / trial.set_size
-        d_f_fam = self._getD(trial, self.kappa_f, P_S1_fam)
-        d_no_f_fam = self._getD(trial, self.kappa, P_S1_fam)
+        color_distance = rads - (trial.probe.color * numpy.pi/180)
+        color_distance[color_distance > numpy.pi] -= 2*numpy.pi
+        color_distance[color_distance < -numpy.pi] += 2*numpy.pi
 
-        P_S1_rec = self._getPS(trial)
-        d_f_rec = self._getD(trial, self.kappa_f, P_S1_rec)
-        d_no_f_rec = self._getD(trial, self.kappa, P_S1_rec)
+        probe_color_similarity = self._getColorSimilarity(color_distance)
 
-        d_f = numpy.sum(
-            ((self.w * d_f_rec + (1 - self.w) * d_f_fam) > 0) * p_recall_f)
-        d_no_f = numpy.sum(
-            ((self.w * d_no_f_rec + (1 - self.w) * d_no_f_fam) > 0) * p_recall_no_f)
+        d_f_rec = numpy.dot(p_recall_f, probe_color_similarity)
+        d_no_f_rec = numpy.dot(p_recall_no_f, probe_color_similarity)
 
-        p_change = trial.getPFocus() * d_f + (1 - trial.getPFocus()) * d_no_f
+        d_rec = d_f_rec * trial.getPFocus() + d_no_f_rec * (1-trial.getPFocus())
+
+        A = self._getActivationA(trial)
+        d_fam = A[trial.probe.color-1]
+
+        d = d_fam * self.familiarity_scale + d_rec
+        # print(d_rec, d_f_rec, d_no_f_rec, d_fam, d)
+
+        p_change = 1 - scipy.stats.norm(self.threshold, scale = self.noise).cdf(d)
 
         return p_change
 
-    def _getPS(self, trial):
-        weighting = numpy.zeros(trial.set_size)
-        for i, stimulus in enumerate(trial.stimuli):
-            weighting[i] = self._getWeighting(
-                trial.probe.location, stimulus.location)
+    def _getColorDistanceMatrix(self, rads):
+        dist_matrix = numpy.zeros((360, 360))
+        for i in range(360):
+            dist_matrix[i] = numpy.roll(rads, i)
+        
+        dist_matrix -= numpy.tile(rads, (360, 1))
 
-        weighting /= numpy.sum(weighting)
-        return weighting[trial.serial_position]
+        dist_matrix[dist_matrix > numpy.pi] -= 2*numpy.pi
+        dist_matrix[dist_matrix < -numpy.pi] += 2*numpy.pi
 
-    def _getD(self, trial, kappa, P_S1):
-        act = self._getActivation(trial.probe.color, kappa)
+        return dist_matrix
 
-        return -numpy.log(2.0 * numpy.pi * (P_S1 * act + (1 - P_S1) / (2.0 * numpy.pi)))
-
+    def _getColorSimilarity(self, distances):
+        if self.color_similarity_mode == 'exp':
+            return numpy.exp(-(numpy.abs(distances) * self.color_similairy))
+        elif self.color_similarity_mode == 'von Mises':
+            return scipi.stats.vonmises(self.color_similarity).pdf(distances)
 
 def _test():
     data_file = open('..\\Data\\colorwheelr1.dat')
@@ -262,8 +294,8 @@ def _test():
     t0 = time.time()
 
     for trial in participants[5].trials:
-        imbayes.getPrediction(trial)
-        print(trial, imbayes.getPrediction(trial))
+        p_recall = imbayes.getPrediction(trial)
+        print(trial, p_recall, numpy.log((trial.response==1) * p_recall + (trial.response==2) * (1-p_recall)))
 
     print(time.time() - t0)
 
@@ -276,4 +308,5 @@ if __name__ == '__main__':
     import time
 
     _test()
+    print('HELLO?')
     pass

@@ -1,0 +1,15 @@
+Participant 3, 4. Session= 4-4 cabin b 16.05.17 (09:00)
+
+Participant 4, 4. Session= 5-4 cabin c 16.05.17 (16:34)
+
+Participant 5 everything okay, without the 5-4 cabin c which belongs to participant 4
+
+Participant 6 everything okay
+
+Participant 7, 4. Session= 8-4 cabin b 12.05.17
+
+Participant 8, 4.session= 9-4 cabin c 16.05.17 (not 8-4 cabin b12.05.17)
+
+Participant 9, 3.session= 10-3 cabin c 12.05.17
+
+Participant 10 4.session= 11-4 cabin c 16.05.17

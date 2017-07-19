@@ -113,7 +113,8 @@ def outputParameters(participants, model_name):
     AIC = 0
     for pID in participants.keys():
         #         print(participants[pID].fitting_result[model_name].fun, participants[pID].fitting_result[model_name].x)
-        AIC += participants[pID].fitting_result[model_name].fun
+        AIC += participants[pID].fitting_result[model_name].fun * 2
+        print(participants[pID].fitting_result[model_name].x)
 
     print('Model Name: {}, AIC: {}'.format(model_name, AIC))
 
@@ -155,22 +156,25 @@ def outputMeasurementParameters(participants, model_name):
 
 def main():
     participants = loadSimulationData()
-#     participants = loadParticipants()
+    # participants = loadParticipants()
 
     plotPC(participants)
     plotYesDistribution(participants)
 
     models = ['Interference Model with Bayes v1.02.01',
-              'Interference Model with Bayes v1.01.01',
-              'Interference Model with Bayes and Swap v1.01.02',
-              'Interference Measurement Model with Bayes v1.01.01']
+            #   'Interference Model with Bayes v1.01.01',
+            #   'Interference Model with Bayes and Swap v1.01.02',
+              'Interference Model with Bayes Dual Process v3.02.01']
+
+    # IMDual = IMBayes.IMBayesDual()
+    # simulateWithDefault(participants, IMDual)
 
     for model_name in models:
         plotPC(participants, model_name)
         plotYesDistribution(participants, model_name)
         outputParameters(participants, model_name)
 
-    outputMeasurementParameters(participants, 'Interference Measurement Model with Bayes v1.01.01')
+    # outputMeasurementParameters(participants, 'Interference Measurement Model with Bayes v1.01.01')
 
     matplotlib.pyplot.show()
 

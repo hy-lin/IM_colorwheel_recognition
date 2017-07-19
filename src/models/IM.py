@@ -20,6 +20,9 @@ class IM(object):
     def __init__(self, b = .15, a = .21, s = 7.7, kappa = 7.19, kappa_f = 40.14, r = 0.12):
         '''
         The default parameter values is the mean estimated value from Colorwheel experiment 1. 
+
+        v 1.1.2: nothing changed, except adding the getPRecall function for getting the
+        recall probability. 
         '''
         self.b = b
         self.a = a
@@ -33,7 +36,7 @@ class IM(object):
         self.model_name_prefix = 'Interference Model'
         self.major_version = 1
         self.middle_version = 1
-        self.minor_version = 1
+        self.minor_version = 2
         self.model_name = self.updateModelName()
         self.n_parameters = 6
 
@@ -47,8 +50,8 @@ class IM(object):
     
     def getParametersAsVector(self):
         return [self.b, self.a, self.s, self.kappa, self.kappa_f, self.r]
-        
-    def getPrediction(self, trial):
+
+    def getPRecall(self, trial):
         A = self._getActivationA(trial)
         B = self._getActivationB(trial)
         
@@ -59,9 +62,11 @@ class IM(object):
         
         activation = (A + B + C) * (1-p_focus) + ((A+B) * self.r + C_f) * p_focus
         
-        
         pred = self._getPred(activation)
         return numpy.squeeze(pred)
+        
+    def getPrediction(self, trial):
+        return self.getPRecall(trial)
     
     def updateParameters(self, x):
         self.b = x[0]

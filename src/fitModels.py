@@ -61,7 +61,10 @@ class Wrapper(object):
         for trial in self.participant.trials:
             ll_t = numpy.log((trial.response==1) * trial.simulation[self.model.model_name] + \
                              (trial.response==2) * (1-trial.simulation[self.model.model_name]))
-            ll -= ll_t
+            if not numpy.isneginf(ll_t):
+                ll -= ll_t
+            else:
+                ll += 99999999
     
         if numpy.isnan(ll):
             ll = 999999999999.0
@@ -74,14 +77,10 @@ class Wrapper(object):
         return ll + 2*self.model.n_parameters
     
 def fit(participant):
-    imbayesswap = IMBayes.IMBayesKappaD()
-    imbayesswap.major_version = 1
-    imbayesswap.middle_version = 1
-    imbayesswap.minor_version = 1
-    imbayesswap.updateModelName()
-    imbayesswap.description = 'Vanilla IMBayesKappaD'
+    imbayesdual = IMBayes.IMBayesDual()
+    imbayesdual.discription = 'The dual process recognition model created by Klaus'
     
-    wrapper = Wrapper(participant, imbayesswap)
+    wrapper = Wrapper(participant, imbayesdual)
     wrapper.fit()
     
     file_path = 'Data/fitting result/tmp/'
