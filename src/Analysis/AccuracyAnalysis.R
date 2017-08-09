@@ -68,7 +68,7 @@ tmp_data[, 5] <- tmp_data_sd[, 3] / sqrt(10)
 tmp_data[, 6] <- tmp_data_sd[, 4] / sqrt(10)
 names(tmp_data) <- c('ProbeType', 'Setsize', 'PC', 'RT', 'PC_SE', 'RT_SE')
 pd <- position_dodge(.1)
-ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = ProbeType, gropu = ProbeType) + 
+ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = ProbeType, group = ProbeType) + 
   geom_line(position = pd) + 
   geom_errorbar(aes(ymin=PC-PC_SE, ymax=PC+PC_SE), width=.1, position = pd) + 
   geom_point(position = pd)

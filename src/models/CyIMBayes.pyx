@@ -3,11 +3,12 @@ Created on 06.02.2017
 
 @author: Hsuan-Yu Lin
 '''
-import IM
+import pyximport; pyximport.install()
+import CyIM
 import numpy
 import scipy.stats
 
-class IMBayes(IM.IM):
+class IMBayes(CyIM.IM):
     '''
     classdocs
     '''
@@ -171,7 +172,7 @@ class IMBayesSwap(IMBayes):
         return -numpy.log(2.0 * numpy.pi * (P_S * act + (1 - P_S) / (2.0 * numpy.pi)))
 
 
-class IMBayesDual(IM.IM):
+class IMBayesDual(CyIM.IM):
     '''
     This is the dual process version of IMBayes, unfortunately the IMBayes doesn't work well.
     '''
@@ -280,7 +281,7 @@ class IMBayesDual(IM.IM):
         if self.color_similarity_mode == 'exp':
             return numpy.exp(-(numpy.abs(distances) * self.color_similairy))
         elif self.color_similarity_mode == 'von Mises':
-            return scipi.stats.vonmises(self.color_similarity).pdf(distances)
+            return scipy.stats.vonmises(self.color_similarity).pdf(distances)
 
 def _test():
     data_file = open('..\\Data\\colorwheelr1.dat')

@@ -36,8 +36,8 @@ class Wrapper(object):
         
     def fit(self):
         bnds = [(self.model.xmin[i], self.model.xmax[i]) for i in range(len(self.model.xmax))]
-        result = scipy.optimize.differential_evolution(self._wrapper, bounds = bnds)
-#         result = scipy.optimize.fmin_tnc(self._wrapper, self.model.getInitialParameters(), bounds = bnds)
+        # result = scipy.optimize.differential_evolution(self._wrapper, bounds = bnds)
+        result = scipy.optimize.fmin_tnc(self._wrapper, self.model.getInitialParameters(), bounds = bnds, approx_grad = True)
         result.model_description = self.model.description
         self.participant.fitting_result[self.model.model_name] = result
     
@@ -77,10 +77,10 @@ class Wrapper(object):
         return ll + 2*self.model.n_parameters
     
 def fit(participant):
-    imbayesdual = IMBayes.IMBayesDual()
-    imbayesdual.discription = 'The dual process recognition model created by Klaus'
+    imbayes = IMBayes.IMBayes()
+    imbayes.discription = 'The single process model with vanila setting'
     
-    wrapper = Wrapper(participant, imbayesdual)
+    wrapper = Wrapper(participant, imbayes)
     wrapper.fit()
     
     file_path = 'Data/fitting result/tmp/'
@@ -125,7 +125,7 @@ def merge(simulationData, tmpData):
 
 def fitExp1():
     participants = loadExp1()
-#     fit(participants[1])
+    fit(participants[1])
      
     with Pool(1) as p:
         p.map(fit, [participants[pID] for pID in participants.keys()])

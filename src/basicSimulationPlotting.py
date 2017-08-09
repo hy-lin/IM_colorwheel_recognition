@@ -111,12 +111,16 @@ def loadParticipants():
 
 def outputParameters(participants, model_name):
     AIC = 0
+    xs = numpy.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
     for pID in participants.keys():
         #         print(participants[pID].fitting_result[model_name].fun, participants[pID].fitting_result[model_name].x)
         AIC += participants[pID].fitting_result[model_name].fun * 2
+        xs += numpy.array(participants[pID].fitting_result[model_name].x)
         print(participants[pID].fitting_result[model_name].x)
 
     print('Model Name: {}, AIC: {}'.format(model_name, AIC))
+
+    print(xs/20)
 
 
 def simulateWithDefault(participants, model):
@@ -161,10 +165,10 @@ def main():
     plotPC(participants)
     plotYesDistribution(participants)
 
-    models = ['Interference Model with Bayes v1.02.01',
+    models = ['Interference Model with Bayes v1.02.01']
             #   'Interference Model with Bayes v1.01.01',
             #   'Interference Model with Bayes and Swap v1.01.02',
-              'Interference Model with Bayes Dual Process v3.02.01']
+            #   'Interference Model with Bayes Dual Process v3.02.01']
 
     # IMDual = IMBayes.IMBayesDual()
     # simulateWithDefault(participants, IMDual)
