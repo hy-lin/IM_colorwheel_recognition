@@ -111,16 +111,27 @@ def loadParticipants():
 
 def outputParameters(participants, model_name):
     AIC = 0
-    xs = numpy.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
     for pID in participants.keys():
         #         print(participants[pID].fitting_result[model_name].fun, participants[pID].fitting_result[model_name].x)
-        AIC += participants[pID].fitting_result[model_name].fun * 2
-        xs += numpy.array(participants[pID].fitting_result[model_name].x)
-        print(participants[pID].fitting_result[model_name].x)
+        try:
+            AIC += participants[pID].fitting_result[model_name].fun * 2
+            print(participants[pID].fitting_result[model_name].x, participants[pID].fitting_result[model_name].fun)
+        except:
+            ll = 0
+            print(participants[pID].fitting_result[model_name][0])
+            for trial in participants[pID].trials:
+                ll_t = numpy.log((trial.response==1) * trial.simulation[model_name] + \
+                                (trial.response==2) * (1-trial.simulation[model_name]))
+                # print(ll_t)
+                if not numpy.isneginf(ll_t):
+                    ll -= ll_t
+            # else:
+                # ll -= 99999999
+            print(ll)
+            AIC += ll
+
 
     print('Model Name: {}, AIC: {}'.format(model_name, AIC))
-
-    print(xs/20)
 
 
 def simulateWithDefault(participants, model):
@@ -157,6 +168,33 @@ def outputMeasurementParameters(participants, model_name):
     mean_plot = figures.MultiLineFigures(means)
     median_plot = figures.MultiLineFigures(median)
 
+def outputExp1ResultAsDataFile(participants, models):
+    output_file = open('Data\\fitting result\\exp1.dat', 'w')
+
+    for pID in participants.keys():
+        participant = participants[pID]
+        for tInd, trial in enumerate(participant.trials):
+            output_string = ''
+            output_string += '{}\t{}\t'.format(pID, tInd)
+            output_string += '{}\t{}\t'.format(trial.set_size, trial.probe_type)
+            for i in range(trial.set_size):
+                output_string += '{}\t{}\t'.format(trial.stimuli[i].color, trial.stimuli[i].location)
+
+            for i in range(6-trial.set_size):
+                output_string += '-1\t-1\t'
+            
+            output_string += '{}\t{}\t'.format(trial.probe.color, trial.probe.location)
+
+            output_string += '{}\t{}\t{}'.format(trial.response, trial.correctness, trial.RT)
+
+            for model in models:
+                output_string += '\t{}'.format(trial.simulation[model])
+
+            output_string += '\n'
+
+            output_file.write(output_string)
+
+    output_file.close()
 
 def main():
     participants = loadSimulationData()
@@ -165,10 +203,10 @@ def main():
     plotPC(participants)
     plotYesDistribution(participants)
 
-    models = ['Interference Model with Bayes v1.02.01']
+    models = ['Interference Model with Bayes v1.02.01',
             #   'Interference Model with Bayes v1.01.01',
             #   'Interference Model with Bayes and Swap v1.01.02',
-            #   'Interference Model with Bayes Dual Process v3.02.01']
+              'Interference Model with Bayes v1.02.02']
 
     # IMDual = IMBayes.IMBayesDual()
     # simulateWithDefault(participants, IMDual)
@@ -177,6 +215,8 @@ def main():
         plotPC(participants, model_name)
         plotYesDistribution(participants, model_name)
         outputParameters(participants, model_name)
+
+    outputExp1ResultAsDataFile(participants, models)
 
     # outputMeasurementParameters(participants, 'Interference Measurement Model with Bayes v1.01.01')
 

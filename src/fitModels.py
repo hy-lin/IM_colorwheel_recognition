@@ -14,12 +14,24 @@ import time
 import sys
 sys.path.insert(0, 'models\\')
 import IMBayes
+import ResourceModelsBayes
 
 def loadExp1():
     data_file = open('Data\\colorwheelr1.dat')
     data_format = Parser.BasicDataFormat()
-    parser = Parser.BasicParser(data_file, data_format)
+    parser = Parser.BasicParser(data_file, data_format, Parser.Exp1TrialFactory)
     
+    participants = parser.parse()
+    
+    data_file.close()
+    
+    return participants
+
+def loadExp2():
+    data_file = open('Data\\Experiment2\\recognition2.dat')
+    data_format = Parser.Exp2DataFormat()
+    parser = Parser.BasicParser(data_file, data_format, Parser.Exp2TrialFactory)
+
     participants = parser.parse()
     
     data_file.close()
@@ -36,8 +48,8 @@ class Wrapper(object):
         
     def fit(self):
         bnds = [(self.model.xmin[i], self.model.xmax[i]) for i in range(len(self.model.xmax))]
-        # result = scipy.optimize.differential_evolution(self._wrapper, bounds = bnds)
-        result = scipy.optimize.fmin_tnc(self._wrapper, self.model.getInitialParameters(), bounds = bnds, approx_grad = True)
+        result = scipy.optimize.differential_evolution(self._wrapper, bounds = bnds)
+#         result = scipy.optimize.fmin_tnc(self._wrapper, self.model.getInitialParameters(), bounds = bnds)
         result.model_description = self.model.description
         self.participant.fitting_result[self.model.model_name] = result
     
@@ -60,7 +72,7 @@ class Wrapper(object):
         ll = 0
         for trial in self.participant.trials:
             ll_t = numpy.log((trial.response==1) * trial.simulation[self.model.model_name] + \
-                             (trial.response==2) * (1-trial.simulation[self.model.model_name]))
+                             (trial.response!=1) * (1-trial.simulation[self.model.model_name]))
             if not numpy.isneginf(ll_t):
                 ll -= ll_t
             else:
@@ -77,10 +89,10 @@ class Wrapper(object):
         return ll + 2*self.model.n_parameters
     
 def fit(participant):
-    imbayes = IMBayes.IMBayes()
-    imbayes.discription = 'The single process model with vanila setting'
+    sabayes = ResourceModelsBayes.SlotAveragingBayes()
+    sabayes.discription = 'The vanila SlotAveragingBayes'
     
-    wrapper = Wrapper(participant, imbayes)
+    wrapper = Wrapper(participant, sabayes)
     wrapper.fit()
     
     file_path = 'Data/fitting result/tmp/'
@@ -91,7 +103,7 @@ def fit(participant):
     
 def loadTmpData():
     file_path = 'Data/fitting result/tmp/'
-    pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
 
     participants ={}
     
@@ -103,7 +115,7 @@ def loadTmpData():
         
     return participants
 
-def loadSimulationData():
+def loadExp1SimulationData():
     file_path = 'Data/fitting result/Exp1/'
     file_name = '{}fitting_results.dat'.format(file_path)
     fitting_results = shelve.open(file_name)
@@ -112,6 +124,15 @@ def loadSimulationData():
 
     return participants
     
+def loadExp2SimulationData():
+    file_path = 'Data/fitting result/Exp2/'
+    file_name = '{}fitting_results.dat'.format(file_path)
+    fitting_results = shelve.open(file_name)
+    participants = fitting_results['participants']
+    fitting_results.close()
+
+    return participants
+
 def merge(simulationData, tmpData):
     for pID in simulationData.keys():
         for model in tmpData[pID].fitting_result.keys():
@@ -125,17 +146,34 @@ def merge(simulationData, tmpData):
 
 def fitExp1():
     participants = loadExp1()
-    fit(participants[1])
+#     fit(participants[1])
      
     with Pool(1) as p:
         p.map(fit, [participants[pID] for pID in participants.keys()])
      
-    participants = merge(loadSimulationData(), loadTmpData())
+    participants = merge(loadExp1SimulationData(), loadTmpData())
     
     d = shelve.open('Data/fitting result/Exp1/fitting_results.dat')
     d['participants'] = participants
     d.close()
+
+def fitExp2():
+    participants = loadExp2()
+#     fit(participants[1])
+     
+    with Pool(1) as p:
+        p.map(fit, [participants[pID] for pID in participants.keys()])
+    
+    try:
+        old_simulation_data = loadExp2SimulationData()
+    except:
+        old_simulation_data = participants
+    participants = merge(old_simulation_data, loadTmpData())
+    
+    d = shelve.open('Data/fitting result/Exp2/fitting_results.dat')
+    d['participants'] = participants
+    d.close()
     
 if __name__ == '__main__':
-    fitExp1()
+    fitExp2()
     pass

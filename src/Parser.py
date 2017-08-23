@@ -19,19 +19,33 @@ class BasicDataFormat(object):
         self.RT = 19
         self.correctness = 20
 
+class Exp2DataFormat(object):
+    def __init__(self):
+        self.pID = 0
+        self.trial_index = 1
+        self.set_size = 2
+        self.probe_type = 3
+        self.color =  [4, 6, 8, 10, 12, 14]
+        self.locations = [5, 7, 9, 11, 13, 15]
+        self.probe = 16
+        self.response = 18
+        self.RT = 20
+        self.correctness = 19
+
 class BasicParser(object):
     '''
     This is the basic Parser for colorwheel recognition data. 
     '''
 
 
-    def __init__(self, data_file, data_format):
+    def __init__(self, data_file, data_format, trial_factory):
         '''
         Constructor
         '''
         
         self.data_file = data_file
         self.data_format = data_format
+        self.trial_factory = trial_factory
         
     def parse(self):
         participants = {}
@@ -40,14 +54,13 @@ class BasicParser(object):
             val = line.split()
             
             pID = int(val[self.data_format.pID])
-            session = int(val[self.data_format.session])
+            # session = int(val[self.data_format.session])
             trial_index = int(val[self.data_format.trial_index])
             
             if pID not in participants.keys():
                 participants[pID] = Participant(pID)
                 
-                
-            trial = BasicTrial(participants[pID])
+            trial = self.trial_factory(participants[pID])
                
             for i in range(int(val[self.data_format.set_size])):
                 color = int(val[self.data_format.color[i]])
@@ -60,7 +73,7 @@ class BasicParser(object):
             
             trial.addTarget(target_color, target_location, 0)
             
-            probe_type = int(val[self.data_format.probe_type])
+            probe_type = val[self.data_format.probe_type]
             probe = int(val[self.data_format.probe])
             probe_location = int(val[self.data_format.locations[0]])
                 
@@ -87,6 +100,13 @@ class Stimulus(object):
         self.location = location
         self.serial_position = serial_position
         self.output_position = output_position
+
+    def colorDistTo(self, stimulus2):
+        dist = numpy.abs(self.color - stimulus2.color)
+        if dist >= 180:
+            dist = 360 - dist
+
+        return dist
         
     def __eq__(self, target):
         eq = False
@@ -131,11 +151,11 @@ class BasicTrial(object):
         
     def addProbe(self, color, location, probe_type):
         self.probe = Stimulus(color, location)
-        if probe_type == 1:
+        if probe_type == '1':
             self.probe_type = 'positive'
-        elif probe_type == 2:
+        elif probe_type == '2':
             self.probe_type = 'new'
-        elif probe_type == 3:
+        elif probe_type == '3':
             self.probe_type = 'intrusion'
         else:
             self.probe_type = 'unknown'
@@ -162,6 +182,21 @@ class BasicTrial(object):
     
     def getPFocus(self):
         return 1.0/self.set_size
+
+class Exp2Trial(BasicTrial):
+    def __init__(self, participant = None):
+        super(Exp2Trial, self).__init__(participant)
+
+    def addProbe(self, color, location, probe_type):
+        self.probe = Stimulus(color, location)
+        if probe_type == 'same':
+            self.probe_type = 'positive'
+        else:
+            self.probe_type = 'new'
+            for stimulus in self.stimuli:
+                if stimulus != self.target:
+                    if stimulus.colorDistTo(self.probe) < 13:
+                        self.probe_type = 'intrusion'
         
 class Participant(object):
     def __init__(self, pID):
@@ -200,7 +235,7 @@ class Participant(object):
         corrects = []
         for trial in trials:
             if model_name is None:
-                if trial.correctness and trial.RT <= 5.0:
+                if trial.correctness and trial.RT <= 5000:
                     corrects.append(1.0)
                 else:
                     corrects.append(0.0)
@@ -234,12 +269,19 @@ class Participant(object):
 
             
         return distance
+
+def Exp1TrialFactory(pID):
+    return BasicTrial(pID)
+
+def Exp2TrialFactory(pID):
+    return Exp2Trial(pID)
     
 def main():
-    data_file = open('Data\\colorwheelr1.dat')
-    data_format = BasicDataFormat()
+    data_file = open('Data\\Experiment2\\recognition2.dat')
+    # data_format = BasicDataFormat()
+    data_format = Exp2DataFormat()
     
-    parser = BasicParser(data_file, data_format)
+    parser = BasicParser(data_file, data_format, Exp2TrialFactory)
     
     participants = parser.parse()
     for pID in participants.keys():

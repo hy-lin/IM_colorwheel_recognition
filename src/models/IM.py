@@ -158,12 +158,12 @@ class IM(object):
     def _getPred(self, activation):
         return activation / numpy.sum(activation)
 #     
-# def test():
+# def _test():
 #     im = IM()
 #     data = {'mu = 180, kappa = 40':im._getActivation(180, 40)}
 #     line_figure = figures.LineFigure(data)
 #     line_figure.show()
 #     
 if __name__ == '__main__':
-#     test()
+#     _test()
     pass
