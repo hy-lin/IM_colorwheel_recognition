@@ -89,10 +89,10 @@ class Wrapper(object):
         return ll + 2*self.model.n_parameters
     
 def fit(participant):
-    sabayes = ResourceModelsBayes.SlotAveragingBayes()
-    sabayes.discription = 'The vanila SlotAveragingBayes'
+    vpbayes = ResourceModelsBayes.VariablePrecisionBayes()
+    vpbayes.discription = 'The vanila VariablePrecisionBayes'
     
-    wrapper = Wrapper(participant, sabayes)
+    wrapper = Wrapper(participant, vpbayes)
     wrapper.fit()
     
     file_path = 'Data/fitting result/tmp/'

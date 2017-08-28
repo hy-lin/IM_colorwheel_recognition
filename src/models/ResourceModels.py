@@ -1,5 +1,6 @@
 import numpy
 import scipy.stats
+import time
 
 class SlotAveraging(object):
 
@@ -7,7 +8,7 @@ class SlotAveraging(object):
         self.k = k
         self.kappa = kappa
 
-        self.model_name_prefix = 'Interference Model'
+        self.model_name_prefix = 'Slot averaging Model'
         self.major_version = 1
         self.middle_version = 1
         self.minor_version = 3
@@ -20,7 +21,7 @@ class SlotAveraging(object):
         self.xmin = [0.0, 0.0]
 
     def updateModelName(self):
-        self.model_name =  self.model_name_prefix + ' v{}.{:02d}.{:02d}'.format(self.major_version, self.middle_version, self.minor_version)
+        self.model_name = self.model_name_prefix + ' v{}.{:02d}.{:02d}'.format(self.major_version, self.middle_version, self.minor_version)
         return self.model_name
 
     def getInitialParameters(self):
@@ -29,16 +30,16 @@ class SlotAveraging(object):
     def getParametersAsVector(self):
         return [self.k, self.kappa]
 
+    def updateParameters(self, x):
+        self.k = x[0]
+        self.kappa = x[1]
+
     def getPRecall(self, trial):
         kappa = self._getKappa(trial)
         pm = self._getPMemory(trial)
         pred = self._getPred(trial, kappa, pm)
 
         return pred
-
-    def updateParameters(self, x):
-        self.k = x[0]
-        self.kappa = x[1]
 
     def _getKappa(self, trial):
         if trial.set_size >= self.k:
@@ -77,3 +78,70 @@ class SlotAveraging(object):
         activation = activation * pm + (1.0-pm) * (1.0 / 360.0)
 
         return activation
+
+class VariablePrecision(object):
+    def __init__(self, J1 = 60.0, tau = 44.47, alpha = 0.7386):
+        self.J1 = J1
+        self.tau = tau
+        self.alpha = alpha
+
+        self.model_name_prefix = 'Variable precision Model'
+        self.major_version = 1
+        self.middle_version = 1
+        self.minor_version = 3
+        self.model_name = self.updateModelName()
+        self.n_parameters = 6
+
+        self.description = 'This is the vanilla IM model.'
+
+        self.xmax = [100.0, 100.0, 1.0]
+        self.xmin = [0.0, 0.0, 0.0]
+
+        self.updating_distribution = True
+        self.n_sim = 5000
+        self.max_set_size = 8
+
+    def updateModelName(self):
+        self.model_name = self.model_name_prefix + ' v{}.{:02d}.{:02d}'.format(self.major_version, self.middle_version, self.minor_version)
+        return self.model_name
+
+    def getInitialParameters(self):
+        return [60.0, 44.47, 0.7386]
+
+    def getParametersAsVector(self):
+        return [self.J1, self.tau, self.alpha]
+
+    def updateParameters(self, x):
+        self.J1 = x[0]
+        self.tau = x[1]
+        self.alpha = x[2]
+
+        self.updating_distribution = True
+
+    def getPRecall(self, trial):
+        pred = self._getActivation(trial.target.color, trial.set_size)
+        pred /= numpy.sum(pred)
+
+        return pred
+
+    def _getActivation(self, mu, set_size):
+        if self.updating_distribution:
+            self._resimulate_distribution()
+
+        x_ind = numpy.arange(360) - mu
+        return self.distribution[set_size, x_ind]
+
+        
+    def _resimulate_distribution(self):
+        angs = numpy.arange(0, 360)
+        rads = angs * numpy.pi / 180.0
+
+        self.distribution = numpy.zeros((self.max_set_size, 360)) + 0.000000000000000001
+        for sz in range(self.max_set_size):
+            J = self.J1 / ((sz+1) ** self.alpha)
+            for iteration in range(self.n_sim):
+                kappa = numpy.random.gamma(J/self.tau, self.tau)
+                self.distribution[sz] += scipy.stats.vonmises(kappa).pdf(rads)
+            self.distribution[sz] /= self.n_sim
+
+        self.updating_distribution = False

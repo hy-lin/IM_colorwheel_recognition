@@ -32,6 +32,31 @@ class SlotAveragingBayes(ResourceModels.SlotAveraging):
 
         return -numpy.log(2.0 * numpy.pi * (pm * act + (1 - pm) / (2.0 * numpy.pi)))
 
+class VariablePrecisionBayes(ResourceModels.VariablePrecision):
+    def __init__(self, J1 = 60.0, tau = 44.47, alpha = 0.7386):
+        super(VariablePrecisionBayes, self).__init__(J1, tau, alpha)
+
+        self.model_name_prefix = 'Variable Precision Model with Bayes'
+
+        self.major_version = 1
+        self.middle_version = 1
+        self.minor_version = 1
+
+        self.model_name = self.updateModelName()
+
+    def getPrediction(self, trial):
+        d = self._getD(trial)
+
+        p_recall = self.getPRecall(trial)
+
+        return numpy.sum((d > 0) * p_recall)
+
+    def _getD(self, trial):
+        act = self._getActivation(trial.target.color, trial.set_size)
+
+        return -numpy.log(2.0 * numpy.pi * act)
+
+
 def _test():
     data_file = open('..\\Data\\colorwheelr1.dat')
     data_format = Parser.BasicDataFormat()
