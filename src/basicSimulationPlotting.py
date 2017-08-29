@@ -80,7 +80,7 @@ def plotPC(participants, model_name=None):
     PC_plot = figures.LineFigure(plot_data)
     PC_plot.setXLabel('Set sizes', False)
     PC_plot.setYLabel('Proportion of Correct', False)
-    PC_plot.setYLim((0.55, 1.00), False)
+    PC_plot.setYLim((0.50, 1.00), False)
 
     if model_name is None:
         PC_plot.setTitle('Data', True)
@@ -88,8 +88,11 @@ def plotPC(participants, model_name=None):
         PC_plot.setTitle(model_name, True)
 
 
-def loadSimulationData():
-    file_path = 'Data/fitting result/Exp1/'
+def loadSimulationData(exp_number):
+    if exp_number == 1:
+        file_path = 'Data/fitting result/Exp1/'
+    elif exp_number == 2:
+        file_path = 'Data/fitting result/Exp2/'
     file_name = '{}fitting_results.dat'.format(file_path)
     fitting_results = shelve.open(file_name)
     participants = fitting_results['participants']
@@ -197,16 +200,17 @@ def outputExp1ResultAsDataFile(participants, models):
     output_file.close()
 
 def main():
-    participants = loadSimulationData()
+    participants = loadSimulationData(2)
     # participants = loadParticipants()
 
     plotPC(participants)
     plotYesDistribution(participants)
 
-    models = ['Interference Model with Bayes v1.02.01',
+    models = ['Interference Model with Bayes v1.02.02',
             #   'Interference Model with Bayes v1.01.01',
             #   'Interference Model with Bayes and Swap v1.01.02',
-              'Interference Model with Bayes v1.02.02']
+              'Slot Averaging Model with Bayes v1.01.01',
+              'Variable Precision Model with Bayes v1.01.01']
 
     # IMDual = IMBayes.IMBayesDual()
     # simulateWithDefault(participants, IMDual)
@@ -216,7 +220,7 @@ def main():
         plotYesDistribution(participants, model_name)
         outputParameters(participants, model_name)
 
-    outputExp1ResultAsDataFile(participants, models)
+    # outputExp1ResultAsDataFile(participants, models)
 
     # outputMeasurementParameters(participants, 'Interference Measurement Model with Bayes v1.01.01')
 

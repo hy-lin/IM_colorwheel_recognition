@@ -74,7 +74,7 @@ def plotRT(participants):
 def loadParticipants():
     data_file = open('Data\\colorwheelr1.dat')
     data_format = Parser.BasicDataFormat()
-    parser = Parser.BasicParser(data_file, data_format)
+    parser = Parser.BasicParser(data_file, data_format, Parser.Exp1TrialFactory)
     
     participants = parser.parse()
     

@@ -40,7 +40,7 @@ class VariablePrecisionBayes(ResourceModels.VariablePrecision):
 
         self.major_version = 1
         self.middle_version = 1
-        self.minor_version = 1
+        self.minor_version = 2
 
         self.model_name = self.updateModelName()
 
@@ -52,7 +52,7 @@ class VariablePrecisionBayes(ResourceModels.VariablePrecision):
         return numpy.sum((d > 0) * p_recall)
 
     def _getD(self, trial):
-        act = self._getActivation(trial.target.color, trial.set_size)
+        act = self._getActivation(trial.probe.color, trial.set_size)
 
         return -numpy.log(2.0 * numpy.pi * act)
 

@@ -13,7 +13,7 @@ class SlotAveraging(object):
         self.middle_version = 1
         self.minor_version = 3
         self.model_name = self.updateModelName()
-        self.n_parameters = 6
+        self.n_parameters = 2
 
         self.description = 'This is the vanilla IM model.'
 
@@ -90,7 +90,7 @@ class VariablePrecision(object):
         self.middle_version = 1
         self.minor_version = 3
         self.model_name = self.updateModelName()
-        self.n_parameters = 6
+        self.n_parameters = 3
 
         self.description = 'This is the vanilla IM model.'
 
@@ -136,7 +136,7 @@ class VariablePrecision(object):
         angs = numpy.arange(0, 360)
         rads = angs * numpy.pi / 180.0
 
-        self.distribution = numpy.zeros((self.max_set_size, 360)) + 0.000000000000000001
+        self.distribution = numpy.zeros((self.max_set_size, 360))
         for sz in range(self.max_set_size):
             J = self.J1 / ((sz+1) ** self.alpha)
             for iteration in range(self.n_sim):
