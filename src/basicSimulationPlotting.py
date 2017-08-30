@@ -101,10 +101,15 @@ def loadSimulationData(exp_number):
     return participants
 
 
-def loadParticipants():
-    data_file = open('Data\\colorwheelr1.dat')
-    data_format = Parser.BasicDataFormat()
-    parser = Parser.BasicParser(data_file, data_format)
+def loadParticipants(exp_number):
+    if exp_number == 1:
+        data_file = open('Data\\colorwheelr1.dat')
+        data_format = Parser.BasicDataFormat()
+        parser = Parser.BasicParser(data_file, data_format, Parser.Exp1TrialFactory)
+    elif exp_number == 2:
+        data_file = open('Data\\colorwheel2.dat')
+        data_format = Parser.Exp2DataFormat()
+        parser = Parser.BasicParser(data_file, data_format, Parser.Exp2TrialFactory)
 
     participants = parser.parse()
 
@@ -201,7 +206,7 @@ def outputExp1ResultAsDataFile(participants, models):
 
 def main():
     participants = loadSimulationData(2)
-    # participants = loadParticipants()
+    # participants = loadParticipants(2)
 
     plotPC(participants)
     plotYesDistribution(participants)

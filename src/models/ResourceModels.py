@@ -95,7 +95,7 @@ class VariablePrecision(object):
         self.description = 'This is the vanilla IM model.'
 
         self.xmax = [100.0, 100.0, 1.0]
-        self.xmin = [0.0, 0.0, 0.0]
+        self.xmin = [0.0, 0.000001, 0.0]
 
         self.updating_distribution = True
         self.n_sim = 5000
