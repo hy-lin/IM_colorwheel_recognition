@@ -15,6 +15,61 @@ import sys
 sys.path.insert(0, 'models\\')
 import IMBayes
 
+def plotSpatialGradient(participants, model_name = None):
+    plot_data = {}
+    max_dist = 7
+
+    for set_size in range(1, 7):
+        constraints = {'set_size': [set_size]}
+        dist_count = [[] for i in range(max_dist+1)]
+
+        for pID in participants.keys():
+            trials = participants[pID].getTrialsMetConstraints(constraints)
+            for trial in trials:
+                min_color = 13
+                min_index = None
+                max_trial_dist = 0
+                for i, stimulus in enumerate(trial.stimuli):
+                    color_dist = abs(stimulus.color - trial.probe.color)
+                    if color_dist >= 180:
+                        color_dist = 360 - color_dist
+
+                    if min_color > color_dist:
+                        min_color = color_dist
+                        min_index = i
+
+                    # for stimulus2 in trial.stimuli:
+                    #     if stimulus is not stimulus2:
+                    #         spatial_distance = numpy.abs(stimulus.location - stimulus2.location)
+                    #         if spatial_distance > max_dist:
+                    #             spatial_distance = max_dist*2 - spatial_distance - 1 
+
+                    #         if max_trial_dist < spatial_distance:
+                    #             max_trial_dist = spatial_distance
+
+                if min_index is not None:
+                    spatial_distance = numpy.abs(trial.stimuli[min_index].location - trial.probe.location)
+                    if spatial_distance > max_dist:
+                        spatial_distance = max_dist*2 - spatial_distance - 1
+                    # if max_trial_dist != 0:
+                    #     spatial_distance = int(numpy.ceil(spatial_distance * max_dist / max_trial_dist))
+
+                    if model_name is None:
+                        dist_count[spatial_distance] += [trial.response == 1]
+                    else:
+                        dist_count[spatial_distance] += [trial.simulation[model_name]]
+
+        distribution = [1 - numpy.mean(dist_count[i]) for i in range(max_dist+1)]
+        plot_data['set size {}'.format(set_size)] = numpy.array([
+            numpy.arange(max_dist+1), distribution])
+
+    distribution_plot = figures.LineFigure(plot_data)
+    distribution_plot.setXLabel('Spatial distance', update=False)
+    distribution_plot.setYLabel('Proportion of "No Change"', update=False)
+    if model_name is None:
+        distribution_plot.setTitle('Data', True)
+    else:
+        distribution_plot.setTitle(model_name, True)
 
 def plotYesDistribution(participants, model_name=None):
     plot_data = {}
@@ -210,6 +265,7 @@ def main():
 
     plotPC(participants)
     plotYesDistribution(participants)
+    plotSpatialGradient(participants)
 
     models = ['Interference Model with Bayes v1.02.02',
             #   'Interference Model with Bayes v1.01.01',
@@ -223,7 +279,9 @@ def main():
     for model_name in models:
         plotPC(participants, model_name)
         plotYesDistribution(participants, model_name)
+        plotSpatialGradient(participants, model_name)
         outputParameters(participants, model_name)
+
 
     # outputExp1ResultAsDataFile(participants, models)
 
