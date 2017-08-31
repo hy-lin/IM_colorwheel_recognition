@@ -59,7 +59,7 @@ def plotSpatialGradient(participants, model_name = None):
                     else:
                         dist_count[spatial_distance] += [trial.simulation[model_name]]
 
-        distribution = [1 - numpy.mean(dist_count[i]) for i in range(max_dist+1)]
+        distribution = [1 - numpy.nanmean(dist_count[i]) for i in range(max_dist+1)]
         plot_data['set size {}'.format(set_size)] = numpy.array([
             numpy.arange(max_dist+1), distribution])
 
@@ -103,7 +103,7 @@ def plotYesDistribution(participants, model_name=None):
                     bin_count[bin_index] += [trial.simulation[model_name]]
 
 #         print(bin_count)
-        distribution = [1 - numpy.mean(bin_count[i]) for i in range(n_bins)]
+        distribution = [1 - numpy.nanmean(bin_count[i]) for i in range(n_bins)]
         plot_data['set size {}'.format(set_size)] = numpy.array([
             x_label, distribution])
 
@@ -127,7 +127,7 @@ def plotPC(participants, model_name=None):
             for pID in participants.keys():
                 PCs.append(participants[pID].getPC(constraints, model_name))
 
-            plot_data[probe_type][1].append(numpy.mean(PCs))
+            plot_data[probe_type][1].append(numpy.nanmean(PCs))
             plot_data[probe_type][0].append(set_size)
 
         plot_data[probe_type] = numpy.array(plot_data[probe_type])
@@ -222,8 +222,8 @@ def outputMeasurementParameters(participants, model_name):
         means[parameter_name] = []
 
         for sz in range(6):
-            means[parameter_name].append(numpy.mean(parameters[parameter_name][sz]))
-            median[parameter_name].append(numpy.median(parameters[parameter_name][sz]))
+            means[parameter_name].append(numpy.nanmean(parameters[parameter_name][sz]))
+            median[parameter_name].append(numpy.nanmedian(parameters[parameter_name][sz]))
 
         means[parameter_name] = numpy.array(means[parameter_name])
         median[parameter_name] = numpy.array(median[parameter_name])
@@ -271,7 +271,7 @@ def main():
             #   'Interference Model with Bayes v1.01.01',
             #   'Interference Model with Bayes and Swap v1.01.02',
               'Slot Averaging Model with Bayes v1.01.01',
-              'Variable Precision Model with Bayes v1.01.01']
+              'Variable Precision Model with Bayes v1.01.02']
 
     # IMDual = IMBayes.IMBayesDual()
     # simulateWithDefault(participants, IMDual)

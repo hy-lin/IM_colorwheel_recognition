@@ -99,7 +99,7 @@ class VariablePrecision(object):
 
         self.updating_distribution = True
         self.n_sim = 5000
-        self.max_set_size = 8
+        self.max_set_size = 6
 
     def updateModelName(self):
         self.model_name = self.model_name_prefix + ' v{}.{:02d}.{:02d}'.format(self.major_version, self.middle_version, self.minor_version)
@@ -129,7 +129,11 @@ class VariablePrecision(object):
             self._resimulate_distribution()
 
         x_ind = numpy.arange(360) - mu
-        return self.distribution[set_size, x_ind]
+        try:
+            return self.distribution[set_size-1, x_ind]
+        except:
+            print(set_size-1, x_ind, self.distribution.shape)
+            return self.distribution[set_size-1, x_ind]
 
         
     def _resimulate_distribution(self):
@@ -145,3 +149,53 @@ class VariablePrecision(object):
             self.distribution[sz] /= self.n_sim
 
         self.updating_distribution = False
+
+class VariablePrecisionSwap(VariablePrecision):
+    def __init__(self, J1 = 60.0, tau = 44.47, alpha = 0.7386, p_swap = 0.05):
+        super(VariablePrecisionSwap, self).__init__(J1, tau, alpha)
+        self.p_swap = p_swap
+
+        self.model_name_prefix = 'Variable Precision Swap Model'
+        self.major_version = 1
+        self.middle_version = 1
+        self.minor_version = 3
+        self.model_name = self.updateModelName()
+        self.n_parameters = 4
+
+        self.description = 'This is the vanilla IM model.'
+
+        self.xmax = [100.0, 100.0, 1.0, 0.18]
+        self.xmin = [0.0, 0.000001, 0.0, 0.0]
+
+
+    def getInitialParameters(self):
+        return [60.0, 44.47, 0.7386, 0.05]
+
+    def getParametersAsVector(self):
+        return [self.J1, self.tau, self.alpha, self.p_swap]
+
+    def updateParameters(self, x):
+        self.J1 = x[0]
+        self.tau = x[1]
+        self.alpha = x[2]
+        self.p_swap = x[3]
+
+        self.updating_distribution = True
+
+    def _getEmptyActivation(self):
+        return numpy.zeros((1, 360))
+
+    def getPRecall(self, trial):
+        act = self._getEmptyActivation()
+        pm = self.getPM(trial)
+        act += self._getActivation(trial.target.color, trial.set_size) * pm
+        for stimulus in trial.stimuli:
+            if stimulus != trial.target:
+                act += self._getActivation(stimulus.color, trial.set_size) * self.p_swap
+        pred = act / numpy.sum(act)
+
+        return pred
+
+    def getPM(self, trial):
+        pm = 1.0 - (trial.set_size-1) * self.p_swap
+        return pm
