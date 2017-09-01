@@ -44,6 +44,8 @@ class SlotAveraging(object):
     def _getKappa(self, trial):
         if trial.set_size >= self.k:
             return self.kappa
+
+        sigma = numpy.sqrt(1.0/kappa)
         
         k_sz_ratio = self.k / trial.set_size
         lower_slot_number = numpy.floor(k_sz_ratio)
@@ -51,7 +53,9 @@ class SlotAveraging(object):
         higher_slot_precentage = k_sz_ratio - lower_slot_number
         lower_slot_precentage = 1 - higher_slot_precentage
 
-        return self.kappa/numpy.sqrt(lower_slot_number) * lower_slot_precentage + self.kappa/numpy.sqrt(higher_slot_number) * higher_slot_precentage
+        sigma_sz = self.sigma/numpy.sqrt(lower_slot_number) * lower_slot_precentage + self.sigma/numpy.sqrt(higher_slot_number) * higher_slot_precentage
+
+        return 1.0/(sigma**2)
 
     def _getPMemory(self, trial):
         if self.k >= trial.set_size:
