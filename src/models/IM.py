@@ -157,6 +157,50 @@ class IM(object):
     
     def _getPred(self, activation):
         return activation / numpy.sum(activation)
+
+class IMEta(IM):
+    def __init__(self, b = .15, a = .21, s = 7.7, kappa = 7.19, kappa_f = 40.14, r = 0.12):
+        super(IMEta, self).__init__(b, a, s, kappa, kappa_f, r)
+
+        self.model_name_prefix = 'Interference Model'
+        self.major_version = 3
+        self.middle_version = 1
+        self.minor_version = 1
+        self.model_name = self.updateModelName()
+        self.n_parameters = 6
+
+        self.description = 'This is the IM model with encoding strength.'
+        
+        self.xmax = [1.0, 1.0, 20.0, 100.0, 100.0, 1.0]
+        self.xmin = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+    def _getEta(self, serial_position):
+        return 1.0
+
+    def _getActivationA(self, trial):
+        activation_A = self._getEmptyActivation()
+        for serial_position, stimulus in enumerate(trial.stimuli):
+            eta = self._getEta(serial_position+1)
+            activation_A += self._getActivation(stimulus.color, self.kappa) * eta
+            
+        return numpy.squeeze(activation_A * self.a)
+    
+    def _getActivationB(self, trial):
+        activation_B = self._getEmptyActivation()
+        for serial_position in range(trial.set_size):
+            activation_B += self._getEta(serial_position+1) / len(activation_B)
+
+        return numpy.squeeze(activation_B * self.b)
+
+    def _getActivationC(self, trial):
+        activation_C = self._getEmptyActivation()
+        max_distance = self._getMaxDistance(trial)
+        for serial_position, stimulus in enumerate(trial.stimuli):
+            weighting = self._getWeighting(trial.probe.location, stimulus.location, max_distance)
+            activation_C += self._getActivation(stimulus.color, self.kappa) * weighting * self._getEta(serial_position+1)
+            
+        return numpy.squeeze(activation_C * self.c)
+
 #     
 # def _test():
 #     im = IM()
