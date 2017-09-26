@@ -13,6 +13,32 @@ class SlotAveragingBayes(ResourceModels.SlotAveraging):
         self.model_name_prefix = 'Slot Averaging Model with Bayes'
 
         self.major_version = 1
+        self.middle_version = 2
+        self.minor_version = 1
+
+        self.model_name = self.updateModelName()
+
+    def getPrediction(self, trial):
+        pm = self._getPMemory(trial)
+
+        d = self._getD(trial)
+
+        p_recall = self.getPRecall(trial)
+
+        return numpy.sum((d > 0) * p_recall) * pm + .5 * (1.0-pm)
+
+    def _getD(self, trial):
+        act = self._getActivation(trial.probe.color, self.kappa)
+
+        return -numpy.log(2.0 * numpy.pi * act)
+
+class SlotAveragingBindingBayes(ResourceModels.SlogAveragingBinding):
+    def __init__(self, k = 2.2, kappa = 7.2, b = .8):
+        super(SlotAveragingBindingBayes, self).__init__(k, kappa, b)
+
+        self.model_name_prefix = 'Slot Averaging Model with Binding errors and Bayes'
+
+        self.major_version = 1
         self.middle_version = 1
         self.minor_version = 1
 
@@ -21,16 +47,16 @@ class SlotAveragingBayes(ResourceModels.SlotAveraging):
     def getPrediction(self, trial):
         pm = self._getPMemory(trial)
 
-        d = self._getD(trial, pm)
+        d = self._getD(trial)
 
         p_recall = self.getPRecall(trial)
 
-        return numpy.sum((d > 0) * p_recall)
+        return numpy.sum((d > 0) * p_recall) * pm + .5 * (1.0-pm)
 
-    def _getD(self, trial, pm):
+    def _getD(self, trial):
         act = self._getActivation(trial.probe.color, self.kappa)
 
-        return -numpy.log(2.0 * numpy.pi * (pm * act + (1 - pm) / (2.0 * numpy.pi)))
+        return -numpy.log(2.0 * numpy.pi * (self.b * act + (1 - self.b) / (2.0 * numpy.pi)))
 
 class VariablePrecisionBayes(ResourceModels.VariablePrecision):
     def __init__(self, J1 = 60.0, tau = 44.47, alpha = 0.7386):

@@ -45,7 +45,7 @@ class SlotAveraging(object):
         if trial.set_size >= self.k:
             return self.kappa
 
-        sigma = numpy.sqrt(1.0/kappa)
+        sigma = numpy.sqrt(1.0/self.kappa)
         
         k_sz_ratio = self.k / trial.set_size
         lower_slot_number = numpy.floor(k_sz_ratio)
@@ -53,7 +53,7 @@ class SlotAveraging(object):
         higher_slot_precentage = k_sz_ratio - lower_slot_number
         lower_slot_precentage = 1 - higher_slot_precentage
 
-        sigma_sz = self.sigma/numpy.sqrt(lower_slot_number) * lower_slot_precentage + self.sigma/numpy.sqrt(higher_slot_number) * higher_slot_precentage
+        sigma_sz = sigma/numpy.sqrt(lower_slot_number) * lower_slot_precentage + sigma/numpy.sqrt(higher_slot_number) * higher_slot_precentage
 
         return 1.0/(sigma**2)
 
@@ -82,6 +82,48 @@ class SlotAveraging(object):
         activation = activation * pm + (1.0-pm) * (1.0 / 360.0)
 
         return activation
+
+class SlogAveragingBinding(SlotAveraging):
+    def __init__(self, k = 2.2, kappa = 7.2, b = .8):
+        super(SlogAveragingBinding, self).__init__(k, kappa)
+        self.b = b
+
+        self.model_name_prefix = 'Slot Averaging Model with Binding errors'
+
+        self.major_version = 1
+        self.middle_version = 1
+        self.minor_version = 1
+
+        self.model_name = self.updateModelName()
+
+        self.xmax = [8.0, 100.0, 1.0]
+        self.xmin = [0.0, 0.0, .0]
+
+    def getInitialParameters(self):
+        return [2.2, 7.2, .6]
+
+    def getParametersAsVector(self):
+        return [self.k, self.kappa, self.b]
+
+    def updateParameters(self, x):
+        self.k = x[0]
+        self.kappa = x[1]
+        self.b = x[2]
+
+    def _getPred(self, trial, kappa, pm):
+        p_no_guess = 0.0
+        activation = self._getActivation(trial.target.color, kappa) * pm * self.b
+        p_no_guess += pm * self.b
+
+        for stimulus in trial.stimuli:
+            if stimulus != trial.target:
+                activation += self._getActivation(stimulus.color, kappa) * pm * (1.0 - self.b) / (trial.set_size-1)
+                p_no_guess += pm * (1.0 - self.b) / (trial.set_size-1)
+
+        activation /= numpy.sum(activation)
+
+        pred = activation * pm + (1.0-pm) * (1.0 / 360.0)
+        return pred
 
 class VariablePrecision(object):
     def __init__(self, J1 = 60.0, tau = 44.47, alpha = 0.7386):

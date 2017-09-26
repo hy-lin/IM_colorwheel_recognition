@@ -15,7 +15,7 @@ import sys
 sys.path.insert(0, 'models\\')
 import IMBayes
 
-def plotSpatialGradient(participants, model_name = None):
+def plotSpatialGradient(participants, model_name = None, displayed_model_name = None):
     plot_data = {}
     max_dist = 7
 
@@ -69,9 +69,9 @@ def plotSpatialGradient(participants, model_name = None):
     if model_name is None:
         distribution_plot.setTitle('Data', True)
     else:
-        distribution_plot.setTitle(model_name, True)
+        distribution_plot.setTitle(displayed_model_name, True)
 
-def plotYesDistribution(participants, model_name=None):
+def plotYesDistribution(participants, model_name=None, displayed_model_name = None):
     plot_data = {}
     n_bins = 15
     x_label = numpy.linspace(-numpy.pi, numpy.pi, n_bins)
@@ -113,10 +113,10 @@ def plotYesDistribution(participants, model_name=None):
     if model_name is None:
         distribution_plot.setTitle('Data', True)
     else:
-        distribution_plot.setTitle(model_name, True)
+        distribution_plot.setTitle(displayed_model_name, True)
 
 
-def plotPC(participants, model_name=None):
+def plotPC(participants, model_name=None, displayed_model_name = None):
     plot_data = {}
     for probe_type in ['positive', 'new', 'intrusion']:
         plot_data[probe_type] = [[], []]
@@ -136,13 +136,43 @@ def plotPC(participants, model_name=None):
     PC_plot.setXLabel('Set sizes', False)
     PC_plot.setYLabel('Proportion of Correct', False)
     PC_plot.setYLim((0.50, 1.00), False)
+    PC_plot.setXLim((0.5, 6.5), False)
 
     if model_name is None:
         PC_plot.setTitle('Data', True)
     else:
-        PC_plot.setTitle(model_name, True)
+        PC_plot.setTitle(displayed_model_name, True)
 
 
+def plotProbeType(participants, model_name=None, displayed_model_name = None):
+    plot_data = {}
+    labels = ['No Change', 'Change']
+    for i, probe_type in enumerate([['positive'], ['new', 'intrusion']]):
+        plot_data[labels[i]] = [[], []]
+        for set_size in range(1, 7):
+            constraints = {'probe_type': probe_type, 'set_size': [set_size]}
+
+            PCs = []
+            for pID in participants.keys():
+                PCs.append(participants[pID].getPC(constraints, model_name))
+
+            plot_data[labels[i]][1].append(numpy.nanmean(PCs))
+            plot_data[labels[i]][0].append(set_size)
+
+        plot_data[labels[i]] = numpy.array(plot_data[labels[i]])
+
+    PC_plot = figures.LineFigure(plot_data)
+    PC_plot.setXLabel('Set sizes', False)
+    PC_plot.setYLabel('Proportion of Correct', False)
+    PC_plot.setYLim((0.50, 1.00), False)
+    PC_plot.setXLim((0.5, 6.5), False)
+  
+
+    if model_name is None:
+        PC_plot.setTitle('Data', True)
+    else:
+        PC_plot.setTitle(displayed_model_name, True)
+        
 def loadSimulationData(exp_number):
     if exp_number == 1:
         file_path = 'Data/fitting result/Exp1/'
@@ -262,7 +292,7 @@ def outputExp1ResultAsDataFile(participants, models):
 def main():
     participants = loadSimulationData(2)
     # participants = loadParticipants(2)
-
+    plotProbeType(participants)
     plotPC(participants)
     plotYesDistribution(participants)
     plotSpatialGradient(participants)
@@ -271,15 +301,26 @@ def main():
             #   'Interference Model with Bayes v1.01.01',
             #   'Interference Model with Bayes and Swap v1.01.02',
               'Slot Averaging Model with Bayes v1.01.01',
-              'Variable Precision Model with Bayes v1.01.02']
+              'Slot Averaging Model with Bayes v1.02.01',
+              'Variable Precision Model with Bayes v1.01.02', 
+              'Variable Precision Swap Model with Bayes v1.01.01']
+              
+    displayed_model_names = [
+        'Interference Model',
+        'Slot Averaging Model',
+        'Slot Averaging Model v2',
+        'Variable Precision Model', 
+        'Variable Precision Model v2',
+    ]
 
     # IMDual = IMBayes.IMBayesDual()
     # simulateWithDefault(participants, IMDual)
 
-    for model_name in models:
-        plotPC(participants, model_name)
-        plotYesDistribution(participants, model_name)
-        plotSpatialGradient(participants, model_name)
+    for i, model_name in enumerate(models):
+        plotProbeType(participants, model_name, displayed_model_names[i])
+        plotPC(participants, model_name, displayed_model_names[i])
+        plotYesDistribution(participants, model_name, displayed_model_names[i])
+        plotSpatialGradient(participants, model_name, displayed_model_names[i])
         outputParameters(participants, model_name)
 
 

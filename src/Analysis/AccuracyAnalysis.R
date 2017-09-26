@@ -56,14 +56,11 @@ classifyProbeType <- function(data){
   return(data)
 }
 
-
 exp2.data <- loadData(2)
 exp2.data <- classifyProbeType(exp2.data)
 
 data <- data.frame(aggregate(list(exp2.data$Correctness, exp2.data$RT), list(exp2.data$ID, exp2.data$ProbeType, exp2.data$Setsize), mean))
 names(data) <- c('ID', 'ProbeType', 'Setsize', 'PC', 'RT')
-
-
 
 tmp_data <- data.frame(aggregate(list(data$PC, data$RT), list(data$ProbeType, data$Setsize), mean))
 tmp_data_sd <- data.frame(aggregate(list(data$PC, data$RT), list(data$ProbeType, data$Setsize), sd))
