@@ -302,6 +302,7 @@ def main():
             #   'Interference Model with Bayes and Swap v1.01.02',
               'Slot Averaging Model with Bayes v1.01.01',
               'Slot Averaging Model with Bayes v1.02.01',
+              'Slot Averaging Model with Binding errors and Bayes v1.01.01',
               'Variable Precision Model with Bayes v1.01.02', 
               'Variable Precision Swap Model with Bayes v1.01.01']
               
@@ -309,6 +310,7 @@ def main():
         'Interference Model',
         'Slot Averaging Model',
         'Slot Averaging Model v2',
+        'Slot Averaging Model with Binding',
         'Variable Precision Model', 
         'Variable Precision Model v2',
     ]
