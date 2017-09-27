@@ -169,7 +169,7 @@ class IMEta(IM):
         self.model_name = self.updateModelName()
         self.n_parameters = 6
 
-        self.description = 'This is the IM model with encoding strength.'
+        self.description = 'This is the IM model with encoding strength. Currently the encoding strength only works on C component.'
         
         self.xmax = [1.0, 1.0, 20.0, 100.0, 100.0, 1.0]
         self.xmin = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -180,15 +180,16 @@ class IMEta(IM):
     def _getActivationA(self, trial):
         activation_A = self._getEmptyActivation()
         for serial_position, stimulus in enumerate(trial.stimuli):
-            eta = self._getEta(serial_position+1)
-            activation_A += self._getActivation(stimulus.color, self.kappa) * eta
+            # eta = self._getEta(serial_position+1)
+            activation_A += self._getActivation(stimulus.color, self.kappa) * 1.0
             
         return numpy.squeeze(activation_A * self.a)
     
     def _getActivationB(self, trial):
         activation_B = self._getEmptyActivation()
         for serial_position in range(trial.set_size):
-            activation_B += self._getEta(serial_position+1) / len(activation_B)
+            # activation_B += self._getEta(serial_position+1) / len(activation_B)
+            activation_B += 1.0 / len(activation_B)
 
         return numpy.squeeze(activation_B * self.b)
 
