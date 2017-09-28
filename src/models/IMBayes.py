@@ -12,7 +12,7 @@ class IMBayes(IM.IM):
     classdocs
     '''
 
-    def __init__(self, b=.05, a=.01, s=2.5, kappa=7.19, kappa_f=40.14, r=0.12):
+    def __init__(self, b=0.006, a=0.276, s=12.773, kappa=4.63, kappa_f=18.556, r=0.12):
         '''
         Constructor
         '''
