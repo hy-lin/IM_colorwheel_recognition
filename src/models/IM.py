@@ -159,8 +159,9 @@ class IM(object):
         return activation / numpy.sum(activation)
 
 class IMEta(IM):
-    def __init__(self, b = .15, a = .21, s = 7.7, kappa = 7.19, kappa_f = 40.14, r = 0.12):
+    def __init__(self, b = .15, a = .21, s = 7.7, kappa = 7.19, kappa_f = 40.14, r = 0.12, p = 0.8):
         super(IMEta, self).__init__(b, a, s, kappa, kappa_f, r)
+        self.p = p
 
         self.model_name_prefix = 'Interference Model'
         self.major_version = 3
@@ -171,11 +172,15 @@ class IMEta(IM):
 
         self.description = 'This is the IM model with encoding strength. Currently the encoding strength only works on C component.'
         
-        self.xmax = [1.0, 1.0, 20.0, 100.0, 100.0, 1.0]
-        self.xmin = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self.xmax = [1.0, 1.0, 20.0, 100.0, 100.0, 1.0, 1.0]
+        self.xmin = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
 
-    def _getEta(self, serial_position):
-        return 1.0
+    def _getEta(self, set_size, serial_position):
+        sp = numpy.arange(set_size)
+        etas = numpy.power(self.p, sp) + numpy.power(self.p, set_size - sp - 1)
+        etas /= numpy.sum(etas) * set_size
+
+        return etas[serial_position]
 
     def _getActivationA(self, trial):
         activation_A = self._getEmptyActivation()
@@ -198,7 +203,7 @@ class IMEta(IM):
         max_distance = self._getMaxDistance(trial)
         for serial_position, stimulus in enumerate(trial.stimuli):
             weighting = self._getWeighting(trial.probe.location, stimulus.location, max_distance)
-            activation_C += self._getActivation(stimulus.color, self.kappa) * weighting * self._getEta(serial_position+1)
+            activation_C += self._getActivation(stimulus.color, self.kappa) * weighting * self._getEta(trial.set_size, serial_position)
             
         return numpy.squeeze(activation_C * self.c)
 

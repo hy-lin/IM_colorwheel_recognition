@@ -1,3 +1,7 @@
+import figures
+import shelve
+import matplotlib.pyplot
+
 import numpy
 
 import sys
@@ -36,7 +40,7 @@ class LocalRecognitionTrial(object):
         stimuli = []
 
         for sp in range(self.set_size):
-            stimuli.append(Stimulus(colors[sp], sp+1, sp+1))
+            stimuli.append(Stimulus(colors[sp], sp, sp))
 
         return stimuli
 
@@ -124,10 +128,19 @@ class DummyTrial(object):
     def getPFocus(self):
         return 1.0/self.set_size
 
+def getTrialsMetConstraints(trials, constraints):
+    final_pool = []
+    
+    for trial in trials:
+        if trial.isMetConstraints(constraints):
+            final_pool.append(trial)
+            
+    return final_pool
+
 def simulatingModel(model, n_rep):
     simulation_trials = []
     for rep_index in range(n_rep):
-        trial = LocalRecognitionTrial(set_size = 5)
+        trial = LocalRecognitionTrial(set_size = 4)
         for probe_index in range(trial.n_probes):
             trial.advanceProbe()
             dummy = DummyTrial(
@@ -144,9 +157,39 @@ def simulatingModel(model, n_rep):
 
     return simulation_trials
 
+def plotSerialPosition(trials, model_name):
+    plot_data = {}
+    for probe_type in ['positive', 'new', 'intrusion']:
+        plot_data[probe_type] = [[], []]
+        for serial_position in range(0, 4):
+            constraints = {'probe_type': [probe_type], 'serial_position': [serial_position]}
 
-    
+            valid_trials = getTrialsMetConstraints(trials, constraints)
+
+            PCs = []
+            for trial in valid_trials:
+                if probe_type == 'positive':
+                    PCs.append(1.0-trial.simulation[model_name])
+                else:
+                    PCs.append(trial.simulation[model_name])
+
+            plot_data[probe_type][1].append(numpy.nanmean(PCs))
+            plot_data[probe_type][0].append(serial_position)
+
+        plot_data[probe_type] = numpy.array(plot_data[probe_type])
+
+    PC_plot = figures.LineFigure(plot_data)
+    PC_plot.setXLabel('serial_position', False)
+    PC_plot.setYLabel('Proportion of Correct', False)
+    # PC_plot.setYLim((0.50, 1.00), False)
+    PC_plot.setXLim((-0.5, 3.5), False)
+    PC_plot.update()
+
+
 if __name__ == '__main__':
-    model = IMBayes.IMBayes()
-    result = simulatingModel(model, 1)
+    model = IMBayes.IMEtaBayes()
+    result = simulatingModel(model, 500)
+    plotSerialPosition(result, model.model_name)
+    matplotlib.pyplot.show()
+
     pass

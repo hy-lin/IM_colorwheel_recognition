@@ -1,10 +1,10 @@
-import simulationLocalRecognitionTask
+import simulateLocalRecognitionTask
 
 import sys
 sys.path.insert(0, 'models\\')
 import IMBayes
 
 model = IMBayes.IMBayes()
-result = simulationLocalRecognitionTask.simulatingModel(model, 1)
+result = simulateLocalRecognitionTask.simulatingModel(model, 3)
 for dummy in result:
     print(dummy.probe_type, dummy.input_position, dummy.serial_position, dummy.simulation)

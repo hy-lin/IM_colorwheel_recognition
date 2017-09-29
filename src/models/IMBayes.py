@@ -75,6 +75,71 @@ class IMBayes(IM.IM):
 
         return -numpy.log(2.0 * numpy.pi * (P_S * act + (1 - P_S) / (2.0 * numpy.pi)))
 
+class IMEtaBayes(IM.IMEta):
+    def __init__(self, b=0.006, a=0.05, s=12.773, kappa=4.63, kappa_f=18.556, r=0.12, p = 0.1):
+        '''
+        Constructor
+        '''
+        super(IMEtaBayes, self).__init__(
+            b=b, a=a, s=s, kappa=kappa, kappa_f=kappa_f, r=r, p = p)
+        self.model_name_prefix = 'Interference Model with Bayes and Encoding Strength'
+
+        self.major_version = 1
+        self.middle_version = 1
+        self.minor_version = 1
+
+        self.model_name = self.updateModelName()
+
+    def getInitialParameters(self):
+        return [.01, .0, 4.3, 10.0, 15.75, 0.25, .8]
+
+    def getPRecall(self, trial):
+        A = self._getActivationA(trial)
+        B = self._getActivationB(trial)
+
+        C = self._getActivationC(trial)
+        C_f = self._getActivationC_f(trial)
+
+        p_recall_no_f = self._getPred(A + B + C)
+        p_recall_f = self._getPred((A + B) * self.r + C_f)
+
+        return (p_recall_f, p_recall_no_f)
+
+    def getPrediction(self, trial):
+        p_recall_f, p_recall_no_f = self.getPRecall(trial)
+
+        P_S1_f = self._getPS(trial, self.r)
+        P_S1_no_f = self._getPS(trial, 0)
+        d_f = self._getD(trial, self.kappa_f, P_S1_f)
+        d_no_f = self._getD(trial, self.kappa, P_S1_no_f)
+
+        p_change = trial.getPFocus() * numpy.sum((d_f > 0) * p_recall_f) + \
+            (1.0 - trial.getPFocus()) * numpy.sum((d_no_f > 0) * p_recall_no_f)
+#         p_change = numpy.sum((d_no_f > 0) * p_recall_no_f)
+
+        if p_change >= 1.0:
+            print('warning, p > 1.0')
+            p_change = 0.999999999
+        elif p_change <= 0.0:
+            print('warning, p < 0')
+            p_change = 0.000000001
+        return p_change
+
+    def _getPS(self, trial, r):
+        weighting = numpy.zeros(trial.set_size)
+        for serial_position, stimulus in enumerate(trial.stimuli):
+            weighting[serial_position] = self._getWeighting(
+                trial.probe.location, stimulus.location) + (self.a * r)
+
+        weighting /= (numpy.sum(weighting) + self.b * trial.set_size * r)
+        return weighting[trial.serial_position]
+
+    def _getD(self, trial, kappa, P_S):
+        act = self._getActivation(trial.probe.color, kappa)
+
+        return -numpy.log(2.0 * numpy.pi * (P_S * act + (1 - P_S) / (2.0 * numpy.pi)))
+
+
 
 class IMBayesKappaD(IMBayes):
     '''
