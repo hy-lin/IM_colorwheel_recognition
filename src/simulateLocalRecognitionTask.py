@@ -140,6 +140,7 @@ def getTrialsMetConstraints(trials, constraints):
 def simulatingModel(model, n_rep):
     simulation_trials = []
     for rep_index in range(n_rep):
+        print('{}/{}'.format(rep_index, n_rep))
         trial = LocalRecognitionTrial(set_size = 4)
         for probe_index in range(trial.n_probes):
             trial.advanceProbe()
@@ -185,11 +186,40 @@ def plotSerialPosition(trials, model_name):
     PC_plot.setXLim((-0.5, 3.5), False)
     PC_plot.update()
 
+def plotPositionOfOrigin(trials, model_name):
+    plot_data = {}
+    for probe_type in ['intrusion']:
+        plot_data[probe_type] = [[], []]
+        for input_position in range(0, 4):
+            constraints = {'probe_type': [probe_type], 'input_position': [input_position]}
+
+            valid_trials = getTrialsMetConstraints(trials, constraints)
+
+            PCs = []
+            for trial in valid_trials:
+                if probe_type == 'positive':
+                    PCs.append(1.0-trial.simulation[model_name])
+                else:
+                    PCs.append(trial.simulation[model_name])
+
+            plot_data[probe_type][1].append(numpy.nanmean(PCs))
+            plot_data[probe_type][0].append(input_position)
+
+        plot_data[probe_type] = numpy.array(plot_data[probe_type])
+
+    PC_plot = figures.LineFigure(plot_data)
+    PC_plot.setXLabel('serial_position', False)
+    PC_plot.setYLabel('Proportion of Correct', False)
+    # PC_plot.setYLim((0.50, 1.00), False)
+    PC_plot.setXLim((-0.5, 3.5), False)
+    PC_plot.update()
+
 
 if __name__ == '__main__':
     model = IMBayes.IMEtaBayes()
     result = simulatingModel(model, 500)
     plotSerialPosition(result, model.model_name)
+    plotPositionOfOrigin(result, model.model_name)
     matplotlib.pyplot.show()
 
     pass

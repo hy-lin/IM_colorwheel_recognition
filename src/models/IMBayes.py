@@ -76,7 +76,7 @@ class IMBayes(IM.IM):
         return -numpy.log(2.0 * numpy.pi * (P_S * act + (1 - P_S) / (2.0 * numpy.pi)))
 
 class IMEtaBayes(IM.IMEta):
-    def __init__(self, b=0.006, a=0.05, s=12.773, kappa=4.63, kappa_f=18.556, r=0.12, p = 0.1):
+    def __init__(self, b=0.006, a=0.05, s=0.1, kappa=4.63, kappa_f=18.556, r=0.12, p = 0.5):
         '''
         Constructor
         '''
