@@ -298,23 +298,23 @@ def main():
     plotSpatialGradient(participants)
 
     models = [
-            #   'Interference Model with Bayes v1.02.02',
+              'Interference Model with Bayes v1.02.02',
             #   'Interference Model with Bayes v1.01.01',
             #   'Interference Model with Bayes and Swap v1.01.02',
-              'Slot Averaging Model with Bayes v1.02.01',
-              'Slot Averaging Model with Bayes v1.02.02',
-              'Slot Averaging Model with Binding errors and Bayes v1.01.01',
+            #   'Slot Averaging Model with Bayes v1.02.01',
+            #   'Slot Averaging Model with Bayes v1.02.02',
+            #   'Slot Averaging Model with Binding errors and Bayes v1.01.01',
             #   'Variable Precision Model with Bayes v1.01.02', 
-            #   'Variable Precision Swap Model with Bayes v1.01.01'
+              'Variable Precision Swap Model with Bayes v1.01.01'
               ]
               
     displayed_model_names = [
-        # 'Interference Model',
-        'Slot Averaging Model',
-        'Slot Averaging Model v2',
-        'Slot Averaging Model with Binding',
+        'Interference Model',
+        # 'Slot Averaging Model',
+        # 'Slot Averaging Model v2',
+        # 'Slot Averaging Model with Binding',
         # 'Variable Precision Model', 
-        # 'Variable Precision Model v2',
+        'Variable Precision Model v2',
     ]
 
     # IMDual = IMBayes.IMBayesDual()

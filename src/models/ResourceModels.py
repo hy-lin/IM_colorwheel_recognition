@@ -84,7 +84,7 @@ class SlotAveraging(object):
         return activation
 
 class SlogAveragingBinding(SlotAveraging):
-    def __init__(self, k = 2.2, kappa = 7.2, b = .8):
+    def __init__(self, k = 2.2, kappa = 7.2, b = .1):
         super(SlogAveragingBinding, self).__init__(k, kappa)
         self.b = b
 
@@ -92,7 +92,7 @@ class SlogAveragingBinding(SlotAveraging):
 
         self.major_version = 1
         self.middle_version = 1
-        self.minor_version = 1
+        self.minor_version = 2
 
         self.model_name = self.updateModelName()
 
@@ -111,14 +111,11 @@ class SlogAveragingBinding(SlotAveraging):
         self.b = x[2]
 
     def _getPred(self, trial, kappa, pm):
-        p_no_guess = 0.0
-        activation = self._getActivation(trial.target.color, kappa) * pm * self.b
-        p_no_guess += pm * self.b
+        activation = self._getActivation(trial.target.color, kappa) * pm * (1.0-self.b * (trial.set_size-1))
 
         for stimulus in trial.stimuli:
             if stimulus != trial.target:
-                activation += self._getActivation(stimulus.color, kappa) * pm * (1.0 - self.b) / (trial.set_size-1)
-                p_no_guess += pm * (1.0 - self.b) / (trial.set_size-1)
+                activation += self._getActivation(stimulus.color, kappa) * pm * self.b / (trial.set_size-1)
 
         activation /= numpy.sum(activation)
 
@@ -245,3 +242,45 @@ class VariablePrecisionSwap(VariablePrecision):
     def getPM(self, trial):
         pm = 1.0 - (trial.set_size-1) * self.p_swap
         return pm
+
+class NeuronModel(object):
+    def __init__(self, kappa_color, kappa_location, gamma):
+
+        self.kappa_color = kappa_color
+        self.kappa_location = kappa_location
+        self.gamma = gamma
+
+        self.n_color_nodes = 360
+        self.n_location_nodes = 13
+
+        self.model_name_prefix = 'Neuron Model'
+        self.major_version = 1
+        self.middle_version = 1
+        self.minor_version = 1
+        self.model_name = self.updateModelName()
+        self.n_parameters = 3
+
+        self.description = 'This is the simulation based Neoron Model. DO NOT FIT THIS.'
+
+        self.xmax = [100.0, 100.0, 100.0]
+        self.xmin = [0.0, 0.0, 0.0]
+
+    def updateModelName(self):
+        self.model_name = self.model_name_prefix + ' v{}.{:02d}.{:02d}'.format(self.major_version, self.middle_version, self.minor_version)
+        return self.model_name
+
+    def getInitialParameters(self):
+        return [2.2, 2.2, 7.2]
+
+    def getParametersAsVector(self):
+        return [self.k, self.kappa]
+
+    def updateParameters(self, x):
+        self.kappa_color = [0]
+        self.kappa_location = x[1]
+        self.gamma = x[2]
+
+    def getPRecall(self, trial):
+        pass
+
+    

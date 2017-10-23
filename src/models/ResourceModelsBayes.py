@@ -41,14 +41,14 @@ class SlotAveragingBindingBayes(ResourceModels.SlogAveragingBinding):
 
         self.major_version = 1
         self.middle_version = 1
-        self.minor_version = 2
+        self.minor_version = 3
 
         self.model_name = self.updateModelName()
 
     def getPrediction(self, trial):
         pm = self._getPMemory(trial)
 
-        d = self._getD(trial)
+        d = self._getD(trial, pm)
 
         p_recall = self.getPRecall(trial)
 
@@ -57,7 +57,7 @@ class SlotAveragingBindingBayes(ResourceModels.SlogAveragingBinding):
     def _getD(self, trial, pm):
         act = self._getActivation(trial.probe.color, self.kappa)
 
-        return -numpy.log(2.0 * numpy.pi * (self.b * pm * act + (1 - self.b * pm) / (2.0 * numpy.pi)))
+        return -numpy.log(2.0 * numpy.pi * ((1.0-self.b*(trial.set_size-1)) * pm * act + (1 - ((1.0-self.b*(trial.set_size-1)) * pm)) / (2.0 * numpy.pi)))
 
 class VariablePrecisionBayes(ResourceModels.VariablePrecision):
     def __init__(self, J1 = 60.0, tau = 44.47, alpha = 0.7386):
