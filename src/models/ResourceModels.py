@@ -1,5 +1,6 @@
 import numpy
 import scipy.stats
+import scipy.special
 import time
 
 class SlotAveraging(object):
@@ -92,7 +93,7 @@ class SlogAveragingBinding(SlotAveraging):
 
         self.major_version = 1
         self.middle_version = 1
-        self.minor_version = 2
+        self.minor_version = 3
 
         self.model_name = self.updateModelName()
 
@@ -115,7 +116,7 @@ class SlogAveragingBinding(SlotAveraging):
 
         for stimulus in trial.stimuli:
             if stimulus != trial.target:
-                activation += self._getActivation(stimulus.color, kappa) * pm * self.b / (trial.set_size-1)
+                activation += self._getActivation(stimulus.color, kappa) * pm * self.b
 
         activation /= numpy.sum(activation)
 
@@ -188,7 +189,11 @@ class VariablePrecision(object):
             J = self.J1 / ((sz+1) ** self.alpha)
             for iteration in range(self.n_sim):
                 kappa = numpy.random.gamma(J/self.tau, self.tau)
-                self.distribution[sz] += scipy.stats.vonmises(kappa).pdf(rads)
+                if kappa >= 650:
+                    kappa = 650
+                distribution = scipy.stats.vonmises(kappa).pdf(rads)
+                self.distribution[sz] += distribution
+
             self.distribution[sz] /= self.n_sim
 
         self.updating_distribution = False
@@ -244,14 +249,15 @@ class VariablePrecisionSwap(VariablePrecision):
         return pm
 
 class NeuronModel(object):
-    def __init__(self, kappa_color, kappa_location, gamma):
+    def __init__(self, kappa_color=13.5, kappa_location=13.5, c=2.0):
 
         self.kappa_color = kappa_color
         self.kappa_location = kappa_location
-        self.gamma = gamma
+        self.c = c
 
         self.n_color_nodes = 360
         self.n_location_nodes = 13
+        self.neurons = numpy.zeros((self.n_color_nodes, self.n_location_nodes))
 
         self.model_name_prefix = 'Neuron Model'
         self.major_version = 1
@@ -260,7 +266,7 @@ class NeuronModel(object):
         self.model_name = self.updateModelName()
         self.n_parameters = 3
 
-        self.description = 'This is the simulation based Neoron Model. DO NOT FIT THIS.'
+        self.description = 'This is the simpified Neoron Model.'
 
         self.xmax = [100.0, 100.0, 100.0]
         self.xmin = [0.0, 0.0, 0.0]
@@ -278,9 +284,37 @@ class NeuronModel(object):
     def updateParameters(self, x):
         self.kappa_color = [0]
         self.kappa_location = x[1]
-        self.gamma = x[2]
+        self.c = x[2]
+
+    def _getPChoise(self, activation):
+        return numpy.exp(-self.c * activation)/sum(numpy.exp(-self.c * activation))
 
     def getPRecall(self, trial):
-        pass
+        self._setupNeurons(self, trial)
+        
+        probe_location_act = self._getActivation(trial.target.location, self.kappa_color, self.n_location_nodes)
+        probe_location_retrieved = self._getPChoise(probe_location_act)
 
-    
+        retrieved_color = numpy.dot(self.neurons, probe_location_retrieved)
+
+        return self._getPChoise(retrieved_color)
+
+
+    def _getActivation(self, mu, kappa, n_response):
+        angs = numpy.linspace(0, 360, n_response+1)
+        angs = numpy.delete(angs, -1)
+        rads = angs * numpy.pi / 180.0
+
+        rads_mu = mu / n_response * 2 * numpy.pi
+        diff = rads - rads_mu
+
+        return numpy.exp(kappa * numpy.cos(diff))/scipy.special.iv(0, kappa)
+
+
+    def _setupNeurons(self, trial):
+        self.neurons = numpy.zeros((self.n_color_nodes, self.n_location_nodes))
+
+        for stimulus in trial.stimuli:
+            color_activation = self._getActivation(mu, self.kappa_color, self.n_color_nodes)
+            location_activation = self._getActivation(mu, self.kappa_location, self.n_location_nodes)
+            self.neurons += numpy.outer(color_activation, location_activation) / (trial.set_size * self.n_color_nodes * self.n_location_nodes)

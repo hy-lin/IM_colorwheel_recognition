@@ -15,7 +15,7 @@ import sys
 sys.path.insert(0, 'models\\')
 import IMBayes
 
-def plotSpatialGradient(participants, model_name = None, displayed_model_name = None):
+def plotSpatialGradient(participants, model_name = None, displayed_model_name = None, save_fig = False):
     plot_data = {}
     max_dist = 7
 
@@ -71,7 +71,10 @@ def plotSpatialGradient(participants, model_name = None, displayed_model_name = 
     else:
         distribution_plot.setTitle(displayed_model_name, True)
 
-def plotYesDistribution(participants, model_name=None, displayed_model_name = None):
+    if save_fig:
+        matplotlib.pyplot.savefig('Data\\fitting result\\Exp2\\figs\\Spatial_gradient_{}.png'.format(displayed_model_name))
+
+def plotYesDistribution(participants, model_name=None, displayed_model_name = None, save_fig = False):
     plot_data = {}
     n_bins = 15
     x_label = numpy.linspace(-numpy.pi, numpy.pi, n_bins)
@@ -115,8 +118,10 @@ def plotYesDistribution(participants, model_name=None, displayed_model_name = No
     else:
         distribution_plot.setTitle(displayed_model_name, True)
 
+    if save_fig:
+        matplotlib.pyplot.savefig('Data\\fitting result\\Exp2\\figs\\Similarity_gradient_{}.png'.format(displayed_model_name))
 
-def plotPC(participants, model_name=None, displayed_model_name = None):
+def plotPC(participants, model_name=None, displayed_model_name = None, save_fig = False):
     plot_data = {}
     for probe_type in ['positive', 'new', 'intrusion']:
         plot_data[probe_type] = [[], []]
@@ -142,6 +147,9 @@ def plotPC(participants, model_name=None, displayed_model_name = None):
         PC_plot.setTitle('Data', True)
     else:
         PC_plot.setTitle(displayed_model_name, True)
+
+    if save_fig:
+        matplotlib.pyplot.savefig('Data\\fitting result\\Exp2\\figs\\Probe_Type_{}.png'.format(displayed_model_name))
 
 
 def plotProbeType(participants, model_name=None, displayed_model_name = None):
@@ -202,16 +210,18 @@ def loadParticipants(exp_number):
     return participants
 
 
-def outputParameters(participants, model_name):
+def outputParameters(participants, model_name, n_parameter, displayed_model_name = None):
     AIC = 0
-    for pID in participants.keys():
+    parms = numpy.zeros((len(participants), len(participants[1].fitting_result[model_name].x)))
+    for i, pID in enumerate(participants.keys()):
+
         #         print(participants[pID].fitting_result[model_name].fun, participants[pID].fitting_result[model_name].x)
         try:
-            AIC += participants[pID].fitting_result[model_name].fun * 2
-            print(participants[pID].fitting_result[model_name].x, participants[pID].fitting_result[model_name].fun)
+            AIC += participants[pID].fitting_result[model_name].fun * 2 + 2*numpy.log(n_parameter)
+            # print(participants[pID].fitting_result[model_name].x, participants[pID].fitting_result[model_name].fun)
+            parms[i] = participants[pID].fitting_result[model_name].x
         except:
             ll = 0
-            print(participants[pID].fitting_result[model_name][0])
             for trial in participants[pID].trials:
                 ll_t = numpy.log((trial.response==1) * trial.simulation[model_name] + \
                                 (trial.response==2) * (1-trial.simulation[model_name]))
@@ -220,11 +230,15 @@ def outputParameters(participants, model_name):
                     ll -= ll_t
             # else:
                 # ll -= 99999999
-            print(ll)
             AIC += ll
 
 
-    print('Model Name: {}, AIC: {}'.format(model_name, AIC))
+    if displayed_model_name is not None:
+        print('Model Name: {}, AIC: {}'.format(displayed_model_name, AIC))
+    else:
+        print('Model Name: {}, AIC: {}'.format(model_name, AIC))
+    print('Parameters median: ', numpy.median(parms, axis = 0))
+    print('Parameters mean: ', numpy.mean(parms, axis = 0))
 
 
 def simulateWithDefault(participants, model):
@@ -262,7 +276,7 @@ def outputMeasurementParameters(participants, model_name):
     median_plot = figures.MultiLineFigures(median)
 
 def outputExp1ResultAsDataFile(participants, models):
-    output_file = open('Data\\fitting result\\exp1.dat', 'w')
+    output_file = open('Data\\fitting result\\exp2.dat', 'w')
 
     for pID in participants.keys():
         participant = participants[pID]
@@ -301,38 +315,49 @@ def main():
               'Interference Model with Bayes v1.02.02',
             #   'Interference Model with Bayes v1.01.01',
             #   'Interference Model with Bayes and Swap v1.01.02',
-            #   'Slot Averaging Model with Bayes v1.02.01',
+              'Slot Averaging Model with Bayes v1.02.01',
             #   'Slot Averaging Model with Bayes v1.02.02',
-            #   'Slot Averaging Model with Binding errors and Bayes v1.01.01',
-            #   'Variable Precision Model with Bayes v1.01.02', 
+              'Slot Averaging Model with Binding errors and Bayes v1.01.02',
+              'Slot Averaging Model with Binding errors and Bayes v1.01.04',
+              'Variable Precision Model with Bayes v1.01.02', 
               'Variable Precision Swap Model with Bayes v1.01.01'
               ]
               
     displayed_model_names = [
         'Interference Model',
-        # 'Slot Averaging Model',
+        'Slot Averaging Model',
         # 'Slot Averaging Model v2',
-        # 'Slot Averaging Model with Binding',
-        # 'Variable Precision Model', 
-        'Variable Precision Model v2',
+        'Slot Averaging Model with Binding (constant)',
+        'Slot Averaging Model with Binding (growing)',
+        'Variable Precision Model', 
+        'Variable Precision Model with Binding',
+    ]
+
+    n_parameters = [
+        6,
+        2,
+        3, 
+        3, 
+        3,
+        4,
     ]
 
     # IMDual = IMBayes.IMBayesDual()
     # simulateWithDefault(participants, IMDual)
 
     for i, model_name in enumerate(models):
-        plotProbeType(participants, model_name, displayed_model_names[i])
-        plotPC(participants, model_name, displayed_model_names[i])
-        plotYesDistribution(participants, model_name, displayed_model_names[i])
-        plotSpatialGradient(participants, model_name, displayed_model_names[i])
-        outputParameters(participants, model_name)
+        # plotProbeType(participants, model_name, displayed_model_names[i])
+        plotPC(participants, model_name, displayed_model_names[i], True)
+        plotYesDistribution(participants, model_name, displayed_model_names[i], True)
+        plotSpatialGradient(participants, model_name, displayed_model_names[i], True)
+        outputParameters(participants, model_name, n_parameters[i], displayed_model_names[i])
 
 
-    # outputExp1ResultAsDataFile(participants, models)
+    outputExp1ResultAsDataFile(participants, models)
 
     # outputMeasurementParameters(participants, 'Interference Measurement Model with Bayes v1.01.01')
 
-    matplotlib.pyplot.show()
+    # matplotlib.pyplot.show()
 
 
 if __name__ == '__main__':

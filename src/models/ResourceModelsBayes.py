@@ -41,7 +41,7 @@ class SlotAveragingBindingBayes(ResourceModels.SlogAveragingBinding):
 
         self.major_version = 1
         self.middle_version = 1
-        self.minor_version = 3
+        self.minor_version = 4
 
         self.model_name = self.updateModelName()
 
@@ -108,6 +108,17 @@ class VariablePrecisionSwapBayes(ResourceModels.VariablePrecisionSwap):
         act = self._getActivation(trial.probe.color, trial.set_size)
 
         return -numpy.log(2.0 * numpy.pi * (pm * act + (1 - pm) / (2.0 * numpy.pi)))
+
+class NeuronModelBayes(ResourceModels.NeuronModel):
+    def __init__(self, kappa_color=13.5, kappa_location=13.5, c=2.0):
+        super(NeuronModelBayes).__init__(kappa_color, kappa_location, c)
+
+        self.model_name_prefix = 'Neuron Model with Bayes'
+        self.major_version = 1
+        self.middle_version = 1
+        self.minor_version = 1
+        self.model_name = self.updateModelName()
+        self.n_parameters = 3
 
 def _test():
     data_file = open('..\\Data\\colorwheelr1.dat')
