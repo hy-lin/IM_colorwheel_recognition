@@ -173,11 +173,7 @@ class VariablePrecision(object):
             self._resimulate_distribution()
 
         x_ind = numpy.arange(360) - mu
-        try:
-            return self.distribution[set_size-1, x_ind]
-        except:
-            print(set_size-1, x_ind, self.distribution.shape)
-            return self.distribution[set_size-1, x_ind]
+        return self.distribution[set_size-1, x_ind]
 
         
     def _resimulate_distribution(self):
@@ -197,6 +193,101 @@ class VariablePrecision(object):
             self.distribution[sz] /= self.n_sim
 
         self.updating_distribution = False
+
+class VariablePrecisionBinding(VariablePrecision):
+    def __init__(self, J1 = 60.0, tau = 44.47, alpha = 0.7386, kappa_s_scaling = 0.05):
+        super(VariablePrecisionSwap, self).__init__(J1, tau, alpha)
+        self.kappa_s_scaling = kappa_s_scaling
+
+        self.model_name_prefix = 'Variable Precision Binding Model'
+        self.major_version = 1
+        self.middle_version = 1
+        self.minor_version = 1
+        self.model_name = self.updateModelName()
+        self.n_parameters = 4
+
+        self.n_spatial_locations = 13
+        self.max_spatial_distance = numpy.ceil(self.n_spatial_locations / 2)
+
+        self.description = 'This is the VP with binding model in IM paper'
+
+        self.xmax = [100.0, 100.0, 1.0, 5.0]
+        self.xmin = [0.0, 0.000001, 0.0, 0.0]
+
+
+    def getInitialParameters(self):
+        return [60.0, 44.47, 0.7386, 0.05]
+
+    def getParametersAsVector(self):
+        return [self.J1, self.tau, self.alpha, self.J_s_scaling]
+
+    def updateParameters(self, x):
+        self.J1 = x[0]
+        self.tau = x[1]
+        self.alpha = x[2]
+        self.J_s_scaling = x[3]
+
+        self.updating_distribution = True
+
+    def _getSpatialActivation(location, target_location, set_size):
+        if self.updating_distribution:
+            self._resimulate_distribution()
+
+        dist = numpy.abs(target_location - location)
+        if dist > self.max_spatial_distance:
+            dist = self.n_spatial_locations - dist
+
+        dist_ind = dist * 360 / (self.max_spatial_distance * 2)
+
+        return self.spatial_distribution[set_size-1, dist_ind]
+
+    def _resimulate_distribution(self):
+        angs = numpy.arange(0, 360)
+        rads = angs * numpy.pi / 180.0
+
+        self.distribution = numpy.zeros((self.max_set_size, 360))
+        self.spatial_distribution = numpy.zeros((self.max_set_size, 360))
+        for sz in range(self.max_set_size):
+            J = self.J1 / ((sz+1) ** self.alpha)
+            for iteration in range(self.n_sim):
+                kappa = numpy.random.gamma(J/self.tau, self.tau)
+                kappa_s = kappa * kappa_s_scaling
+                if kappa >= 650:
+                    kappa = 650
+                if kappa_s >= 650:
+                    kappa_s = 650
+
+                distribution = scipy.stats.vonmises(kappa).pdf(rads)
+                self.distribution[sz] += distribution
+                distribution = scipy.stats.vonmises(kappa_s).pdf(rads)
+                self.spatial_distribution[sz] += distribution
+
+            self.distribution[sz] /= self.n_sim
+            self.spatial_distribution[sz] /= self.n_sim
+
+        self.updating_distribution = False
+
+    def getPRecall(self, trial):
+        act = self._getEmptyActivation()
+        for stimulus in trial.stimuli:
+            act += self._getActivation(trial.target.color, trial.set_size) *  \
+                self._getSpatialActivation(stimulus.location, trial.target.location, trial.set_size)
+        pred = act / numpy.sum(act)
+
+        return pred
+
+    def getPM(self, trial):
+        numerator = self._getSpatialActivation(0, 0, trial.set_size)
+        denominator = 0
+        for stimulus in trial.stimulus:
+            denominator += self._getSpatialActivation(
+                stimulus.location,
+                trial.target.location,
+                trial.set_size
+            )
+        
+        return numerator / denominator
+
 
 class VariablePrecisionSwap(VariablePrecision):
     def __init__(self, J1 = 60.0, tau = 44.47, alpha = 0.7386, p_swap = 0.05):
