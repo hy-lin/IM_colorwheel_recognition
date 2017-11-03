@@ -248,7 +248,7 @@ class VariablePrecisionBinding(VariablePrecision):
         angs = numpy.arange(0, 360)
         rads = angs * numpy.pi / 180.0
         spatial_angs = numpy.arange(0, self.max_spatial_distance+1)
-        spatial_rads = spatial_angs * numpy.pi / 180.0
+        spatial_rads = spatial_angs * numpy.pi / (self.max_spatial_distance+1)
 
         self.distribution = numpy.zeros((self.max_set_size, 360))
         self.spatial_distribution = numpy.zeros((self.max_set_size, len(spatial_rads)))
