@@ -89,8 +89,8 @@ class Wrapper(object):
         return ll + 2*self.model.n_parameters
     
 def fit(participant):
-    vpbayes = ResourceModelsBayes.SlotAveragingBindingBayes()
-    vpbayes.discription = 'The VariablePrecisionBayes with swap'
+    vpbayes = ResourceModelsBayes.VariablePrecisionBindingBayes()
+    vpbayes.discription = 'The VariablePrecisionBayes with binding'
     
     wrapper = Wrapper(participant, vpbayes)
     wrapper.fit()

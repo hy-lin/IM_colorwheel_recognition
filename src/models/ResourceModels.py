@@ -196,7 +196,7 @@ class VariablePrecision(object):
 
 class VariablePrecisionBinding(VariablePrecision):
     def __init__(self, J1 = 60.0, tau = 44.47, alpha = 0.7386, kappa_s_scaling = 0.05):
-        super(VariablePrecisionSwap, self).__init__(J1, tau, alpha)
+        super(VariablePrecisionBinding, self).__init__(J1, tau, alpha)
         self.kappa_s_scaling = kappa_s_scaling
 
         self.model_name_prefix = 'Variable Precision Binding Model'
@@ -229,7 +229,10 @@ class VariablePrecisionBinding(VariablePrecision):
 
         self.updating_distribution = True
 
-    def _getSpatialActivation(location, target_location, set_size):
+    def _getEmptyActivation(self):
+        return numpy.zeros((1, 360))
+
+    def _getSpatialActivation(self, location, target_location, set_size):
         if self.updating_distribution:
             self._resimulate_distribution()
 
@@ -237,21 +240,23 @@ class VariablePrecisionBinding(VariablePrecision):
         if dist > self.max_spatial_distance:
             dist = self.n_spatial_locations - dist
 
-        dist_ind = dist * 360 / (self.max_spatial_distance * 2)
+        dist_ind = dist
 
         return self.spatial_distribution[set_size-1, dist_ind]
 
     def _resimulate_distribution(self):
         angs = numpy.arange(0, 360)
         rads = angs * numpy.pi / 180.0
+        spatial_angs = numpy.arange(0, self.max_spatial_distance+1)
+        spatial_rads = spatial_angs * numpy.pi / 180.0
 
         self.distribution = numpy.zeros((self.max_set_size, 360))
-        self.spatial_distribution = numpy.zeros((self.max_set_size, 360))
+        self.spatial_distribution = numpy.zeros((self.max_set_size, len(spatial_rads)))
         for sz in range(self.max_set_size):
             J = self.J1 / ((sz+1) ** self.alpha)
             for iteration in range(self.n_sim):
                 kappa = numpy.random.gamma(J/self.tau, self.tau)
-                kappa_s = kappa * kappa_s_scaling
+                kappa_s = kappa * self.kappa_s_scaling
                 if kappa >= 650:
                     kappa = 650
                 if kappa_s >= 650:
@@ -259,7 +264,7 @@ class VariablePrecisionBinding(VariablePrecision):
 
                 distribution = scipy.stats.vonmises(kappa).pdf(rads)
                 self.distribution[sz] += distribution
-                distribution = scipy.stats.vonmises(kappa_s).pdf(rads)
+                distribution = scipy.stats.vonmises(kappa_s).pdf(spatial_rads)
                 self.spatial_distribution[sz] += distribution
 
             self.distribution[sz] /= self.n_sim
@@ -279,7 +284,7 @@ class VariablePrecisionBinding(VariablePrecision):
     def getPM(self, trial):
         numerator = self._getSpatialActivation(0, 0, trial.set_size)
         denominator = 0
-        for stimulus in trial.stimulus:
+        for stimulus in trial.stimuli:
             denominator += self._getSpatialActivation(
                 stimulus.location,
                 trial.target.location,
