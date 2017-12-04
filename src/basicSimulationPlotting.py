@@ -306,7 +306,7 @@ def outputExp1ResultAsDataFile(participants, models):
 def main():
     participants = loadSimulationData(2)
     # participants = loadParticipants(2)
-    plotProbeType(participants)
+    # plotProbeType(participants)
     plotPC(participants)
     plotYesDistribution(participants)
     plotSpatialGradient(participants)
@@ -315,9 +315,9 @@ def main():
               'Interference Model with Bayes v1.02.02',
             #   'Interference Model with Bayes v1.01.01',
             #   'Interference Model with Bayes and Swap v1.01.02',
-              'Slot Averaging Model with Bayes v1.02.01',
+              'Slot Averaging Model with Bayes v1.02.02',
             #   'Slot Averaging Model with Bayes v1.02.02',
-              'Slot Averaging Model with Binding errors and Bayes v1.01.02',
+            #   'Slot Averaging Model with Binding errors and Bayes v1.01.02',
               'Slot Averaging Model with Binding errors and Bayes v1.01.04',
               'Variable Precision Model with Bayes v1.01.02', 
               'Variable Precision Swap Model with Bayes v1.01.01'
@@ -327,7 +327,7 @@ def main():
         'Interference Model',
         'Slot Averaging Model',
         # 'Slot Averaging Model v2',
-        'Slot Averaging Model with Binding (constant)',
+        # 'Slot Averaging Model with Binding (constant)',
         'Slot Averaging Model with Binding (growing)',
         'Variable Precision Model', 
         'Variable Precision Model with Binding',
@@ -336,7 +336,7 @@ def main():
     n_parameters = [
         6,
         2,
-        3, 
+        # 3, 
         3, 
         3,
         4,
@@ -357,7 +357,7 @@ def main():
 
     # outputMeasurementParameters(participants, 'Interference Measurement Model with Bayes v1.01.01')
 
-    # matplotlib.pyplot.show()
+    matplotlib.pyplot.show()
 
 
 if __name__ == '__main__':

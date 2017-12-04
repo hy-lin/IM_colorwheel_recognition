@@ -14,7 +14,7 @@ class SlotAveragingBayes(ResourceModels.SlotAveraging):
 
         self.major_version = 1
         self.middle_version = 2
-        self.minor_version = 2
+        self.minor_version = 3
 
         self.model_name = self.updateModelName()
 
@@ -26,7 +26,7 @@ class SlotAveragingBayes(ResourceModels.SlotAveraging):
         p_recall = self._getActivation(trial.target.color, self.kappa)
         p_recall /= numpy.sum(p_recall)
 
-        return numpy.sum((d > 0) * p_recall) * pm + .5 * (1.0-pm)
+        return numpy.sum((d > 0) * p_recall)
 
     def _getD(self, trial):
         act = self._getActivation(trial.probe.color, self.kappa)
@@ -41,7 +41,7 @@ class SlotAveragingBindingBayes(ResourceModels.SlogAveragingBinding):
 
         self.major_version = 1
         self.middle_version = 1
-        self.minor_version = 4
+        self.minor_version = 5
 
         self.model_name = self.updateModelName()
 
@@ -52,7 +52,7 @@ class SlotAveragingBindingBayes(ResourceModels.SlogAveragingBinding):
 
         p_recall = self.getPRecall(trial)
 
-        return numpy.sum((d > 0) * p_recall) * pm
+        return numpy.sum((d > 0) * p_recall)
 
     def _getD(self, trial, pm):
         act = self._getActivation(trial.probe.color, self.kappa)
