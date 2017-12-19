@@ -1,0 +1,13 @@
+This is the experiment combined recall and recognition task together. There are three different sessions in the expeirment:
+1) pure recall
+2) pure recognition
+3) combined recognition and recall
+
+The core requirements for the experiment are:
+1) set-size manipulation. 1, 2, 4, 6
+2) Enough trials for recognition manipulation. 80 trials per set-size. 40 positive, 20 new, 20 intrusion. 
+
+pure recall: 1 session
+pure recognition: 1 session
+combined recognition and recall: 2 sessions
+The session order is totally randomized. 

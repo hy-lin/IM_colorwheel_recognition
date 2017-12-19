@@ -237,8 +237,19 @@ def outputParameters(participants, model_name, n_parameter, displayed_model_name
         print('Model Name: {}, AIC: {}'.format(displayed_model_name, AIC))
     else:
         print('Model Name: {}, AIC: {}'.format(model_name, AIC))
-    print('Parameters median: ', numpy.median(parms, axis = 0))
-    print('Parameters mean: ', numpy.mean(parms, axis = 0))
+    
+    parameters_median = numpy.median(parms, axis = 0)
+    parameters_mean = numpy.mean(parms, axis = 0)
+
+    output_string = 'Parameters median: '
+    for parameter in parameters_median:
+        output_string += '{:.3f}\t'.format(parameter)
+    print(output_string)
+
+    output_string = 'Parameters mean: '
+    for parameter in parameters_mean:
+        output_string += '{:.3f}\t'.format(parameter)
+    print(output_string)
 
 
 def simulateWithDefault(participants, model):
@@ -307,9 +318,9 @@ def main():
     participants = loadSimulationData(2)
     # participants = loadParticipants(2)
     # plotProbeType(participants)
-    plotPC(participants)
-    plotYesDistribution(participants)
-    plotSpatialGradient(participants)
+    # plotPC(participants)
+    # plotYesDistribution(participants)
+    # plotSpatialGradient(participants)
 
     models = [
               'Interference Model with Bayes v1.02.02',
@@ -318,7 +329,7 @@ def main():
               'Slot Averaging Model with Bayes v1.02.02',
             #   'Slot Averaging Model with Bayes v1.02.02',
             #   'Slot Averaging Model with Binding errors and Bayes v1.01.02',
-              'Slot Averaging Model with Binding errors and Bayes v1.01.04',
+              'Slot Averaging Model with Binding errors and Bayes v1.01.05',
               'Variable Precision Model with Bayes v1.01.02', 
               'Variable Precision Swap Model with Bayes v1.01.01'
               ]
@@ -347,9 +358,9 @@ def main():
 
     for i, model_name in enumerate(models):
         # plotProbeType(participants, model_name, displayed_model_names[i])
-        plotPC(participants, model_name, displayed_model_names[i], True)
-        plotYesDistribution(participants, model_name, displayed_model_names[i], True)
-        plotSpatialGradient(participants, model_name, displayed_model_names[i], True)
+        # plotPC(participants, model_name, displayed_model_names[i], True)
+        # plotYesDistribution(participants, model_name, displayed_model_names[i], True)
+        # plotSpatialGradient(participants, model_name, displayed_model_names[i], True)
         outputParameters(participants, model_name, n_parameters[i], displayed_model_names[i])
 
 
