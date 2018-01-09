@@ -14,6 +14,7 @@ class CoreInterface(object):
         self.window = visual.Window(
             units = 'height',
             monitor = 'Hmm?',
+            color = (200, 200, 200),
             colorSpace = 'rgb255', 
             winType = 'pyglet',
             screen = 1
@@ -84,3 +85,6 @@ class CoreInterface(object):
         )
 
         poly.draw()
+
+    def wait(self, ms):
+        core.wait(ms * 1000)

@@ -1,8 +1,6 @@
 '''
-Created on 23.03.2017
+Created on 1/9/2018
 This is the setup file for experiment parameters.
-This is not as flexible as I might want to, but I also don't want to
-create a script language interpreter just for an experiment.
 
 @author: Hsuan-Yu Lin
 '''
