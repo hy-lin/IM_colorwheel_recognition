@@ -3,7 +3,7 @@ This is the interface for psychopy. I tend to manipulate PsychoPy (or any
 other display library) through an interface isntead of calling PsychoPy
 directly, since it's easier to swap library if I so desire.
 '''
-from psychopy import visual, core
+from psychopy import visual, core, event
 
 class CoreInterface(object):
     '''
@@ -86,5 +86,46 @@ class CoreInterface(object):
 
         poly.draw()
 
+    def catchColorwheel(self, coords, shift = 'random'):
+        if shift == 'random':
+            shift = numpy.random.randint(0, 359)
+
+        angs = numpy.arange(0, 360) + shift
+        angs[angs>=360] = angs[angs>=360] - 360
+
+        polys = []
+
+        for ang in range(360):
+            polys.append(visual.ShapeStim(win,
+                                          vertices = coords[ang],
+                                          fillColorSpace = 'rgb255',
+                                          fillColor = angle2RGB(ang + shift, self.exp_parameters),
+                                          lineWidth = 0))
+
+        return visual.BufferImageStim(win, stim = polys), shift
+
+
     def wait(self, ms):
         core.wait(ms * 1000)
+
+class Recorder(object):
+    def __init__(self, win):
+        self.win = win
+        self.mouse = event.Mouse(win = win)
+
+    def getMousePos(self):
+        return self.mouse.getPos()
+
+    def resetMouseClick(self):
+        self.mouse.clickReset()
+
+    def getMousePressed(self, get_time):
+        return self.mouse.getPressed(get_time)
+
+    def setMousePos(self, pos):
+        self.mouse.setPos(pos)
+
+    def setCursorVisibility(self, visibility):
+        self.mouse.setVisible(visibility)
+
+    

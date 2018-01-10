@@ -61,7 +61,7 @@ class Stimulus(object):
         if self.color != -1:
             rgb_color = CIELAB.angle2RGB(self.color, self.exp_parameters.Lab_center, self.exp_parameters.radius)
         else:
-            rbg_color = None
+            rgb_color = None
         return rgb_color
 
 
@@ -70,20 +70,118 @@ class Trial(object):
     This is the basic trial class, which mostly use to setup the interface.
     '''
 
-    def __init__(self, set_size, stimuli, probe, display, **kwargs):
+    def __init__(self, set_size, stimuli, probe, display, exp_parameters, **kwargs):
         self.set_size = set_size
         self.stimuli = stimuli
         self.probe = probe
         self.display = display
+        self.exp_parameters = exp_parameters
 
         self.additional_infos = kwargs
 
-    def run(self):
-        self.learning()
-        self.testing()
+    def run(self, display, recorder):
+        self.learning(display)
+        self.testing(display, recorder)
 
-    def learning(self):
+    def learning(self, display):
         pass
     
-    def testing(self):
+    def testing(self, display, recorder):
         pass
+
+    def save(self, save_file):
+        pass
+
+class RecallTrial(Trial):
+    '''
+    The recall trial.
+    '''
+
+    def __init__(self, set_size, stimuli, probe, display, exp_parameters, **kwargs):
+        super(RecallTrial, self).__init__(set_size, stimuli, probe, display, kwargs)
+
+    def learning(self, display):
+        for stimulus in self.stimuli:
+            stimulus.draw(display)
+
+        display.refresh()
+        display.wait(self.exp_parameters.stimulus_onset)
+        display.refresh()
+        display.wait(self.exp_parameters.retention_interval)
+
+    def testing(self, display, recorder):
+        colorwheel_coords = self._getWheelCoord()
+        colorwheel, shift = display.catchColorwheel(colorwheel_coords)
+
+        recorder.setCursorVisibility(True)
+        recorder.resetMouseClick()
+        recorder.setMousePos((0, 0))
+        
+        buttons = [0, 0, 0]
+
+        while buttons[0] == 0:
+            mouse_pos = recorder.getMousePos()
+            ang = pos2ang(mouse_pos)
+
+            colorwheel.draw()
+
+            ang = (ang + shift) % 360
+            self.probe.color = ang
+            self.probe.draw()
+
+
+            buttons, t = recorder.getPressed(getTime = True)
+
+        self.t = t[0]
+        self.response = ang
+
+
+    def _getWheelCoord(self):
+        x1 = numpy.zeros(361)
+        x2 = numpy.zeros(361)
+        y1 = numpy.zeros(361)
+        y2 = numpy.zeros(361)
+
+        for ang in range(361):
+            radian = 2 * numpy.pi * (ang+1) / 360
+            if (ang+1) > 360:
+                radian = 2 * numpy.pi / 360
+
+            x1[ang] = -self.exp_parameters.colorwheel_radius1 * numpy.cos(radian)
+            y1[ang] = self.exp_parameters.colorwheel_radius1 * numpy.sin(radian)
+            x2[ang] = -self.exp_parameters.colorwheel_radius2 * numpy.cos(radian)
+            y2[ang] = self.exp_parameters.colorwheel_radius2 * numpy.sin(radian)
+
+        coords = []
+        for ang in range(360):
+            coords.append([(x1[ang], y1[ang]),
+                           (x2[ang], y2[ang]),
+                           (x2[ang+1], y2[ang+1]),
+                           (x1[ang+1], y1[ang+1])])
+        
+        return coords
+
+def pos2ang(mouse_pos, ref_pos = (0, 0)):
+    x, y = mouse_pos
+    ref_x, ref_y = ref_pos
+    x = x-ref_x
+    y = y-ref_y
+
+    dist = numpy.sqrt(x**2 + y**2)
+    ang = numpy.arccos(abs(x/dist)) * 180 / numpy.pi
+
+    if x < 0 and y > 0:
+        ang = ang
+    elif x < 0 and y <= 0:
+        ang = 360 - ang
+    elif x >=0 and y <= 0:
+        ang = ang + 180
+    elif x >=0 and y > 0:
+        ang = 180 - ang
+    
+    ang = ang % 360
+    
+    try:
+        return int(numpy.floor(ang))
+    except:
+        return numpy.random.randint(0, 359)
