@@ -32,4 +32,4 @@ class ExpParameters(object):
         self.n_practice_trials = 10
         self.n_experpiment_trials = 320
         self.set_sizes = [1, 2, 4, 6]
-        self.n_breaks = 1
+        self.n_breaks = 10

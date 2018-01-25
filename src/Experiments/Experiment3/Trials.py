@@ -82,6 +82,9 @@ class Trial(object):
         self.exp_parameters = exp_parameters
         self.probe_type = probe_type
 
+        self.t = -1
+        self.response = -1
+
         self.trial_type = 'NA'
 
     def run(self, display, recorder):
@@ -139,6 +142,8 @@ class RecallTrial(Trial):
         recorder.setMousePos((0, 0))
         
         buttons = [0, 0, 0]
+        
+        display.refresh()
 
         while buttons[0] == 0:
             mouse_pos = recorder.getMousePos()

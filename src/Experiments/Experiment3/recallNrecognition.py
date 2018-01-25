@@ -5,12 +5,6 @@ import PsychoPyInterface
 import datetime
 import numpy
 
-if 0:
-    import UserList
-    import UserString
-    import Tkinter
-    import FileDialog
-    import scipy.optimize
 
 
 class Experiment(object):
@@ -19,12 +13,13 @@ class Experiment(object):
         self.display = PsychoPyInterface.CoreInterface(self.exp_parameters)
         self.recorder = PsychoPyInterface.Recorder(self.display.window)
 
-        self.pID = self._getPID()
-        self.session = self._getSession()
+        self._getPID()
+        self._getSession()
         
 
         self.save_file = open('Data\\recallNrecognition.dat', 'a')
         self.logger = open('Data\\log.dat', 'a')
+        self.logger_string = ''
 
         self.log('experiment created')
 
@@ -182,6 +177,9 @@ class Experiment(object):
         return Trials.RecognitionTrial(set_size, stimuli, probe, probe_type, self.display, self.exp_parameters)
         
     def _endofExperiment(self):
+        for tInd, experiment_trial in enumerate(self.experiment_trials):
+            self.save(experiment_trial, tInd)
+	
         self.log('experiment finished, closing files.')
         self.save_file.close()
 
@@ -189,6 +187,7 @@ class Experiment(object):
                                  'space'], self.recorder)
 
         self.log('exiting program. Goodbye.')
+        self.logger.write(self.logger_string)
         self.logger.close()
 
     def run(self):
@@ -200,6 +199,7 @@ class Experiment(object):
                                  'space'], self.recorder)
         for tInd, practice_trial in enumerate(self.practice_trials):
             self.log('presenting practice trial {}'.format(tInd))
+            self.log(practice_trial.getSaveString())
             practice_trial.run(self.display, self.recorder)
             self.log(practice_trial.getSaveString())
 
@@ -208,9 +208,10 @@ class Experiment(object):
                                  'space'], self.recorder)
         for tInd, experiment_trial in enumerate(self.experiment_trials):
             self.log('presenting experiment trials {}'.format(tInd))
+            self.log(experiment_trial.getSaveString())
             experiment_trial.run(self.display, self.recorder)
             self.log(experiment_trial.getSaveString())
-            self.save(experiment_trial)
+            
 
             if tInd % (len(self.experiment_trials) / self.exp_parameters.n_breaks) == 0 and tInd != 0:
                 self.takingBreak()
@@ -231,15 +232,17 @@ class Experiment(object):
         current_time = datetime.datetime.now()
         time_str = current_time.strftime('%d-%b-%Y %I-%M-%S')
 
-        output_string = '{}\t{}\t{}\t{}'.format(
+        output_string = '{}\t{}\t{}\t{}\n'.format(
             time_str, self.pID, self.session, msg)
 
-        self.logger.write('{}\n'.format(output_string))
-        print(output_string)
+        self.logger_string += output_string
 
-    def save(self, trial):
+        #self.logger.write('{}\n'.format(output_string))
+        # print(output_string)
+
+    def save(self, trial, tInd):
         output_string = trial.getSaveString()
-        self.save_file.write('{}\t{}\t{}\t{}\n'.format(self.pID, self.session, self.session_type, output_string))
+        self.save_file.write('{}\t{}\t{}\t{}\t{}\n'.format(self.pID, self.session, self.session_type, tInd, output_string))
 
 
 def main():

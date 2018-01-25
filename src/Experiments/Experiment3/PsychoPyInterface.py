@@ -26,6 +26,18 @@ class CoreInterface(object):
             screen = 0
         )
 
+        self._cacheColorwheel()
+
+    def _cacheColorwheel(self):
+        self.polys = []
+
+        for ang in range(360):
+            self.polys.append(visual.ShapeStim(self.window,
+                                        #   vertices = coords[ang],
+                                          fillColorSpace = 'rgb255',
+                                          fillColor = (0, 0, 0),
+                                          lineWidth = 0))
+
     def close(self):
         self.window.close()
 
@@ -109,16 +121,11 @@ class CoreInterface(object):
         angs = numpy.arange(0, 360) + shift
         angs[angs>=360] = angs[angs>=360] - 360
 
-        polys = []
-
         for ang in range(360):
-            polys.append(visual.ShapeStim(self.window,
-                                          vertices = coords[ang],
-                                          fillColorSpace = 'rgb255',
-                                          fillColor = CIELAB.angle2RGB(ang + shift, self.exp_parameters.Lab_center, self.exp_parameters.Lab_radius),
-                                          lineWidth = 0))
+            self.polys[ang].vertices = coords[ang]
+            self.polys[ang].fillColor = CIELAB.angle2RGB(ang + shift, self.exp_parameters.Lab_center, self.exp_parameters.Lab_radius)
 
-        return visual.BufferImageStim(self.window, stim = polys), shift
+        return visual.BufferImageStim(self.window, stim = self.polys), shift
 
     def getString(self, recorder, display_text, x = None, y = None, text_color = (0, 0, 0)):
         if x is None:
