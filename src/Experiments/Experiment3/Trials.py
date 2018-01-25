@@ -42,24 +42,28 @@ class Stimulus(object):
                 loc[1] + self.exp_parameters.stimulus_size/2.0,
                 self._getRGBColor()
             )
-            display.drawThickFrame(
-                loc[0] - self.exp_parameters.stimulus_size/2.0,
-                loc[1] - self.exp_parameters.stimulus_size/2.0,
-                loc[0] + self.exp_parameters.stimulus_size/2.0,
-                loc[1] + self.exp_parameters.stimulus_size/2.0,
-                self.exp_parameters.thin_frame,
-                (0, 0, 0)
-            )
+            self.drawFrame(display)
+
+    def drawFrame(self, display):
+        loc = self._getLocation()
+        display.drawThickFrame(
+            loc[0] - self.exp_parameters.stimulus_size/2.0,
+            loc[1] - self.exp_parameters.stimulus_size/2.0,
+            loc[0] + self.exp_parameters.stimulus_size/2.0,
+            loc[1] + self.exp_parameters.stimulus_size/2.0,
+            self.exp_parameters.thin_frame,
+            (0, 0, 0)
+        )
 
     def _getLocation(self):
-        x = numpy.cos(self.location / 13.0) * self.exp_parameters.location_radius
-        y = numpy.sin(self.location / 13.0) * self.exp_parameters.location_radius
+        x = numpy.cos(self.location / 13.0 * 2 * numpy.pi) * self.exp_parameters.location_radius
+        y = numpy.sin(self.location / 13.0 * 2 * numpy.pi) * self.exp_parameters.location_radius
 
         return (x, y)
 
     def _getRGBColor(self):
         if self.color != -1:
-            rgb_color = CIELAB.angle2RGB(self.color, self.exp_parameters.Lab_center, self.exp_parameters.radius)
+            rgb_color = CIELAB.angle2RGB(self.color, self.exp_parameters.Lab_center, self.exp_parameters.Lab_radius)
         else:
             rgb_color = None
         return rgb_color
@@ -70,35 +74,24 @@ class Trial(object):
     This is the basic trial class, which mostly use to setup the interface.
     '''
 
-    def __init__(self, set_size, stimuli, probe, display, exp_parameters, **kwargs):
+    def __init__(self, set_size, stimuli, probe, probe_type, display, exp_parameters):
         self.set_size = set_size
         self.stimuli = stimuli
         self.probe = probe
         self.display = display
         self.exp_parameters = exp_parameters
+        self.probe_type = probe_type
 
-        self.additional_infos = kwargs
+        self.trial_type = 'NA'
 
     def run(self, display, recorder):
+        recorder.hideCursor()
         self.learning(display)
         self.testing(display, recorder)
 
-    def learning(self, display):
-        pass
-    
-    def testing(self, display, recorder):
-        pass
-
-    def save(self, save_file):
-        pass
-
-class RecallTrial(Trial):
-    '''
-    The recall trial.
-    '''
-
-    def __init__(self, set_size, stimuli, probe, display, exp_parameters, **kwargs):
-        super(RecallTrial, self).__init__(set_size, stimuli, probe, display, kwargs)
+        display.refresh()
+        display.wait(self.exp_parameters.inter_trial_interval)
+        display.refresh()
 
     def learning(self, display):
         for stimulus in self.stimuli:
@@ -108,12 +101,40 @@ class RecallTrial(Trial):
         display.wait(self.exp_parameters.stimulus_onset)
         display.refresh()
         display.wait(self.exp_parameters.retention_interval)
+    
+    def testing(self, display, recorder):
+        pass
+
+    def getSaveString(self):
+        output_string = ''
+        output_string += '{}\t'.format(self.trial_type)
+        output_string += '{}\t{}\t'.format(self.set_size, self.probe_type)
+        for stimulus in self.stimuli:
+            output_string += '{}\t{}\t'.format(stimulus.color, stimulus.location)
+
+        for i in range(max(self.exp_parameters.set_sizes) - self.set_size):
+            output_string += '-1\t-1\t'
+
+        output_string += '{}\t{}\t'.format(self.probe.color, self.probe.location)
+        output_string += '{}\t{}'.format(self.t, self.response)
+
+        return output_string
+        pass
+
+class RecallTrial(Trial):
+    '''
+    The recall trial.
+    '''
+
+    def __init__(self, set_size, stimuli, probe, probe_type, display, exp_parameters):
+        super(RecallTrial, self).__init__(set_size, stimuli, probe, probe_type, display, exp_parameters)
+        self.trial_type = 'recall'
 
     def testing(self, display, recorder):
         colorwheel_coords = self._getWheelCoord()
         colorwheel, shift = display.catchColorwheel(colorwheel_coords)
 
-        recorder.setCursorVisibility(True)
+        recorder.showCursor()
         recorder.resetMouseClick()
         recorder.setMousePos((0, 0))
         
@@ -123,17 +144,28 @@ class RecallTrial(Trial):
             mouse_pos = recorder.getMousePos()
             ang = pos2ang(mouse_pos)
 
+            if ang is None:
+                ang = -1
+            else:
+                ang = (ang + shift) % 360
+
             colorwheel.draw()
 
-            ang = (ang + shift) % 360
+            for stimulus in self.stimuli:
+                stimulus.drawFrame(display)
+
             self.probe.color = ang
-            self.probe.draw()
+            self.probe.draw(display)
+
+            display.refresh()
 
 
-            buttons, t = recorder.getPressed(getTime = True)
+            buttons, t = recorder.getMousePressed(get_time = True)
 
         self.t = t[0]
         self.response = ang
+
+        recorder.hideCursor()
 
 
     def _getWheelCoord(self):
@@ -184,4 +216,29 @@ def pos2ang(mouse_pos, ref_pos = (0, 0)):
     try:
         return int(numpy.floor(ang))
     except:
-        return numpy.random.randint(0, 359)
+        return None
+
+class RecognitionTrial(Trial):
+    '''
+    The recall trial.
+    '''
+
+    def __init__(self, set_size, stimuli, probe, probe_type, display, exp_parameters):
+        super(RecognitionTrial, self).__init__(set_size, stimuli, probe, probe_type, display, exp_parameters)
+        self.trial_type = 'recognition'
+
+    def testing(self, display, recorder):
+        recorder.resetMouseClick()
+        
+        buttons = [0, 0, 0]
+        t0 = display.getTime()
+        while buttons[0] == 0 and buttons[2] == 0:
+            for stimulus in self.stimuli:
+                stimulus.drawFrame(display)
+            self.probe.draw(display)
+            display.refresh()
+            buttons = recorder.getMousePressed()
+            
+        self.t = display.getTime() - t0
+
+        self.response = buttons[0] == 1

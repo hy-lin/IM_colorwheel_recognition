@@ -1,0 +1,15 @@
+999	-1	mix	recognition	2	positive	281	2	200	3	-1	-1	-1	-1	-1	-1	-1	-1	281	2	1.31832133715	True
+999	-1	mix	recognition	2	new	28	10	181	12	-1	-1	-1	-1	-1	-1	-1	-1	15	10	0.851640453359	True
+999	-1	mix	recognition	1	new	269	2	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	56	2	0.83443535093	False
+999	-1	mix	recall	2	new	200	5	26	2	-1	-1	-1	-1	-1	-1	-1	-1	183	5	1.96123570423	183
+999	-1	mix	recall	4	positive	161	0	202	1	179	10	306	8	-1	-1	-1	-1	155	0	2.75085431073	155
+999	-1	mix	recall	4	new	210	5	37	4	317	12	321	8	-1	-1	-1	-1	189	5	1.69715718234	189
+999	-1	mix	recall	2	intrusion	95	9	295	7	-1	-1	-1	-1	-1	-1	-1	-1	83	9	2.06111407935	83
+999	-1	mix	recall	6	intrusion	128	2	6	3	54	10	206	8	37	1	192	5	121	2	1.80058109665	121
+999	-1	mix	recognition	4	new	277	10	239	9	164	1	94	6	-1	-1	-1	-1	121	10	0.517736534164	True
+None	None	mix	recall	1	intrusion	235	6	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	167	6	0.510375748466	167
+None	None	recognition	recognition	1	new	336	0	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	152	0	0.250798430565	True
+None	None	recognition	recognition	2	intrusion	238	7	325	0	-1	-1	-1	-1	-1	-1	-1	-1	325	7	0.0423916594864	True
+None	None	recognition	recognition	1	new	289	12	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	56	12	0.267626056804	True
+None	None	mix	recognition	6	new	90	10	282	12	20	8	356	6	283	1	93	0	163	10	3.87408175496	True
+None	None	mix	recall	1	positive	245	11	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	50	11	8.36184228908	50

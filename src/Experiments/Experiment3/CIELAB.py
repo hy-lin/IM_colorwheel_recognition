@@ -1,3 +1,5 @@
+import numpy
+
 class Color_Lab(object):
     def __init__(self, L, a, b):
         self.L = L

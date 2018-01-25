@@ -1,0 +1,225 @@
+24-Jan-2018 02-11-43	999	-1	experiment created
+24-Jan-2018 02-11-43	999	-1	finished generating practice trials
+24-Jan-2018 02-11-43	999	-1	finished generating experiment trials
+24-Jan-2018 02-11-46	999	-1	recognition	1	new	308	11	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	269	11	0.367305715229	True
+24-Jan-2018 02-11-48	999	-1	recognition	6	positive	9	7	102	12	231	11	275	8	19	6	284	1	9	7	0.417743547694	True
+24-Jan-2018 02-11-51	999	-1	recognition	6	new	339	9	359	11	197	10	48	3	207	5	172	8	320	9	0.0837677825784	True
+24-Jan-2018 02-11-53	999	-1	recognition	1	new	102	6	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	279	6	0.217309107953	False
+24-Jan-2018 02-12-14	999	-1	experiment created
+24-Jan-2018 02-12-14	999	-1	finished generating practice trials
+24-Jan-2018 02-12-14	999	-1	finished generating experiment trials
+24-Jan-2018 02-12-21	999	-1	recall	4	positive	72	10	300	7	261	6	29	0	-1	-1	-1	-1	234	10	4.15379275189	234
+24-Jan-2018 02-12-24	999	-1	recognition	6	intrusion	58	4	2	2	286	10	161	8	309	0	152	9	2	4	1.28463643398	False
+24-Jan-2018 02-12-29	999	-1	recall	4	new	293	1	64	2	139	0	33	11	-1	-1	-1	-1	308	1	1.76609476933	308
+24-Jan-2018 02-12-34	999	-1	recall	6	positive	194	11	23	8	192	10	344	2	160	6	342	9	172	11	2.49731917779	172
+24-Jan-2018 02-12-37	999	-1	recognition	2	new	110	8	352	9	-1	-1	-1	-1	-1	-1	-1	-1	41	8	1.71903226965	True
+24-Jan-2018 02-12-42	999	-1	recall	4	intrusion	186	11	149	0	113	12	20	2	-1	-1	-1	-1	33	11	1.52281507145	33
+24-Jan-2018 02-12-44	999	-1	recognition	1	new	48	4	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	38	4	0.717913240918	True
+24-Jan-2018 02-12-50	999	-1	recall	2	new	76	10	42	11	-1	-1	-1	-1	-1	-1	-1	-1	77	10	3.48740786188	77
+24-Jan-2018 02-12-55	999	-1	recall	1	positive	333	10	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	313	10	1.51134652371	313
+24-Jan-2018 02-12-59	999	-1	recall	2	intrusion	175	6	192	10	-1	-1	-1	-1	-1	-1	-1	-1	168	6	1.64694629175	168
+24-Jan-2018 02-13-02	999	-1	recognition	2	positive	281	2	200	3	-1	-1	-1	-1	-1	-1	-1	-1	281	2	1.31832133715	True
+24-Jan-2018 02-13-05	999	-1	recognition	2	new	28	10	181	12	-1	-1	-1	-1	-1	-1	-1	-1	15	10	0.851640453359	True
+24-Jan-2018 02-13-08	999	-1	recognition	1	new	269	2	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	56	2	0.83443535093	False
+24-Jan-2018 02-13-13	999	-1	recall	2	new	200	5	26	2	-1	-1	-1	-1	-1	-1	-1	-1	183	5	1.96123570423	183
+24-Jan-2018 02-13-18	999	-1	recall	4	positive	161	0	202	1	179	10	306	8	-1	-1	-1	-1	155	0	2.75085431073	155
+24-Jan-2018 02-13-22	999	-1	recall	4	new	210	5	37	4	317	12	321	8	-1	-1	-1	-1	189	5	1.69715718234	189
+24-Jan-2018 02-13-27	999	-1	recall	2	intrusion	95	9	295	7	-1	-1	-1	-1	-1	-1	-1	-1	83	9	2.06111407935	83
+24-Jan-2018 02-13-31	999	-1	recall	6	intrusion	128	2	6	3	54	10	206	8	37	1	192	5	121	2	1.80058109665	121
+24-Jan-2018 02-13-34	999	-1	recognition	4	new	277	10	239	9	164	1	94	6	-1	-1	-1	-1	121	10	0.517736534164	True
+24-Jan-2018 02-30-17	None	None	experiment created
+24-Jan-2018 02-30-17	None	None	finished generating practice trials
+24-Jan-2018 02-30-17	None	None	finished generating experiment trials
+24-Jan-2018 02-30-17	None	None	experiment started
+24-Jan-2018 02-30-19	None	None	presenting practice trial 0
+24-Jan-2018 02-30-22	None	None	recognition	2	intrusion	71	8	40	2	-1	-1	-1	-1	-1	-1	-1	-1	40	8	1.26805884295	True
+24-Jan-2018 02-30-22	None	None	presenting practice trial 1
+24-Jan-2018 02-30-24	None	None	recognition	6	new	177	10	77	6	142	12	357	8	283	0	229	11	178	10	0.301208608053	True
+24-Jan-2018 02-30-24	None	None	presenting practice trial 2
+24-Jan-2018 02-33-15	None	None	experiment created
+24-Jan-2018 02-33-15	None	None	finished generating practice trials
+24-Jan-2018 02-33-15	None	None	finished generating experiment trials
+24-Jan-2018 02-33-15	None	None	experiment started
+24-Jan-2018 02-33-16	None	None	presenting practice trial 0
+24-Jan-2018 02-33-19	None	None	recall	4	intrusion	285	6	63	8	83	3	315	2	-1	-1	-1	-1	266	6	0.954090741398	266
+24-Jan-2018 02-33-19	None	None	presenting practice trial 1
+24-Jan-2018 02-33-22	None	None	recognition	2	positive	121	11	281	5	-1	-1	-1	-1	-1	-1	-1	-1	121	11	0.584673554372	True
+24-Jan-2018 02-33-22	None	None	presenting practice trial 2
+24-Jan-2018 02-33-24	None	None	recognition	1	new	140	8	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	136	8	0.517488779777	True
+24-Jan-2018 02-33-24	None	None	presenting practice trial 3
+24-Jan-2018 02-33-27	None	None	recall	1	intrusion	331	0	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	0	0.00349764191378	-1
+24-Jan-2018 02-33-27	None	None	presenting practice trial 4
+24-Jan-2018 02-33-30	None	None	recall	4	positive	105	5	91	10	330	6	168	4	-1	-1	-1	-1	-1	5	0.761986722189	-1
+24-Jan-2018 02-33-30	None	None	presenting practice trial 5
+24-Jan-2018 02-33-34	None	None	recall	4	positive	341	2	276	6	95	11	92	0	-1	-1	-1	-1	188	2	0.796808330478	188
+24-Jan-2018 02-33-34	None	None	presenting practice trial 6
+24-Jan-2018 02-33-36	None	None	recognition	6	positive	22	1	189	5	276	9	254	11	120	2	143	0	22	1	0.351144944585	True
+24-Jan-2018 02-33-36	None	None	presenting practice trial 7
+24-Jan-2018 02-33-38	None	None	recognition	2	positive	322	0	170	11	-1	-1	-1	-1	-1	-1	-1	-1	322	0	0.117517119001	True
+24-Jan-2018 02-33-38	None	None	presenting practice trial 8
+24-Jan-2018 02-33-41	None	None	recognition	6	new	153	3	291	0	218	2	281	5	234	6	10	1	99	3	0.28373009198	True
+24-Jan-2018 02-33-41	None	None	presenting practice trial 9
+24-Jan-2018 02-33-43	None	None	recall	1	new	196	10	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	10	0.00365672931184	-1
+24-Jan-2018 02-33-46	None	None	presenting experiment trials 0
+24-Jan-2018 02-33-49	None	None	recall	1	intrusion	235	6	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	167	6	0.510375748466	167
+24-Jan-2018 02-34-13	None	None	experiment created
+24-Jan-2018 02-34-13	None	None	finished generating practice trials
+24-Jan-2018 02-34-13	None	None	finished generating experiment trials
+24-Jan-2018 02-34-13	None	None	experiment started
+24-Jan-2018 02-34-14	None	None	presenting practice trial 0
+24-Jan-2018 02-34-16	None	None	recognition	4	positive	238	1	212	8	135	5	195	6	-1	-1	-1	-1	238	1	0.400836377757	True
+24-Jan-2018 02-34-16	None	None	presenting practice trial 1
+24-Jan-2018 02-34-27	None	None	experiment created
+24-Jan-2018 02-34-27	None	None	finished generating practice trials
+24-Jan-2018 02-34-27	None	None	finished generating experiment trials
+24-Jan-2018 02-34-27	None	None	experiment started
+24-Jan-2018 02-34-28	None	None	presenting practice trial 0
+24-Jan-2018 02-34-30	None	None	recognition	4	intrusion	312	7	298	6	284	8	349	11	-1	-1	-1	-1	298	7	0.317196891467	True
+24-Jan-2018 02-34-30	None	None	presenting practice trial 1
+24-Jan-2018 02-34-32	None	None	recognition	1	new	348	7	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	197	7	0.150826256606	True
+24-Jan-2018 02-34-32	None	None	presenting practice trial 2
+24-Jan-2018 02-34-34	None	None	recognition	6	new	272	1	43	2	235	11	208	8	166	10	193	9	329	1	0.218106540658	True
+24-Jan-2018 02-34-34	None	None	presenting practice trial 3
+24-Jan-2018 02-34-37	None	None	recognition	2	positive	114	7	98	11	-1	-1	-1	-1	-1	-1	-1	-1	114	7	0.0336888946167	True
+24-Jan-2018 02-34-37	None	None	presenting practice trial 4
+24-Jan-2018 02-34-39	None	None	recognition	4	positive	37	5	298	10	255	11	293	3	-1	-1	-1	-1	37	5	0.150364960175	True
+24-Jan-2018 02-34-39	None	None	presenting practice trial 5
+24-Jan-2018 02-34-41	None	None	recognition	6	intrusion	143	1	135	3	222	2	15	4	275	8	164	12	135	1	0.28450414625	True
+24-Jan-2018 02-34-41	None	None	presenting practice trial 6
+24-Jan-2018 02-34-43	None	None	recognition	6	new	328	3	118	7	284	5	43	10	341	4	298	6	289	3	0.167507625076	True
+24-Jan-2018 02-34-43	None	None	presenting practice trial 7
+24-Jan-2018 02-34-46	None	None	recognition	1	positive	337	10	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	337	10	0.367697446562	True
+24-Jan-2018 02-34-46	None	None	presenting practice trial 8
+24-Jan-2018 02-34-48	None	None	recognition	2	intrusion	17	3	85	8	-1	-1	-1	-1	-1	-1	-1	-1	85	3	0.217472756996	True
+24-Jan-2018 02-34-48	None	None	presenting practice trial 9
+24-Jan-2018 02-34-50	None	None	recognition	4	new	117	6	358	9	42	5	267	10	-1	-1	-1	-1	305	6	0.0169134422013	True
+24-Jan-2018 02-34-51	None	None	presenting experiment trials 0
+24-Jan-2018 02-34-54	None	None	recognition	1	new	336	0	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	152	0	0.250798430565	True
+24-Jan-2018 02-34-54	None	None	presenting experiment trials 1
+24-Jan-2018 02-34-56	None	None	recognition	2	intrusion	238	7	325	0	-1	-1	-1	-1	-1	-1	-1	-1	325	7	0.0423916594864	True
+24-Jan-2018 02-34-56	None	None	presenting experiment trials 2
+24-Jan-2018 02-34-58	None	None	recognition	1	new	289	12	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	56	12	0.267626056804	True
+24-Jan-2018 02-34-58	None	None	experiment finished, closing files.
+24-Jan-2018 02-35-01	None	None	exiting program. Goodbye.
+24-Jan-2018 02-40-36	None	None	experiment created
+24-Jan-2018 02-40-36	None	None	finished generating practice trials
+24-Jan-2018 02-40-36	None	None	finished generating experiment trials
+24-Jan-2018 02-40-36	None	None	experiment started
+24-Jan-2018 02-40-37	None	None	presenting practice trial 0
+24-Jan-2018 02-40-47	None	None	experiment created
+24-Jan-2018 02-40-47	None	None	finished generating practice trials
+24-Jan-2018 02-40-47	None	None	finished generating experiment trials
+24-Jan-2018 02-40-47	None	None	experiment started
+24-Jan-2018 02-40-48	None	None	presenting practice trial 0
+24-Jan-2018 02-40-51	None	None	recall	1	positive	43	8	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	211	8	0.919115747771	211
+24-Jan-2018 02-40-51	None	None	presenting practice trial 1
+24-Jan-2018 02-40-54	None	None	recall	1	new	142	11	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	164	11	0.698225747867	164
+24-Jan-2018 02-40-54	None	None	presenting practice trial 2
+24-Jan-2018 02-40-57	None	None	recognition	2	positive	178	6	325	12	-1	-1	-1	-1	-1	-1	-1	-1	178	6	0.933324419118	True
+24-Jan-2018 02-40-57	None	None	presenting practice trial 3
+24-Jan-2018 02-52-50	None	None	experiment created
+24-Jan-2018 02-52-50	None	None	finished generating practice trials
+24-Jan-2018 02-52-50	None	None	finished generating experiment trials
+24-Jan-2018 02-52-50	None	None	experiment started
+24-Jan-2018 02-52-54	None	None	presenting practice trial 0
+24-Jan-2018 02-53-00	None	None	recall	6	none	96	4	38	10	173	6	0	7	64	5	77	3	222	4	3.16702523103	222
+24-Jan-2018 02-53-00	None	None	presenting practice trial 1
+24-Jan-2018 02-53-12	None	None	experiment created
+24-Jan-2018 02-53-12	None	None	finished generating practice trials
+24-Jan-2018 02-53-12	None	None	finished generating experiment trials
+24-Jan-2018 02-53-12	None	None	experiment started
+24-Jan-2018 02-53-14	None	None	presenting practice trial 0
+24-Jan-2018 02-53-22	None	None	recognition	4	positive	136	4	284	5	262	1	114	6	-1	-1	-1	-1	136	4	6.5019121849	True
+24-Jan-2018 02-53-22	None	None	presenting practice trial 1
+24-Jan-2018 02-53-27	None	None	recognition	1	new	291	9	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	101	9	3.27658712487	True
+24-Jan-2018 02-53-27	None	None	presenting practice trial 2
+24-Jan-2018 02-53-38	None	None	recognition	4	positive	157	6	191	4	267	10	7	3	-1	-1	-1	-1	157	6	8.6169591727	True
+24-Jan-2018 02-53-38	None	None	presenting practice trial 3
+24-Jan-2018 02-53-41	None	None	recognition	1	positive	198	4	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	198	4	0.286107564749	False
+24-Jan-2018 02-53-41	None	None	presenting practice trial 4
+24-Jan-2018 02-53-54	None	None	experiment created
+24-Jan-2018 02-53-54	None	None	finished generating practice trials
+24-Jan-2018 02-53-54	None	None	finished generating experiment trials
+24-Jan-2018 02-53-54	None	None	experiment started
+24-Jan-2018 02-53-55	None	None	presenting practice trial 0
+24-Jan-2018 02-54-03	None	None	recognition	4	new	147	1	337	6	251	4	62	7	-1	-1	-1	-1	167	1	5.76240126175	True
+24-Jan-2018 02-54-03	None	None	presenting practice trial 1
+24-Jan-2018 02-54-10	None	None	recall	1	positive	288	5	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	310	5	4.75046942186	310
+24-Jan-2018 02-54-10	None	None	presenting practice trial 2
+24-Jan-2018 02-54-16	None	None	recall	4	intrusion	332	2	219	7	83	9	144	0	-1	-1	-1	-1	325	2	3.08551831415	325
+24-Jan-2018 02-54-16	None	None	presenting practice trial 3
+24-Jan-2018 02-54-22	None	None	recall	1	intrusion	207	8	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	221	8	4.10594393851	221
+24-Jan-2018 02-54-22	None	None	presenting practice trial 4
+24-Jan-2018 02-54-28	None	None	recognition	6	positive	311	6	347	5	90	9	149	10	307	7	36	4	311	6	3.71891452217	True
+24-Jan-2018 02-54-28	None	None	presenting practice trial 5
+24-Jan-2018 02-54-33	None	None	recognition	6	intrusion	233	10	134	6	47	2	283	4	322	7	137	12	134	10	2.60623075199	True
+24-Jan-2018 02-54-33	None	None	presenting practice trial 6
+24-Jan-2018 02-54-39	None	None	recall	6	positive	212	11	67	3	203	12	248	9	297	5	172	4	179	11	3.14265634899	179
+24-Jan-2018 02-54-39	None	None	presenting practice trial 7
+24-Jan-2018 02-54-42	None	None	recognition	2	new	97	2	49	1	-1	-1	-1	-1	-1	-1	-1	-1	53	2	1.6219995062	False
+24-Jan-2018 02-54-42	None	None	presenting practice trial 8
+24-Jan-2018 02-54-46	None	None	recognition	1	new	118	8	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	169	8	1.38325522465	False
+24-Jan-2018 02-54-46	None	None	presenting practice trial 9
+24-Jan-2018 02-54-49	None	None	recognition	4	positive	205	4	276	8	125	7	166	9	-1	-1	-1	-1	205	4	1.21036400223	True
+24-Jan-2018 02-54-55	None	None	presenting experiment trials 0
+24-Jan-2018 02-55-00	None	None	recognition	6	new	90	10	282	12	20	8	356	6	283	1	93	0	163	10	3.87408175496	True
+24-Jan-2018 02-55-00	None	None	presenting experiment trials 1
+24-Jan-2018 02-55-11	None	None	recall	1	positive	245	11	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	50	11	8.36184228908	50
+24-Jan-2018 02-55-11	None	None	presenting experiment trials 2
+25-Jan-2018 01-01-09	None	None	experiment created
+25-Jan-2018 01-01-09	None	None	finished generating practice trials
+25-Jan-2018 01-01-09	None	None	finished generating experiment trials
+25-Jan-2018 01-01-09	None	None	experiment started
+25-Jan-2018 01-01-10	None	None	presenting practice trial 0
+25-Jan-2018 01-01-38	None	None	experiment created
+25-Jan-2018 01-01-38	None	None	finished generating practice trials
+25-Jan-2018 01-01-38	None	None	finished generating experiment trials
+25-Jan-2018 01-01-38	None	None	experiment started
+25-Jan-2018 01-01-39	None	None	presenting practice trial 0
+25-Jan-2018 01-01-42	None	None	recognition	6	positive	153	6	0	11	6	3	302	2	64	1	249	0	153	6	1.33513499335	True
+25-Jan-2018 01-01-42	None	None	presenting practice trial 1
+25-Jan-2018 01-02-06	None	None	experiment created
+25-Jan-2018 01-02-06	None	None	finished generating practice trials
+25-Jan-2018 01-02-06	None	None	finished generating experiment trials
+25-Jan-2018 01-02-06	None	None	experiment started
+25-Jan-2018 01-02-06	None	None	presenting practice trial 0
+25-Jan-2018 01-02-15	None	None	experiment created
+25-Jan-2018 01-02-15	None	None	finished generating practice trials
+25-Jan-2018 01-02-15	None	None	finished generating experiment trials
+25-Jan-2018 01-02-15	None	None	experiment started
+25-Jan-2018 01-02-15	None	None	presenting practice trial 0
+25-Jan-2018 01-02-19	None	None	recognition	2	new	130	5	81	3	-1	-1	-1	-1	-1	-1	-1	-1	292	5	1.11803600621	True
+25-Jan-2018 01-02-19	None	None	presenting practice trial 1
+25-Jan-2018 01-02-25	None	None	recall	4	positive	300	1	21	4	104	10	278	12	-1	-1	-1	-1	181	1	3.50329407847	181
+25-Jan-2018 01-02-25	None	None	presenting practice trial 2
+25-Jan-2018 01-02-28	None	None	recognition	1	new	35	12	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	143	12	1.3179769329	True
+25-Jan-2018 01-02-28	None	None	presenting practice trial 3
+25-Jan-2018 01-02-44	None	None	experiment created
+25-Jan-2018 01-02-44	None	None	finished generating practice trials
+25-Jan-2018 01-02-44	None	None	finished generating experiment trials
+25-Jan-2018 01-02-44	None	None	experiment started
+25-Jan-2018 01-02-45	None	None	presenting practice trial 0
+25-Jan-2018 01-02-48	None	None	recall	1	positive	220	10	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	10	1.00889064766	-1
+25-Jan-2018 01-02-48	None	None	presenting practice trial 1
+25-Jan-2018 01-02-51	None	None	recognition	4	intrusion	252	0	288	11	176	6	268	3	-1	-1	-1	-1	288	0	1.06935326695	True
+25-Jan-2018 01-02-51	None	None	presenting practice trial 2
+25-Jan-2018 01-02-54	None	None	recognition	6	positive	30	12	333	11	5	7	291	0	60	4	26	8	30	12	0.868033297724	True
+25-Jan-2018 01-02-54	None	None	presenting practice trial 3
+25-Jan-2018 01-02-57	None	None	recognition	6	intrusion	333	1	58	6	299	4	244	9	25	3	131	11	58	1	1.03439138806	True
+25-Jan-2018 01-02-57	None	None	presenting practice trial 4
+25-Jan-2018 01-03-00	None	None	recognition	2	positive	287	6	169	11	-1	-1	-1	-1	-1	-1	-1	-1	287	6	0.63450924959	True
+25-Jan-2018 01-03-00	None	None	presenting practice trial 5
+25-Jan-2018 01-03-03	None	None	recognition	2	positive	359	4	80	2	-1	-1	-1	-1	-1	-1	-1	-1	359	4	0.533574853471	True
+25-Jan-2018 01-03-03	None	None	presenting practice trial 6
+25-Jan-2018 01-03-31	None	None	experiment created
+25-Jan-2018 01-03-31	None	None	finished generating practice trials
+25-Jan-2018 01-03-31	None	None	finished generating experiment trials
+25-Jan-2018 01-03-31	None	None	experiment started
+25-Jan-2018 01-03-32	None	None	presenting practice trial 0
+25-Jan-2018 01-03-42	None	None	recall	4	new	114	11	154	3	205	0	200	12	-1	-1	-1	-1	349	11	7.48988312493	349
+25-Jan-2018 01-03-42	None	None	presenting practice trial 1
+25-Jan-2018 01-05-29	None	None	experiment created
+25-Jan-2018 01-05-29	None	None	finished generating practice trials
+25-Jan-2018 01-05-29	None	None	finished generating experiment trials
+25-Jan-2018 01-05-29	None	None	experiment started
+25-Jan-2018 01-05-30	None	None	presenting practice trial 0
