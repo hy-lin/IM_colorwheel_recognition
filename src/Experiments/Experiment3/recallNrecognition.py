@@ -126,7 +126,7 @@ class Experiment(object):
             ))
 
         probe = Trials.Stimulus(
-            numpy.random.randint(0, 360),
+            -1,
             locations[0],
             self.exp_parameters
         )
@@ -200,7 +200,7 @@ class Experiment(object):
         for tInd, practice_trial in enumerate(self.practice_trials):
             self.log('presenting practice trial {}'.format(tInd))
             self.log(practice_trial.getSaveString())
-            practice_trial.run(self.display, self.recorder)
+            practice_trial.run(self.display, self.recorder, self.log)
             self.log(practice_trial.getSaveString())
 
 
@@ -209,7 +209,7 @@ class Experiment(object):
         for tInd, experiment_trial in enumerate(self.experiment_trials):
             self.log('presenting experiment trials {}'.format(tInd))
             self.log(experiment_trial.getSaveString())
-            experiment_trial.run(self.display, self.recorder)
+            experiment_trial.run(self.display, self.recorder, self.log)
             self.log(experiment_trial.getSaveString())
             
 
@@ -237,8 +237,8 @@ class Experiment(object):
 
         self.logger_string += output_string
 
-        #self.logger.write('{}\n'.format(output_string))
-        # print(output_string)
+        self.logger.write('{}\n'.format(output_string))
+        print(output_string)
 
     def save(self, trial, tInd):
         output_string = trial.getSaveString()

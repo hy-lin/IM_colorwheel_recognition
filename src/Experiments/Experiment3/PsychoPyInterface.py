@@ -27,16 +27,54 @@ class CoreInterface(object):
         )
 
         self._cacheColorwheel()
+    def _getWheelCoord(self):
+        x1 = numpy.zeros(361)
+        x2 = numpy.zeros(361)
+        y1 = numpy.zeros(361)
+        y2 = numpy.zeros(361)
 
-    def _cacheColorwheel(self):
-        self.polys = []
+        for ang in range(361):
+            radian = 2 * numpy.pi * (ang+1) / 360
+            if (ang+1) > 360:
+                radian = 2 * numpy.pi / 360
+
+            x1[ang] = -self.exp_parameters.colorwheel_radius1 * numpy.cos(radian)
+            y1[ang] = self.exp_parameters.colorwheel_radius1 * numpy.sin(radian)
+            x2[ang] = -self.exp_parameters.colorwheel_radius2 * numpy.cos(radian)
+            y2[ang] = self.exp_parameters.colorwheel_radius2 * numpy.sin(radian)
+
+        coords = []
+        for ang in range(360):
+            coords.append([(x1[ang], y1[ang]),
+                           (x2[ang], y2[ang]),
+                           (x2[ang+1], y2[ang+1]),
+                           (x1[ang+1], y1[ang+1])])
+        
+        return coords
+		
+    def _cacheColorwheel(self, shift = 'random'):
+        polys = []
+        coords = self._getWheelCoord()
 
         for ang in range(360):
-            self.polys.append(visual.ShapeStim(self.window,
+            polys.append(visual.ShapeStim(self.window,
                                         #   vertices = coords[ang],
                                           fillColorSpace = 'rgb255',
                                           fillColor = (0, 0, 0),
                                           lineWidth = 0))
+										  
+        if shift == 'random':
+            shift = numpy.random.randint(0, 359)
+
+        angs = numpy.arange(0, 360) + shift
+        angs[angs>=360] = angs[angs>=360] - 360
+
+        for ang in range(360):
+            polys[ang].vertices = coords[ang]
+            polys[ang].fillColor = CIELAB.angle2RGB(ang + shift, self.exp_parameters.Lab_center, self.exp_parameters.Lab_radius)
+
+        self.colorwheel = visual.BufferImageStim(self.window, stim = polys)
+        self.shift = shift
 
     def close(self):
         self.window.close()
@@ -113,19 +151,6 @@ class CoreInterface(object):
         )
 
         poly.draw()
-
-    def catchColorwheel(self, coords, shift = 'random'):
-        if shift == 'random':
-            shift = numpy.random.randint(0, 359)
-
-        angs = numpy.arange(0, 360) + shift
-        angs[angs>=360] = angs[angs>=360] - 360
-
-        for ang in range(360):
-            self.polys[ang].vertices = coords[ang]
-            self.polys[ang].fillColor = CIELAB.angle2RGB(ang + shift, self.exp_parameters.Lab_center, self.exp_parameters.Lab_radius)
-
-        return visual.BufferImageStim(self.window, stim = self.polys), shift
 
     def getString(self, recorder, display_text, x = None, y = None, text_color = (0, 0, 0)):
         if x is None:

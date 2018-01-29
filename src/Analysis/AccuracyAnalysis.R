@@ -98,7 +98,9 @@ ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = ProbeType) +
   geom_point(position = pd, size = 1) +
   geom_line(position = pd, aes(x=Setsize, y = IM, linetype = ProbeType, group = ProbeType), color = 'red', size = 1) +
   xlab('Set Size') +
-  ylab('Propotion of Correct')
+  ylab('Propotion of Correct') +
+  theme(text = element_text(size=14)) +
+  theme(legend.text = element_text(size=14))
 
 pd <- position_dodge(.1)
 ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = ProbeType) + 
@@ -106,7 +108,8 @@ ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = ProbeType) +
   geom_errorbar(aes(ymin=PC-PC_SE, ymax=PC+PC_SE), width=.1, position = pd, size = 1) + 
   geom_point(position = pd, size = 1) +
   xlab('Set Size') +
-  ylab('Propotion of Correct')
+  ylab('Propotion of Correct') +
+  theme(legend.text = element_text(size = 20))
 
 pd <- position_dodge(.1)
 ggplot(data=tmp_data) + aes(x=Setsize, y = RT, linetype = ProbeType, group = ProbeType) + 
@@ -133,4 +136,5 @@ ggplot(data=tmp_data)+aes(breaks, frequency)+
   ylim(0, 1) +
   xlab('Similarity between target and probe') +
   ylab('Proportion of "no change" response') +
-  geom_line(aes(breaks, IM), color = 'red', size = 2)
+  geom_line(aes(breaks, IM), color = 'red', size = 2) +
+  theme(text = element_text(size=14))

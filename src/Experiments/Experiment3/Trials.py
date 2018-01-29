@@ -87,9 +87,11 @@ class Trial(object):
 
         self.trial_type = 'NA'
 
-    def run(self, display, recorder):
+    def run(self, display, recorder, logger):
         recorder.hideCursor()
+        logger('Trial display')
         self.learning(display)
+        logger('Trial testing')
         self.testing(display, recorder)
 
         display.refresh()
@@ -134,9 +136,6 @@ class RecallTrial(Trial):
         self.trial_type = 'recall'
 
     def testing(self, display, recorder):
-        colorwheel_coords = self._getWheelCoord()
-        colorwheel, shift = display.catchColorwheel(colorwheel_coords)
-
         recorder.showCursor()
         recorder.resetMouseClick()
         recorder.setMousePos((0, 0))
@@ -144,6 +143,7 @@ class RecallTrial(Trial):
         buttons = [0, 0, 0]
         
         display.refresh()
+        t0 = display.getTime()
 
         while buttons[0] == 0:
             mouse_pos = recorder.getMousePos()
@@ -152,9 +152,9 @@ class RecallTrial(Trial):
             if ang is None:
                 ang = -1
             else:
-                ang = (ang + shift) % 360
+                ang = (ang + display.shift) % 360
 
-            colorwheel.draw()
+            display.colorwheel.draw()
 
             for stimulus in self.stimuli:
                 stimulus.drawFrame(display)
@@ -166,37 +166,15 @@ class RecallTrial(Trial):
 
 
             buttons, t = recorder.getMousePressed(get_time = True)
+            display.wait(0.01)
 
-        self.t = t[0]
+        self.t = display.getTime() - t0
         self.response = ang
 
         recorder.hideCursor()
 
 
-    def _getWheelCoord(self):
-        x1 = numpy.zeros(361)
-        x2 = numpy.zeros(361)
-        y1 = numpy.zeros(361)
-        y2 = numpy.zeros(361)
-
-        for ang in range(361):
-            radian = 2 * numpy.pi * (ang+1) / 360
-            if (ang+1) > 360:
-                radian = 2 * numpy.pi / 360
-
-            x1[ang] = -self.exp_parameters.colorwheel_radius1 * numpy.cos(radian)
-            y1[ang] = self.exp_parameters.colorwheel_radius1 * numpy.sin(radian)
-            x2[ang] = -self.exp_parameters.colorwheel_radius2 * numpy.cos(radian)
-            y2[ang] = self.exp_parameters.colorwheel_radius2 * numpy.sin(radian)
-
-        coords = []
-        for ang in range(360):
-            coords.append([(x1[ang], y1[ang]),
-                           (x2[ang], y2[ang]),
-                           (x2[ang+1], y2[ang+1]),
-                           (x1[ang+1], y1[ang+1])])
-        
-        return coords
+    
 
 def pos2ang(mouse_pos, ref_pos = (0, 0)):
     x, y = mouse_pos
@@ -243,6 +221,7 @@ class RecognitionTrial(Trial):
             self.probe.draw(display)
             display.refresh()
             buttons = recorder.getMousePressed()
+            display.wait(0.01)
             
         self.t = display.getTime() - t0
 
