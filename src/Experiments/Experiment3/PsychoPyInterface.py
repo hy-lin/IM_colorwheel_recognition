@@ -27,6 +27,7 @@ class CoreInterface(object):
         )
 
         self._cacheColorwheel()
+        
     def _getWheelCoord(self):
         x1 = numpy.zeros(361)
         x2 = numpy.zeros(361)

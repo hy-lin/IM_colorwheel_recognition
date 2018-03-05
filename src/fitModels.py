@@ -15,6 +15,7 @@ import sys
 sys.path.insert(0, 'models\\')
 import IMBayes
 import ResourceModelsBayes
+import SummedActivation
 
 def loadExp1():
     data_file = open('Data\\colorwheelr1.dat')
@@ -89,10 +90,13 @@ class Wrapper(object):
         return ll + 2*self.model.n_parameters
     
 def fit(participant):
-    vpbayes = ResourceModelsBayes.VariablePrecisionBindingBayes()
-    vpbayes.discription = 'The VariablePrecisionBayes with binding'
+    # vpbayes = ResourceModelsBayes.VariablePrecisionBindingBayes()
+    # vpbayes.discription = 'The VariablePrecisionBayes with binding'
     
-    wrapper = Wrapper(participant, vpbayes)
+    boundary_model = SummedActivation.IMBoundary()
+    boundary_model.discription = 'The boundary model'
+
+    wrapper = Wrapper(participant, boundary_model)
     wrapper.fit()
     
     file_path = 'Data/fitting result/tmp/'
