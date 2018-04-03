@@ -32,11 +32,12 @@ class IM(object):
         self.r = r
         
         self.c = 1.0 # fixed
+        self.max_setsize = 6
         
         self.model_name_prefix = 'Interference Model'
         self.major_version = 1
         self.middle_version = 1
-        self.minor_version = 3
+        self.minor_version = 4
         self.model_name = self.updateModelName()
         self.n_parameters = 6
 
@@ -145,7 +146,7 @@ class IM(object):
         activation_C = self._getEmptyActivation()
         max_distance = self._getMaxDistance(trial)
         for stimulus in trial.stimuli:
-            weighting = self._getWeighting(trial.probe.location, stimulus.location, max_distance)
+            weighting = self._getWeighting(trial.probe.location, stimulus.location)
             activation_C += self._getActivation(stimulus.color, self.kappa) * weighting
             
         return numpy.squeeze(activation_C * self.c)

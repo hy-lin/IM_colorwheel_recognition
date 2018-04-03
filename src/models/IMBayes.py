@@ -20,11 +20,33 @@ class IMBayes(IM.IM):
             b=b, a=a, s=s, kappa=kappa, kappa_f=kappa_f, r=r)
         self.model_name_prefix = 'Interference Model with Bayes'
 
-        self.major_version = 1
-        self.middle_version = 2
-        self.minor_version = 3
+        self.major_version = 2
+        self.middle_version = 0
+        self.minor_version = 0
+
+        # version 2.0.0: adding the inference_knowledge option into the model
+
+        self.inference_knowledge = ['focus', 'trial_specific']
 
         self.model_name = self.updateModelName()
+    
+    def cachePS(self, trials):
+        if 'trial_specific' in self.inference_knowledge:
+            self.P_s = [[] for i in range(self.max_setsize)]
+
+            if 'focus' in self.inference_knowledge:
+                self.P_s_f = [[] for i in range(self.max_setsize)]
+
+            for trial in trials:
+                self.P_s[trial.set_size-1].append(self._getPS(trial, 0))
+
+                if 'focus' in self.inference_knowledge:
+                    self.P_s_f[trial.set_size-1].append(self._getPS(trial, self.r))
+
+            for i in range(self.max_setsize):
+                self.P_s[i] = numpy.mean(self.P_s[i])
+                if 'focus' in self.inference_knowledge:
+                    self.P_s_f[i] = numpy.mean(self.P_s_f[i])
 
     def getInitialParameters(self):
         return [.01, .0, 4.3, 10.0, 15.75, 0.25]
@@ -42,16 +64,32 @@ class IMBayes(IM.IM):
         return (p_recall_f, p_recall_no_f)
 
     def getPrediction(self, trial):
-        p_recall_f, p_recall_no_f = self.getPRecall(trial)
+        if 'focus' in self.inference_knowledge:
+            p_recall_f, p_recall_no_f = self.getPRecall(trial)
 
-        P_S1_f = self._getPS(trial, self.r)
-        P_S1_no_f = self._getPS(trial, 0)
-        d_f = self._getD(trial, self.kappa_f, P_S1_f)
-        d_no_f = self._getD(trial, self.kappa, P_S1_no_f)
+            if 'trial_specific' in self.inference_knowledge:
+                P_S1_f = self._getPS(trial, self.r)
+                P_S1_no_f = self._getPS(trial, 0)
+            else:
+                P_S1_f = self.P_s[trial.set_size-1]
+                P_S1_no_f = self.P_s_f[trial.set_size-1]
 
-        p_change = trial.getPFocus() * numpy.sum((d_f > 0) * p_recall_f) + \
-            (1.0 - trial.getPFocus()) * numpy.sum((d_no_f > 0) * p_recall_no_f)
-#         p_change = numpy.sum((d_no_f > 0) * p_recall_no_f)
+            d_f = self._getD(trial, self.kappa_f, P_S1_f)
+            d_no_f = self._getD(trial, self.kappa, P_S1_no_f)
+
+            p_change = trial.getPFocus() * numpy.sum((d_f > 0) * p_recall_f) + \
+                (1.0 - trial.getPFocus()) * numpy.sum((d_no_f > 0) * p_recall_no_f)
+        else:
+            p_recall_f, p_recall_no_f = self.getPRecall(trial)
+            p_recall = trial.getPFocus() * p_recall_f + (1.0-trial.getPFocus()) * p_recall_no_f
+
+            if 'trial_specific' in self.inference_knowledge:
+                P_S1 = self._getPS(trial, 0)
+            else:
+                P_S1 = self.P_s[trial.set_size-1]
+
+            d = self._getD(trial, self.kappa, P_S1)
+            p_change = numpy.sum((d > 0) * p_recall)
 
         if p_change >= 1.0:
             print('warning, p > 1.0')
@@ -61,7 +99,7 @@ class IMBayes(IM.IM):
             p_change = 0.000000001
         return p_change
 
-    def _getPS(self, trial, r):
+    def _getPS(self, trial, r=0):
         weighting = numpy.zeros(trial.set_size)
         for i, stimulus in enumerate(trial.stimuli):
             weighting[i] = self._getWeighting(
@@ -138,8 +176,6 @@ class IMEtaBayes(IM.IMEta):
         act = self._getActivation(trial.probe.color, kappa)
 
         return -numpy.log(2.0 * numpy.pi * (P_S * act + (1 - P_S) / (2.0 * numpy.pi)))
-
-
 
 class IMBayesKappaD(IMBayes):
     '''

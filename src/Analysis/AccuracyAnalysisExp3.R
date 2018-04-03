@@ -34,7 +34,7 @@ loadData <- function(exp){
   data$ID <- factor(data$ID)
   data$TrialIndex <- factor(data$TrialIndex)
   
-  data$Response <- factor(data$Response)
+  #data$Response <- factor(data$Response)
   return(data)
 }
 
@@ -66,8 +66,10 @@ wrapDistance <- function(color1, color2){
 }
 
 classifyProbeType <- function(data, exp){
+  bins <- seq(0, 180, 20)
   data$ProbeType <- 1
   data$dissimilarity <- 1
+  data$dissimilarity_bin <- 1
   for (i in 1:length(data$ProbeType)){
     if (exp == 1 | exp == 2){
       if (data$ColorProbe[i] == data$ColorTarget[i]){
@@ -94,6 +96,7 @@ classifyProbeType <- function(data, exp){
       }
       
       data$dissimilarity[i] <- wrapDistance(data$ColorProbe[i], data$ColorTarget[i])
+      data$dissimilarity_bin[i] <- which.max(data$dissimilarity[i] <= bins)
     }
     else{
       if (data$TrialType[i] == 'recognition'){
@@ -122,18 +125,25 @@ classifyProbeType <- function(data, exp){
         if (data$ProbeType[i] == 'Same'){
           if (data$Response[i] == 'True'){
             data$Correctness[i] <- 1
+            data$Response[i] = 1
           }else{
             data$Correctness[i] <- 0
+            data$Response[i] = 0
           }
         }else{
           if (data$Response[i] == 'True'){
             data$Correctness[i] <- 0
+            data$Response[i] = 1
           }else{
             data$Correctness[i] <- 1
+            data$Response[i] = 0
           }
         }
+        data$dissimilarity[i] <- wrapDistance(data$ColorProbe[i], data$ColorTarget[i])
+        data$dissimilarity_bin[i] <- which.max(data$dissimilarity[i] <= bins)
       }else{
         data$Correctness[i] <- wrapDistance(data$ColorTarget[i], data$ColorProbe[i])
+        data$dissimilarity_bin[i] <- which.max(data$Correctness[i] <= bins)
       }
     }
     
@@ -142,47 +152,26 @@ classifyProbeType <- function(data, exp){
   return(data)
 }
 
-#getCorrectness <- function(data){
-#  data$Correctness <- -1
-#  for (i in 1:length(data$TrialIndex)){
-#    if 
-#  }
-#  
-#}
 
 exp3.data <- loadData(3)
 exp3.data <- classifyProbeType(exp3.data, 3)
 
-exp2.data <- loadSimulationData(2)
-exp2.data <- classifyProbeType(exp2.data)
+data <- data.frame(aggregate(list(exp3.data$Correctness, exp3.data$RT), list(exp3.data$ID,exp3.data$TrialType, exp3.data$SessionCondition, exp3.data$ProbeType, exp3.data$Setsize), mean))
+names(data) <- c('ID','TrialType', 'SessionCondition', 'ProbeType', 'Setsize', 'PC', 'RT')
 
-data <- data.frame(aggregate(list(exp2.data$Correctness, exp2.data$RT, exp2.data$SimPC), list(exp2.data$ID, exp2.data$ProbeType, exp2.data$Setsize), mean))
-names(data) <- c('ID', 'ProbeType', 'Setsize', 'PC', 'RT', 'IM')
-
-tmp_data <- data.frame(aggregate(list(data$PC, data$RT, data$IM), list(data$ProbeType, data$Setsize), mean))
-tmp_data_sd <- data.frame(aggregate(list(data$PC, data$RT), list(data$ProbeType, data$Setsize), sd))
-tmp_data[, 6] <- tmp_data_sd[, 3] / sqrt(20)
-tmp_data[, 7] <- tmp_data_sd[, 4] / sqrt(20)
-names(tmp_data) <- c('ProbeType', 'Setsize', 'PC', 'RT', 'IM', 'PC_SE', 'RT_SE')
+tmp_data <- data.frame(aggregate(list(data[data$TrialType!='recall',]$PC, data[data$TrialType!='recall',]$RT), list(data[data$TrialType!='recall',]$ProbeType, data[data$TrialType!='recall',]$Setsize), mean))
+tmp_data_sd <- data.frame(aggregate(list(data[data$TrialType!='recall',]$PC, data[data$TrialType!='recall',]$RT), list(data[data$TrialType!='recall',]$ProbeType, data[data$TrialType!='recall',]$Setsize), sd))
+tmp_data[, 5] <- tmp_data_sd[, 3] / sqrt(20)
+tmp_data[, 6] <- tmp_data_sd[, 4] / sqrt(20)
+names(tmp_data) <- c('ProbeType', 'Setsize', 'PC', 'RT', 'PC_SE', 'RT_SE')
 pd <- position_dodge(.1)
 ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = ProbeType) + 
   geom_line(position = pd, size = 1) + 
   geom_errorbar(aes(ymin=PC-PC_SE, ymax=PC+PC_SE), width=.1, position = pd, size = 1) + 
   geom_point(position = pd, size = 1) +
-  geom_line(position = pd, aes(x=Setsize, y = IM, linetype = ProbeType, group = ProbeType), color = 'red', size = 1) +
+#  geom_line(position = pd, aes(x=Setsize, y = IM, linetype = ProbeType, group = ProbeType), color = 'red', size = 1) +
   xlab('Set Size') +
-  ylab('Propotion of Correct') +
-  theme(text = element_text(size=14)) +
-  theme(legend.text = element_text(size=14))
-
-pd <- position_dodge(.1)
-ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = ProbeType) + 
-  geom_line(position = pd, size = 1) + 
-  geom_errorbar(aes(ymin=PC-PC_SE, ymax=PC+PC_SE), width=.1, position = pd, size = 1) + 
-  geom_point(position = pd, size = 1) +
-  xlab('Set Size') +
-  ylab('Propotion of Correct') +
-  theme(legend.text = element_text(size = 20))
+  ylab('Propotion of Correct')
 
 pd <- position_dodge(.1)
 ggplot(data=tmp_data) + aes(x=Setsize, y = RT, linetype = ProbeType, group = ProbeType) + 
@@ -192,22 +181,43 @@ ggplot(data=tmp_data) + aes(x=Setsize, y = RT, linetype = ProbeType, group = Pro
   xlab('Set Size') +
   ylab('Reaction Time (s)')
 
-bins <- seq(0, 180, 20)
-h1 <- hist(x = exp2.data[exp2.data$Setsize==6 & exp2.data$Response==0,]$dissimilarity, breaks = bins, plot = 0)
-h2 <- hist(x = exp2.data[exp2.data$Setsize==6,]$dissimilarity, breaks = bins, plot = 0)
+tmp_data <- data.frame(aggregate(list(data[data$TrialType!='recall',]$PC, data[data$TrialType!='recall',]$RT), list(data[data$TrialType!='recall',]$ProbeType, data[data$TrialType!='recall',]$SessionCondition, data[data$TrialType!='recall',]$Setsize), mean))
+tmp_data_sd <- data.frame(aggregate(list(data[data$TrialType!='recall',]$PC, data[data$TrialType!='recall',]$RT), list(data[data$TrialType!='recall',]$ProbeType, data[data$TrialType!='recall',]$SessionCondition, data[data$TrialType!='recall',]$Setsize), sd))
+tmp_data[, 6] <- tmp_data_sd[, 4] / sqrt(20)
+tmp_data[, 7] <- tmp_data_sd[, 5] / sqrt(20)
+names(tmp_data) <- c('ProbeType', 'SessionCondition', 'Setsize', 'PC', 'RT', 'PC_SE', 'RT_SE')
+pd <- position_dodge(.25)
+ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = ProbeType, color = SessionCondition) + 
+  geom_line(position = pd, size = 1) + 
+  geom_errorbar(aes(ymin=PC-PC_SE, ymax=PC+PC_SE), width=.1, position = pd, size = 1) + 
+  geom_point(position = pd, size = 1) +
+  #  geom_line(position = pd, aes(x=Setsize, y = IM, linetype = ProbeType, group = ProbeType), color = 'red', size = 1) +
+  xlab('Set Size') +
+  ylab('Propotion of Correct') +
+  scale_color_manual(values = c(mix = 'black', recognition = 'gray')) +
+  theme_bw()
 
-IM_dist <- rep(0, 9)
-for (i in 1:9){
-  IM_dist[i] <- 1- mean(exp2.data[exp2.data$Setsize==6 & exp2.data$dissimilarity >= bins[i] & exp2.data$dissimilarity < bins[i+1],]$IM)
-}
+pd <- position_dodge(.1)
+ggplot(data=tmp_data) + aes(x=Setsize, y = RT, linetype = ProbeType, color = SessionCondition) + 
+  geom_line(position = pd, size = 1) + 
+  geom_errorbar(aes(ymin=RT-RT_SE, ymax=RT+RT_SE), width=.1, position = pd, size = 1) + 
+  geom_point(position = pd, size = 1) +
+  xlab('Set Size') +
+  ylab('Reaction Time (s)') 
 
-tmp_data <- data.frame(cbind(bins[-10], h1$counts/h2$counts, IM_dist))
-names(tmp_data) <- c('breaks', 'frequency', 'IM')
+tmp_data <- data.frame(
+  aggregate(list(as.numeric(exp3.data[exp3.data$TrialType!='recall',]$Response)-2),
+            list(exp3.data[exp3.data$TrialType!='recall',]$dissimilarity_bin, exp3.data[exp3.data$TrialType!='recall',]$Setsize, exp3.data[exp3.data$TrialType!='recall',]$SessionCondition),
+            mean, 
+            na.action = na.omit)
+)
+names(tmp_data) <- c('breaks', 'setsize', 'SessionCondition', 'frequency')
+tmp_data$setsize <- factor(tmp_data$setsize)
+tmp_data$breaks <- tmp_data$breaks / 10 * 180
 
-ggplot(data=tmp_data)+aes(breaks, frequency)+
-  geom_col() +
-  ylim(0, 1) +
-  xlab('Similarity between target and probe') +
-  ylab('Proportion of "no change" response') +
-  geom_line(aes(breaks, IM), color = 'red', size = 2) +
-  theme(text = element_text(size=14))
+pd <- position_dodge(.1)
+ggplot(data=tmp_data) + aes(x=breaks, y = frequency, linetype = setsize, color = SessionCondition) + 
+  geom_line(position = pd, size = 1) + 
+  geom_point(position = pd, size = 1) +
+  xlab('Target-probe similarity') +
+  ylab('Propotion of Same')

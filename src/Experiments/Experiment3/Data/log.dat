@@ -1228,3 +1228,79 @@
 25-Jan-2018 08-24-22	123	3	recognition	6	positive	235	10	350	3	180	12	121	11	177	1	99	6	235	10	0.500835636485	True
 25-Jan-2018 08-24-22	123	3	experiment finished, closing files.
 25-Jan-2018 08-24-23	123	3	exiting program. Goodbye.
+26-Mar-2018 05-50-36	123	2	experiment created
+
+26-Mar-2018 05-50-36	123	2	finished generating practice trials
+
+26-Mar-2018 05-50-36	123	2	finished generating experiment trials
+
+26-Mar-2018 05-50-36	123	2	experiment started
+
+26-Mar-2018 05-50-38	123	2	presenting practice trial 0
+
+26-Mar-2018 05-50-38	123	2	recognition	1	positive	326	1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	326	1	-1	-1
+
+26-Mar-2018 05-50-38	123	2	Trial display
+
+26-Mar-2018 05-50-39	123	2	Trial testing
+
+26-Mar-2018 05-50-42	123	2	recognition	1	positive	326	1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	326	1	1.90101003356	True
+
+26-Mar-2018 05-50-42	123	2	presenting practice trial 1
+
+26-Mar-2018 05-50-42	123	2	recognition	4	positive	246	3	171	9	342	12	260	6	-1	-1	-1	-1	246	3	-1	-1
+
+26-Mar-2018 05-50-42	123	2	Trial display
+
+26-Mar-2018 05-50-43	123	2	Trial testing
+
+26-Mar-2018 05-50-48	123	2	recognition	4	positive	246	3	171	9	342	12	260	6	-1	-1	-1	-1	246	3	4.77841555269	True
+
+26-Mar-2018 05-50-48	123	2	presenting practice trial 2
+
+26-Mar-2018 05-50-48	123	2	recognition	1	new	197	2	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	353	2	-1	-1
+
+26-Mar-2018 05-50-48	123	2	Trial display
+
+26-Mar-2018 05-50-50	123	2	Trial testing
+
+26-Mar-2018 05-50-55	123	2	recognition	1	new	197	2	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	353	2	4.15287040058	True
+
+26-Mar-2018 05-50-55	123	2	presenting practice trial 3
+
+26-Mar-2018 05-50-55	123	2	recognition	6	intrusion	312	0	24	1	128	3	27	11	26	9	304	12	24	0	-1	-1
+
+26-Mar-2018 05-50-55	123	2	Trial display
+
+26-Mar-2018 05-50-56	123	2	Trial testing
+
+26-Mar-2018 05-50-59	123	2	recognition	6	intrusion	312	0	24	1	128	3	27	11	26	9	304	12	24	0	2.29057760967	True
+
+26-Mar-2018 05-50-59	123	2	presenting practice trial 4
+
+26-Mar-2018 05-50-59	123	2	recognition	2	new	145	4	335	7	-1	-1	-1	-1	-1	-1	-1	-1	273	4	-1	-1
+
+26-Mar-2018 05-50-59	123	2	Trial display
+
+26-Mar-2018 05-51-01	123	2	Trial testing
+
+26-Mar-2018 05-51-03	123	2	recognition	2	new	145	4	335	7	-1	-1	-1	-1	-1	-1	-1	-1	273	4	1.68402743037	False
+
+26-Mar-2018 05-51-03	123	2	presenting practice trial 5
+
+26-Mar-2018 05-51-03	123	2	recognition	2	intrusion	241	9	206	10	-1	-1	-1	-1	-1	-1	-1	-1	206	9	-1	-1
+
+26-Mar-2018 05-51-03	123	2	Trial display
+
+26-Mar-2018 05-51-04	123	2	Trial testing
+
+26-Mar-2018 05-51-10	123	2	recognition	2	intrusion	241	9	206	10	-1	-1	-1	-1	-1	-1	-1	-1	206	9	5.33833089995	True
+
+26-Mar-2018 05-51-10	123	2	presenting practice trial 6
+
+26-Mar-2018 05-51-10	123	2	recognition	4	intrusion	87	3	239	10	49	8	121	1	-1	-1	-1	-1	239	3	-1	-1
+
+26-Mar-2018 05-51-10	123	2	Trial display
+
+26-Mar-2018 05-51-12	123	2	Trial testing
+

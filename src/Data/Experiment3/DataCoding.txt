@@ -1,0 +1,16 @@
+Columns:
+    1: pID (1-20)
+	2: session
+	3: session condition
+    4: Trial Index 
+	5: Trial condition
+    6: Set size (1-6)
+    7: Probe type: positive, new, intrusion (meaning less in recall condition)
+	8: target color
+	9: target location
+    10, 12, 14, 16, 18: Non-target colors
+    11, 13, 15, 17, 19:: Non-target locations
+    20: Probe color/Recalled color
+    21: Probe location
+    22: RT (seconds)
+    23: response (True: Same, False: Change, or recalled color)
