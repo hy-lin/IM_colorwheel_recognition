@@ -32,6 +32,22 @@ class Exp2DataFormat(object):
         self.RT = 20
         self.correctness = 19
 
+class Exp3DataFormat(object):
+    def __init__(self):
+        self.pID = 0
+        self.session = 1
+        self.session_condition = 2
+        self.trial_index = 3
+        self.trial_type = 4
+        self.set_size = 5
+        self.probe_type = 6
+        self.color = [7, 9, 11, 13, 15, 17]
+        self.locations = [8, 10, 12, 14, 16, 18]
+        self.probe = 19
+        self.probe_location = 20
+        self.RT = 21
+        self.response = 22
+
 class BasicParser(object):
     '''
     This is the basic Parser for colorwheel recognition data. 
@@ -56,6 +72,13 @@ class BasicParser(object):
             pID = int(val[self.data_format.pID])
             # session = int(val[self.data_format.session])
             trial_index = int(val[self.data_format.trial_index])
+
+            try:
+                if val[self.data_format.trial_type] == 'recall':
+                    continue
+            except:
+                # nothing happen
+                pass
             
             if pID not in participants.keys():
                 participants[pID] = Participant(pID)
@@ -80,8 +103,23 @@ class BasicParser(object):
             trial.addProbe(probe, probe_location, probe_type)
             
             RT = float(val[self.data_format.RT])
-            response = int(val[self.data_format.response])
-            correctness = int(val[self.data_format.correctness])
+            try:
+                response = int(val[self.data_format.response])
+                correctness = int(val[self.data_format.correctness])
+            except:
+                response = int(val[self.data_format.response] == 'True')
+
+                if probe_type == 'positive':
+                    if response == 1:
+                        correctness = 1
+                    else:
+                        correctness = 0
+                else:
+                    if response == 1:
+                        correctness = 0
+                    else:
+                        correctness = 1
+                   
             
             trial.addResponse(response, RT, correctness)
             
@@ -158,7 +196,7 @@ class BasicTrial(object):
         elif probe_type == '3':
             self.probe_type = 'intrusion'
         else:
-            self.probe_type = 'unknown'
+            self.probe_type = probe_type
         
     def addResponse(self, response, RT, correctness):
         self.response = response
@@ -275,13 +313,16 @@ def Exp1TrialFactory(pID):
 
 def Exp2TrialFactory(pID):
     return Exp2Trial(pID)
+
+def Exp3TrialFactory(pID):
+    return BasicTrial(pID)
     
 def main():
-    data_file = open('Data\\Experiment2\\recognition2.dat')
+    data_file = open('Data\\Experiment3\\recallNRecognition.dat')
     # data_format = BasicDataFormat()
-    data_format = Exp2DataFormat()
+    data_format = Exp3DataFormat()
     
-    parser = BasicParser(data_file, data_format, Exp2TrialFactory)
+    parser = BasicParser(data_file, data_format, Exp3TrialFactory)
     
     participants = parser.parse()
     for pID in participants.keys():

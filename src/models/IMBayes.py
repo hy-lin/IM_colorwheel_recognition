@@ -28,7 +28,11 @@ class IMBayes(IM.IM):
 
         self.inference_knowledge = ['focus', 'trial_specific']
 
-        self.model_name = self.updateModelName()
+        self.model_name = self._updateModelName()
+
+    def _updateModelName(self):
+        self.model_name =  self.model_name_prefix + ' {} {} v{}.{:02d}.{:02d}'.format(self.inference_knowledge[0], self.inference_knowledge[1], self.major_version, self.middle_version, self.minor_version)
+        return self.model_name
     
     def cachePS(self, trials):
         if 'trial_specific' in self.inference_knowledge:

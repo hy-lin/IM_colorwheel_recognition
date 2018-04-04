@@ -39,6 +39,19 @@ def loadExp2():
     
     return participants
 
+def loadExp3():
+    data_file = open('Data\\Experiment3\\recallNRecognition.dat')
+    # data_format = BasicDataFormat()
+    data_format = Parser.Exp3DataFormat()
+    
+    parser = Parser.BasicParser(data_file, data_format, Parser.Exp3TrialFactory)
+    
+    participants = parser.parse()
+    
+    data_file.close()
+    
+    return participants
+
 
 class Wrapper(object):
     def __init__(self, participant, model):
@@ -93,10 +106,13 @@ def fit(participant):
     # vpbayes = ResourceModelsBayes.VariablePrecisionBindingBayes()
     # vpbayes.discription = 'The VariablePrecisionBayes with binding'
     
-    boundary_model = SummedActivation.IMBoundary()
-    boundary_model.discription = 'The boundary model'
+    # boundary_model = SummedActivation.IMBoundary()
+    # boundary_model.discription = 'The boundary model'
 
-    wrapper = Wrapper(participant, boundary_model)
+    imbayes = IMBayes.IMBayes()
+    imbayes.discription = 'The vanila IMBayes model with variable knowledge in inference'
+
+    wrapper = Wrapper(participant, imbayes)
     wrapper.fit()
     
     file_path = 'Data/fitting result/tmp/'
@@ -178,6 +194,22 @@ def fitExp2():
     d['participants'] = participants
     d.close()
     
+def fitExp3():
+    participants = loadExp3()
+
+    with Pool(1) as p:
+        p.map(fit, [participants[pID] for pID in participants.keys()])
+    
+    try:
+        old_simulation_data = loadExp2SimulationData()
+    except:
+        old_simulation_data = participants
+    participants = merge(old_simulation_data, loadTmpData())
+    
+    d = shelve.open('Data/fitting result/Exp3/fitting_results.dat')
+    d['participants'] = participants
+    d.close()
+
 if __name__ == '__main__':
-    fitExp2()
+    fitExp3()
     pass
