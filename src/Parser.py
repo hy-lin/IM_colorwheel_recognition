@@ -73,17 +73,18 @@ class BasicParser(object):
             # session = int(val[self.data_format.session])
             trial_index = int(val[self.data_format.trial_index])
 
-            try:
-                if val[self.data_format.trial_type] == 'recall':
-                    continue
-            except:
-                # nothing happen
-                pass
+            
             
             if pID not in participants.keys():
                 participants[pID] = Participant(pID)
                 
-            trial = self.trial_factory(participants[pID])
+            try:
+                if val[self.data_format.trial_type] == 'recall':
+                    trial = RecallTrial(participants[pID])
+                else:
+                    trial = self.trial_factory(participants[pID])
+            except:
+                trial = self.trial_factory(participants[pID])
                
             for i in range(int(val[self.data_format.set_size])):
                 color = int(val[self.data_format.color[i]])
@@ -100,25 +101,38 @@ class BasicParser(object):
             probe = int(val[self.data_format.probe])
             probe_location = int(val[self.data_format.locations[0]])
                 
-            trial.addProbe(probe, probe_location, probe_type)
+            try:
+                if val[self.data_format.trial_type] == 'recall':
+                    trial.addProbe(probe, probe_location)
+                else:
+                    trial.addProbe(probe, probe_location, probe_type)
+            except:
+                # nothing happen
+                trial.addProbe(probe, probe_location, probe_type)
             
             RT = float(val[self.data_format.RT])
             try:
                 response = int(val[self.data_format.response])
                 correctness = int(val[self.data_format.correctness])
             except:
-                response = int(val[self.data_format.response] == 'False')
-
-                if probe_type == 'positive':
-                    if response == 1:
-                        correctness = 0
-                    else:
-                        correctness = 1
+                if val[self.data_format.trial_type] == 'recall':
+                    response = int(val[self.data_format.response])
+                    correctness = numpy.abs(response - target_color)
+                    if correctness > 180:
+                        correctness = 360 - correctness
                 else:
-                    if response == 1:
-                        correctness = 1
+                    response = int(val[self.data_format.response] == 'False')
+
+                    if probe_type == 'positive':
+                        if response == 1:
+                            correctness = 0
+                        else:
+                            correctness = 1
                     else:
-                        correctness = 2
+                        if response == 1:
+                            correctness = 1
+                        else:
+                            correctness = 2
                    
             
             trial.addResponse(response, RT, correctness)
@@ -158,6 +172,60 @@ class Stimulus(object):
             eq = False
             
         return eq
+
+class RecallTrial(object):
+    '''
+        The recall trial. Why do I have to do this?
+    '''
+
+    def __init__(self, participant = None):
+        self.participant = participant
+        self.stimuli = []
+        self.set_size = 0
+        self.simulation = {}
+
+    def __str__(self):
+        return 'set size: {}, target: {}, probe: {}, correctness {}'.format(self.set_size, self.target.color, self.probe.color, self.correctness)
+
+    def addStimulus(self, color, location):
+        self.stimuli.append(Stimulus(color, location))
+        self.set_size += 1
+        
+    def checkSetSize(self, set_size):
+        if self.set_size == set_size:
+            return True
+        else:
+            return False
+        
+    def addTarget(self, color, location, serial_position):
+        self.target = Stimulus(color, location)
+        self.serial_position = serial_position
+        
+    def addProbe(self, color, location):
+        self.probe = Stimulus(color, location)
+        
+    def addResponse(self, response, RT, correctness):
+        self.response = response
+        self.RT = RT
+        self.correctness = correctness
+        
+    def isMetConstraints(self, constaints):
+        passed = True
+        
+        for argument in constaints.keys():
+            if argument in self.__dict__.keys():
+                if self.__dict__[argument] not in constaints[argument]:
+                    passed = False
+            else:
+                passed = False
+                
+            if not passed:
+                break
+            
+        return passed
+    
+    def getPFocus(self):
+        return 1.0/self.set_size
 
 class BasicTrial(object):
     '''
@@ -241,17 +309,26 @@ class Participant(object):
         self.pID = pID
         
         self.trials = []
+        self.recall_trials = []
         self.fitting_result = {}
         
-    def addTrial(self, trial):
-        self.trials.append(trial)
+    def addTrial(self, trial, trial_type = 'recognition'):
+        if trial_type == 'recognition':
+            self.trials.append(trial)
+        else:
+            self.recall_trials.append(trial)
         
-    def getTrialsMetConstraints(self, constraints):
+    def getTrialsMetConstraints(self, constraints, trial_type = 'recognition'):
         final_pool = []
         
-        for trial in self.trials:
-            if trial.isMetConstraints(constraints):
-                final_pool.append(trial)
+        if trial_type == 'recogniton':
+            for trial in self.trials:
+                if trial.isMetConstraints(constraints):
+                    final_pool.append(trial)
+        else:
+            for trial in self.recall_trials:
+                if trial.isMetConstraints(constraints):
+                    final_pool.append(trial)
                 
         return final_pool
         
