@@ -226,6 +226,7 @@ def outputParameters(participants, model_name, n_parameter, displayed_model_name
             AIC += participants[pID].fitting_result[model_name].fun * 2 + 2*numpy.log(n_parameter)
             # print(participants[pID].fitting_result[model_name].x, participants[pID].fitting_result[model_name].fun)
             parms[i] = participants[pID].fitting_result[model_name].x
+            print(participants[pID].fitting_result[model_name].fun * 2, participants[pID].fitting_result[model_name].x)
         except:
             ll = 0
             for trial in participants[pID].trials:

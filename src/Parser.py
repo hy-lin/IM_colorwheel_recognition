@@ -107,18 +107,18 @@ class BasicParser(object):
                 response = int(val[self.data_format.response])
                 correctness = int(val[self.data_format.correctness])
             except:
-                response = int(val[self.data_format.response] == 'True')
+                response = int(val[self.data_format.response] == 'False')
 
                 if probe_type == 'positive':
                     if response == 1:
-                        correctness = 1
-                    else:
                         correctness = 0
+                    else:
+                        correctness = 1
                 else:
                     if response == 1:
-                        correctness = 0
-                    else:
                         correctness = 1
+                    else:
+                        correctness = 2
                    
             
             trial.addResponse(response, RT, correctness)

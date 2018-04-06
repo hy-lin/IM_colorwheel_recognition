@@ -216,8 +216,8 @@ def fitExp2():
     
 def fitExp3():
     inference_knowledges = [
-        # ['focus', 'trial_specific'],
-        # ['no_focus', 'trial_specific'],
+        ['focus', 'trial_specific'],
+        ['no_focus', 'trial_specific'],
         ['focus', 'experiment_specific'],
         ['no_focus', 'experiment_specific']
     ]
@@ -225,7 +225,7 @@ def fitExp3():
     for inference_knowledge in inference_knowledges:
         participants = loadExp3()
 
-        with Pool(20) as p:
+        with Pool(1) as p:
             p.starmap(fit, [(participants[pID], 'IMBayes', inference_knowledge) for pID in participants.keys()])
         
         try:
