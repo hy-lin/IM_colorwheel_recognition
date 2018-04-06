@@ -71,6 +71,14 @@ class Wrapper(object):
         
         self.t0 = time.time()
         self.model.updateParameters(x)
+        
+        try:
+            #print('hmm')
+            self.model.cachePS(self.participant.trials)
+        except:
+            print('cache fail')
+            pass
+        
         self._simulate()
         ll = self._calculateLL()
         
@@ -102,15 +110,17 @@ class Wrapper(object):
     
         return ll + 2*self.model.n_parameters
     
-def fit(participant):
+def fit(participant, model = 'IMBayes', inference_knowledge = ['focus', 'trial_specific']):
     # vpbayes = ResourceModelsBayes.VariablePrecisionBindingBayes()
     # vpbayes.discription = 'The VariablePrecisionBayes with binding'
     
     # boundary_model = SummedActivation.IMBoundary()
     # boundary_model.discription = 'The boundary model'
 
-    imbayes = IMBayes.IMBayes()
-    imbayes.discription = 'The vanila IMBayes model with variable knowledge in inference'
+    if model == 'IMBayes':
+        imbayes = IMBayes.IMBayes()
+        imbayes.inference_knowledge = inference_knowledge
+        imbayes.discription = 'The vanilla IM Bayes model with different level of knowledge in inference rule'
 
     wrapper = Wrapper(participant, imbayes)
     wrapper.fit()
@@ -123,7 +133,7 @@ def fit(participant):
     
 def loadTmpData():
     file_path = 'Data/fitting result/tmp/'
-    pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
     participants ={}
     
@@ -153,8 +163,18 @@ def loadExp2SimulationData():
 
     return participants
 
+def loadExp3SimulationData():
+    file_path = 'Data/fitting result/Exp3/'
+    file_name = '{}fitting_results.dat'.format(file_path)
+    fitting_results = shelve.open(file_name)
+    participants = fitting_results['participants']
+    fitting_results.close()
+
+    return participants
+
 def merge(simulationData, tmpData):
     for pID in simulationData.keys():
+        print('Merging: {}'.format(pID))
         for model in tmpData[pID].fitting_result.keys():
             simulationData[pID].fitting_result[model] = tmpData[pID].fitting_result[model]
             
@@ -195,20 +215,28 @@ def fitExp2():
     d.close()
     
 def fitExp3():
-    participants = loadExp3()
+    inference_knowledges = [
+        # ['focus', 'trial_specific'],
+        # ['no_focus', 'trial_specific'],
+        ['focus', 'experiment_specific'],
+        ['no_focus', 'experiment_specific']
+    ]
 
-    with Pool(1) as p:
-        p.map(fit, [participants[pID] for pID in participants.keys()])
-    
-    try:
-        old_simulation_data = loadExp2SimulationData()
-    except:
-        old_simulation_data = participants
-    participants = merge(old_simulation_data, loadTmpData())
-    
-    d = shelve.open('Data/fitting result/Exp3/fitting_results.dat')
-    d['participants'] = participants
-    d.close()
+    for inference_knowledge in inference_knowledges:
+        participants = loadExp3()
+
+        with Pool(20) as p:
+            p.starmap(fit, [(participants[pID], 'IMBayes', inference_knowledge) for pID in participants.keys()])
+        
+        try:
+            old_simulation_data = loadExp3SimulationData()
+        except:
+            old_simulation_data = participants
+        participants = merge(old_simulation_data, loadTmpData())
+        
+        d = shelve.open('Data/fitting result/Exp3/fitting_results.dat')
+        d['participants'] = participants
+        d.close()
 
 if __name__ == '__main__':
     fitExp3()

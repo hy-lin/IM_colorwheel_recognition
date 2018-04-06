@@ -186,6 +186,8 @@ def loadSimulationData(exp_number):
         file_path = 'Data/fitting result/Exp1/'
     elif exp_number == 2:
         file_path = 'Data/fitting result/Exp2/'
+    elif exp_number == 3:
+        file_path = 'Data/fitting result/Exp3/'
     file_name = '{}fitting_results.dat'.format(file_path)
     fitting_results = shelve.open(file_name)
     participants = fitting_results['participants']
@@ -203,6 +205,10 @@ def loadParticipants(exp_number):
         data_file = open('Data\\colorwheel2.dat')
         data_format = Parser.Exp2DataFormat()
         parser = Parser.BasicParser(data_file, data_format, Parser.Exp2TrialFactory)
+    elif exp_number == 3:
+        data_file = open('Data\\recallNrecognition.dat')
+        data_format = Parser.Exp3DataFormat()
+        parser = Parser.BasicParser(data_file, data_format, Parser.Exp3TrialFactory)
 
     participants = parser.parse()
 
@@ -315,7 +321,7 @@ def outputExp1ResultAsDataFile(participants, models):
     output_file.close()
 
 def main():
-    participants = loadSimulationData(2)
+    participants = loadSimulationData(3)
     # participants = loadParticipants(2)
     # plotProbeType(participants)
     # plotPC(participants)
@@ -323,25 +329,28 @@ def main():
     # plotSpatialGradient(participants)
 
     models = [
-              'Interference Model with Bayes v1.02.02',
-            #   'Interference Model with Bayes v1.01.01',
-            #   'Interference Model with Bayes and Swap v1.01.02',
-              'Slot Averaging Model with Bayes v1.02.02',
+              'Interference Model with Bayes focus trial_specific v2.00.00',
+            #   'Interference Model with Bayes no_focus trial_specific v2.00.00',
+            # #   'Interference Model with Bayes v1.01.01',
+            # #   'Interference Model with Bayes and Swap v1.01.02',
             #   'Slot Averaging Model with Bayes v1.02.02',
-            #   'Slot Averaging Model with Binding errors and Bayes v1.01.02',
-              'Slot Averaging Model with Binding errors and Bayes v1.01.05',
-              'Variable Precision Model with Bayes v1.01.02', 
-              'Variable Precision Swap Model with Bayes v1.01.01'
+            # #   'Slot Averaging Model with Bayes v1.02.02',
+            # #   'Slot Averaging Model with Binding errors and Bayes v1.01.02',
+            #   'Slot Averaging Model with Binding errors and Bayes v1.01.05',
+            #   'Variable Precision Model with Bayes v1.01.02', 
+            #   'Variable Precision Swap Model with Bayes v1.01.01'
               ]
               
     displayed_model_names = [
         'Interference Model',
-        'Slot Averaging Model',
-        # 'Slot Averaging Model v2',
-        # 'Slot Averaging Model with Binding (constant)',
-        'Slot Averaging Model with Binding (growing)',
-        'Variable Precision Model', 
-        'Variable Precision Model with Binding',
+        # 'Interference Model',
+
+        # 'Slot Averaging Model',
+        # # 'Slot Averaging Model v2',
+        # # 'Slot Averaging Model with Binding (constant)',
+        # 'Slot Averaging Model with Binding (growing)',
+        # 'Variable Precision Model', 
+        # 'Variable Precision Model with Binding',
     ]
 
     n_parameters = [
@@ -357,14 +366,14 @@ def main():
     # simulateWithDefault(participants, IMDual)
 
     for i, model_name in enumerate(models):
-        # plotProbeType(participants, model_name, displayed_model_names[i])
-        # plotPC(participants, model_name, displayed_model_names[i], True)
+        plotProbeType(participants, model_name, displayed_model_names[i])
+        plotPC(participants, model_name, displayed_model_names[i], True)
         # plotYesDistribution(participants, model_name, displayed_model_names[i], True)
         # plotSpatialGradient(participants, model_name, displayed_model_names[i], True)
         outputParameters(participants, model_name, n_parameters[i], displayed_model_names[i])
 
 
-    outputExp1ResultAsDataFile(participants, models)
+    # outputExp1ResultAsDataFile(participants, models)
 
     # outputMeasurementParameters(participants, 'Interference Measurement Model with Bayes v1.01.01')
 
