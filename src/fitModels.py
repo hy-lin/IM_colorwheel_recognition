@@ -63,7 +63,7 @@ class Wrapper(object):
     def fit(self):
         bnds = [(self.model.xmin[i], self.model.xmax[i]) for i in range(len(self.model.xmax))]
         result = scipy.optimize.differential_evolution(self._wrapper, bounds = bnds)
-#         result = scipy.optimize.fmin_tnc(self._wrapper, self.model.getInitialParameters(), bounds = bnds)
+        # result = scipy.optimize.fmin_tnc(self._wrapper, self.model.getInitialParameters(), bounds = bnds)
         result.model_description = self.model.description
         self.participant.fitting_result[self.model.model_name] = result
     
@@ -120,6 +120,7 @@ def fit(participant, model = 'IMBayes', inference_knowledge = ['focus', 'trial_s
     if model == 'IMBayes':
         imbayes = IMBayes.IMBayes()
         imbayes.inference_knowledge = inference_knowledge
+        imbayes.model_name = imbayes._updateModelName()
         imbayes.discription = 'The vanilla IM Bayes model with different level of knowledge in inference rule'
 
     wrapper = Wrapper(participant, imbayes)
@@ -225,7 +226,7 @@ def fitExp3():
     for inference_knowledge in inference_knowledges:
         participants = loadExp3()
 
-        with Pool(1) as p:
+        with Pool(20) as p:
             p.starmap(fit, [(participants[pID], 'IMBayes', inference_knowledge) for pID in participants.keys()])
         
         try:

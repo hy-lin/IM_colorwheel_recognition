@@ -72,8 +72,6 @@ class BasicParser(object):
             pID = int(val[self.data_format.pID])
             # session = int(val[self.data_format.session])
             trial_index = int(val[self.data_format.trial_index])
-
-            
             
             if pID not in participants.keys():
                 participants[pID] = Participant(pID)
@@ -81,8 +79,10 @@ class BasicParser(object):
             try:
                 if val[self.data_format.trial_type] == 'recall':
                     trial = RecallTrial(participants[pID])
+                    trial_type = 'recall'
                 else:
                     trial = self.trial_factory(participants[pID])
+                    trial_type = 'recognition'
             except:
                 trial = self.trial_factory(participants[pID])
                
@@ -132,7 +132,7 @@ class BasicParser(object):
                         if response == 1:
                             correctness = 1
                         else:
-                            correctness = 2
+                            correctness = 0
                    
             
             trial.addResponse(response, RT, correctness)
@@ -142,7 +142,7 @@ class BasicParser(object):
                 print(trial.set_size)
                 print(int(val[self.data_format.set_size]))
                 
-            participants[pID].addTrial(trial)
+            participants[pID].addTrial(trial, trial_type)
             
         return participants
         
@@ -321,7 +321,7 @@ class Participant(object):
     def getTrialsMetConstraints(self, constraints, trial_type = 'recognition'):
         final_pool = []
         
-        if trial_type == 'recogniton':
+        if trial_type == 'recognition':
             for trial in self.trials:
                 if trial.isMetConstraints(constraints):
                     final_pool.append(trial)
@@ -336,7 +336,7 @@ class Participant(object):
         return 'pID = {}; N = {}'.format(self.pID, len(self.trials))
 
     def getRT(self, constraints):
-        trials = self.getTrialsMetConstraints(constraints)
+        trials = self.getTrialsMetConstraints(constraints, trial_type='recognition')
                 
         RT = []
         for trial in trials:
@@ -345,7 +345,7 @@ class Participant(object):
         return numpy.mean(RT)
     
     def getPC(self, constraints, model_name = None):
-        trials = self.getTrialsMetConstraints(constraints)
+        trials = self.getTrialsMetConstraints(constraints, trial_type='recognition')
                 
         corrects = []
         for trial in trials:
@@ -404,15 +404,18 @@ def main():
     participants = parser.parse()
     for pID in participants.keys():
         print(participants[pID])
+
+        constraint = {}
+        print('recall', len(participants[pID].getTrialsMetConstraints(constraint, trial_type = 'recall')))
        
-        constraint = {'probe_type': ['positive']}
-        print(['positive', participants[pID].getPC(constraint), participants[pID].getRT(constraint)]) 
+        # constraint = {'probe_type': ['positive']}
+        # print(['positive', len(participants[pID].getTrialsMetConstraints(constraint)), participants[pID].getPC(constraint), participants[pID].getRT(constraint)]) 
         
-        constraint = {'probe_type': ['new']}
-        print(['new', participants[pID].getPC(constraint), participants[pID].getRT(constraint)])
+        # constraint = {'probe_type': ['new']}
+        # print(['new', len(participants[pID].getTrialsMetConstraints(constraint)), participants[pID].getPC(constraint), participants[pID].getRT(constraint)])
         
-        constraint = {'probe_type': ['intrusion']}
-        print(['intrusion', participants[pID].getPC(constraint), participants[pID].getRT(constraint)])
+        # constraint = {'probe_type': ['intrusion']}
+        # print(['intrusion', len(participants[pID].getTrialsMetConstraints(constraint)), participants[pID].getPC(constraint), participants[pID].getRT(constraint)])
     
     data_file.close()
     
