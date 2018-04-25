@@ -16,6 +16,7 @@ sys.path.insert(0, 'models\\')
 import IMBayes
 import ResourceModelsBayes
 import SummedActivation
+import IM
 
 def loadExp1():
     data_file = open('Data\\colorwheelr1.dat')
@@ -54,9 +55,10 @@ def loadExp3():
 
 
 class Wrapper(object):
-    def __init__(self, participant, model):
+    def __init__(self, participant, model, fit_mode = 'recognition'):
         self.participant = participant
         self.model = model
+        self.fit_mode = fit_mode
         
         self.t0 = time.time()
         
@@ -73,7 +75,6 @@ class Wrapper(object):
         self.model.updateParameters(x)
         
         try:
-            #print('hmm')
             self.model.cachePS(self.participant.trials)
         except:
             print('cache fail')
@@ -87,18 +88,34 @@ class Wrapper(object):
         return ll
     
     def _simulate(self):
-        for trial in self.participant.trials:
-            trial.simulation[self.model.model_name] = self.model.getPrediction(trial)
-    
+        if self.fit_mode == 'recognition':
+            for trial in self.participant.trials:
+                trial.simulation[self.model.model_name] = self.model.getPrediction(trial)
+        else:
+            for trial in self.participant.recall_trials:
+                trial.simulation[self.model.model_name] = self.model.getPrediction(trial)
+                # print(trial.simulation)
+        
     def _calculateLL(self):
         ll = 0
-        for trial in self.participant.trials:
-            ll_t = numpy.log((trial.response==1) * trial.simulation[self.model.model_name] + \
-                             (trial.response!=1) * (1-trial.simulation[self.model.model_name]))
-            if not numpy.isneginf(ll_t):
-                ll -= ll_t
-            else:
-                ll += 99999999
+
+        if self.fit_mode == 'recognition':
+            for trial in self.participant.trials:
+                ll_t = numpy.log((trial.response==1) * trial.simulation[self.model.model_name] + \
+                                (trial.response!=1) * (1-trial.simulation[self.model.model_name]))
+                if not numpy.isneginf(ll_t):
+                    ll -= ll_t
+                else:
+                    ll += 99999999
+        else:
+            for trial in self.participant.recall_trials:
+                ll_t = numpy.log(
+                    trial.simulation[self.model.model_name][trial.response]
+                )
+                if not numpy.isneginf(ll_t):
+                    ll -= ll_t
+                else:
+                    ll += 99999999
     
         if numpy.isnan(ll):
             ll = 999999999999.0
@@ -110,7 +127,7 @@ class Wrapper(object):
     
         return ll + 2*self.model.n_parameters
     
-def fit(participant, model = 'IMBayes', inference_knowledge = ['focus', 'trial_specific']):
+def fit(participant, model = 'IMBayes', fit_mode = 'recognition', inference_knowledge = ['focus', 'trial_specific']):
     # vpbayes = ResourceModelsBayes.VariablePrecisionBindingBayes()
     # vpbayes.discription = 'The VariablePrecisionBayes with binding'
     
@@ -118,12 +135,19 @@ def fit(participant, model = 'IMBayes', inference_knowledge = ['focus', 'trial_s
     # boundary_model.discription = 'The boundary model'
 
     if model == 'IMBayes':
-        imbayes = IMBayes.IMBayes()
-        imbayes.inference_knowledge = inference_knowledge
-        imbayes.model_name = imbayes._updateModelName()
-        imbayes.discription = 'The vanilla IM Bayes model with different level of knowledge in inference rule'
+        tbf_model = IMBayes.IMBayes()
+        tbf_model.inference_knowledge = inference_knowledge
+        tbf_model.model_name = tbf_model.updateModelName()
+        tbf_model.discription = 'The vanilla IM Bayes model with different level of knowledge in inference rule'
 
-    wrapper = Wrapper(participant, imbayes)
+    if model == 'IM':
+        if fit_mode == 'recognitoin':
+            raise ValueError('IM can not fit to recognition data directly.')
+
+        tbf_model = IM.IM()
+        tbf_model.model_name = tbf_model.updateModelName()
+
+    wrapper = Wrapper(participant, tbf_model, fit_mode)
     wrapper.fit()
     
     file_path = 'Data/fitting result/tmp/'
@@ -181,9 +205,15 @@ def merge(simulationData, tmpData):
             
             for i, trial in enumerate(simulationData[pID].trials):
                 trial.simulation[model] = tmpData[pID].trials[i].simulation[model]
-                
-    return simulationData
 
+            if 'recall_trials' in tmpData[pID].__dict__.keys():
+                if 'recall_trials' in simulationData[pID].__dict__.keys():
+                    for i, recall_trial in enumerate(simulationData[pID].trials):
+                        recall_trial.simulation[model] = tmpData[pID].recall_trials[i].simulation[model]
+                else:
+                    simulationData[pID].recall_trials = tmpData[pID].recall_trials
+
+    return simulationData
 
 def fitExp1():
     participants = loadExp1()
@@ -227,7 +257,7 @@ def fitExp3():
         participants = loadExp3()
 
         with Pool(20) as p:
-            p.starmap(fit, [(participants[pID], 'IMBayes', inference_knowledge) for pID in participants.keys()])
+            p.starmap(fit, [(participants[pID], 'IMBayes', 'recognitoin', inference_knowledge) for pID in participants.keys()])
         
         try:
             old_simulation_data = loadExp3SimulationData()
@@ -239,6 +269,22 @@ def fitExp3():
         d['participants'] = participants
         d.close()
 
+def fitExp3Recall():
+    participants = loadExp3()
+
+    with Pool(20) as p:
+        p.starmap(fit, [(participants[pID], 'IM', 'recall') for pID in participants.keys()])
+
+    try:
+        old_simulation_data = loadExp3SimulationData()
+    except:
+        old_simulation_data = participants
+    participants = merge(old_simulation_data, loadTmpData())
+    
+    d = shelve.open('Data/fitting result/Exp3/fitting_results.dat')
+    d['participants'] = participants
+    d.close()
+
 if __name__ == '__main__':
-    fitExp3()
+    fitExp3Recall()
     pass

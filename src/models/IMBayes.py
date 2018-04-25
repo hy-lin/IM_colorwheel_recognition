@@ -28,9 +28,9 @@ class IMBayes(IM.IM):
 
         self.inference_knowledge = ['focus', 'trial_specific']
 
-        self.model_name = self._updateModelName()
+        self.model_name = self.updateModelName()
 
-    def _updateModelName(self):
+    def updateModelName(self):
         self.model_name =  self.model_name_prefix + ' {} {} v{}.{:02d}.{:02d}'.format(self.inference_knowledge[0], self.inference_knowledge[1], self.major_version, self.middle_version, self.minor_version)
         return self.model_name
     

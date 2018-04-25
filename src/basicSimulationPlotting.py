@@ -69,7 +69,10 @@ def plotSpatialGradient(participants, model_name = None, displayed_model_name = 
     if model_name is None:
         distribution_plot.setTitle('Data', True)
     else:
-        distribution_plot.setTitle(displayed_model_name, True)
+        if displayed_model_name is None:
+            distribution_plot.setTitle(model_name, True)
+        else:
+            distribution_plot.setTitle(displayed_model_name, True)
 
     if save_fig:
         matplotlib.pyplot.savefig('Data\\fitting result\\Exp2\\figs\\Spatial_gradient_{}.png'.format(displayed_model_name))
@@ -146,10 +149,13 @@ def plotPC(participants, model_name=None, displayed_model_name = None, save_fig 
     if model_name is None:
         PC_plot.setTitle('Data', True)
     else:
-        PC_plot.setTitle(displayed_model_name, True)
+        if displayed_model_name is None:
+            PC_plot.setTitle(model_name, True)
+        else:
+            PC_plot.setTitle(displayed_model_name, True)
 
     if save_fig:
-        matplotlib.pyplot.savefig('Data\\fitting result\\Exp2\\figs\\Probe_Type_{}.png'.format(displayed_model_name))
+        matplotlib.pyplot.savefig('Data\\fitting result\\Exp3\\figs\\Probe_Type_{}.png'.format(model_name))
 
 
 def plotProbeType(participants, model_name=None, displayed_model_name = None):
@@ -179,7 +185,10 @@ def plotProbeType(participants, model_name=None, displayed_model_name = None):
     if model_name is None:
         PC_plot.setTitle('Data', True)
     else:
-        PC_plot.setTitle(displayed_model_name, True)
+        if displayed_model_name is None:
+            PC_plot.setTitle(model_name, True)
+        else:
+            PC_plot.setTitle(displayed_model_name, True)
         
 def loadSimulationData(exp_number):
     if exp_number == 1:
@@ -341,6 +350,8 @@ def main():
             #   'Variable Precision Model with Bayes v1.01.02', 
             #   'Variable Precision Swap Model with Bayes v1.01.01'
               ]
+
+    models = participants[1].trials[1].simulation.keys()
               
     displayed_model_names = [
         'Interference Model',
@@ -363,15 +374,17 @@ def main():
         4,
     ]
 
+    n_parameters = [6, 6, 6, 6]
+
     # IMDual = IMBayes.IMBayesDual()
     # simulateWithDefault(participants, IMDual)
 
     for i, model_name in enumerate(models):
-        plotProbeType(participants, model_name, displayed_model_names[i])
-        plotPC(participants, model_name, displayed_model_names[i], True)
+        plotProbeType(participants, model_name)
+        plotPC(participants, model_name, save_fig=True)
         # plotYesDistribution(participants, model_name, displayed_model_names[i], True)
         # plotSpatialGradient(participants, model_name, displayed_model_names[i], True)
-        outputParameters(participants, model_name, n_parameters[i], displayed_model_names[i])
+        outputParameters(participants, model_name, n_parameters[i])
 
 
     # outputExp1ResultAsDataFile(participants, models)
