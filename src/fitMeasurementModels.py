@@ -14,6 +14,8 @@ import time
 import sys
 sys.path.insert(0, 'models\\')
 import IMMBayes
+import MixtureModels
+import MixtureModelsBayes
 
 def loadExp1():
     data_file = open('Data\\colorwheelr1.dat')
@@ -26,11 +28,35 @@ def loadExp1():
     
     return participants
 
+def loadExp2():
+    data_file = open('Data\\Experiment2\\recognition2.dat')
+    data_format = Parser.Exp2DataFormat()
+    parser = Parser.BasicParser(data_file, data_format, Parser.Exp2TrialFactory)
+
+    participants = parser.parse()
+    
+    data_file.close()
+    
+    return participants
+
+def loadExp3():
+    data_file = open('Data\\Experiment3\\recallNRecognition.dat')
+    # data_format = BasicDataFormat()
+    data_format = Parser.Exp3DataFormat()
+    
+    parser = Parser.BasicParser(data_file, data_format, Parser.Exp3TrialFactory)
+    
+    participants = parser.parse()
+    
+    data_file.close()
+    
+    return participants
 
 class Wrapper(object):
-    def __init__(self, participant, model):
+    def __init__(self, participant, model, fit_mode = 'recognition'):
         self.participant = participant
         self.model = model
+        self.fit_mode = fit_mode
         
         self.t0 = time.time()
         
@@ -39,8 +65,11 @@ class Wrapper(object):
         
         xs = []
         fun = 0
-        for set_size in [1, 2, 3, 4, 5, 6]:
-            self.active_trials = self.participant.getTrialsMetConstraints({'set_size': [set_size]})
+        for set_size in [1, 2, 4, 6]:
+            if self.fit_mode == 'recognition':
+                self.active_trials = self.participant.getTrialsMetConstraints({'set_size': [set_size]})
+            else:
+                self.active_trials = self.participant.getTrialsMetConstraints({'set_size': [set_size]}, 'recall')
             result = scipy.optimize.differential_evolution(self._wrapper, bounds = bnds)
             fun += result.fun
             xs.append(result.x)
@@ -67,11 +96,24 @@ class Wrapper(object):
     
     def _calculateLL(self):
         ll = 0
-        for trial in self.active_trials:
-            ll_t = numpy.log((trial.response==1) * trial.simulation[self.model.model_name] + \
-                             (trial.response==2) * (1-trial.simulation[self.model.model_name]))
-            ll -= ll_t
-    
+        if self.fit_mode == 'recognition':
+            for trial in self.active_trials:
+                ll_t = numpy.log((trial.response==1) * trial.simulation[self.model.model_name] + \
+                                (trial.response!=1) * (1-trial.simulation[self.model.model_name]))
+                if not numpy.isneginf(ll_t):
+                    ll -= ll_t
+                else:
+                    ll += 99999999
+        else:
+            for trial in self.active_trials:
+                ll_t = numpy.log(
+                    trial.simulation[self.model.model_name][trial.response]
+                )
+                if not numpy.isneginf(ll_t):
+                    ll -= ll_t
+                else:
+                    ll += 99999999
+
         if numpy.isnan(ll):
             ll = 999999999999.0
             
@@ -82,15 +124,26 @@ class Wrapper(object):
     
         return ll + 2*self.model.n_parameters
     
-def fit(participant):
-    immbayes = IMMBayes.IMMABBayes()
-    immbayes.major_version = 1
-    immbayes.middle_version = 1
-    immbayes.minor_version = 1
-    immbayes.updateModelName()
-    immbayes.description = 'Vanilla immbayes AB'
+def fit(participant, fit_mode = 'recognition'):
+    model = 'MM'
+    if model == 'IMM':
+        immbayes = IMMBayes.IMMABBayes()
+        immbayes.major_version = 1
+        immbayes.middle_version = 1
+        immbayes.minor_version = 1
+        immbayes.updateModelName()
+        immbayes.description = 'Vanilla immbayes AB'
 
-    wrapper = Wrapper(participant, immbayes)
+        wrapper = Wrapper(participant, immbayes, fit_mode)
+
+    if model == 'MMBayes':
+        mixture_model = MixtureModelsBayes.MixtureModelsBayes()
+        wrapper = Wrapper(participant, mixture_model, fit_mode)
+
+    if model == 'MM':
+        mixture_model = MixtureModels.MixtureModel()
+        wrapper = Wrapper(participant, mixture_model, 'recall')
+
     wrapper.fit()
     
     file_path = 'Data/fitting result/tmp/'
@@ -121,15 +174,39 @@ def loadSimulationData():
     fitting_results.close()
 
     return participants
+
+def loadExp3SimulationData():
+    file_path = 'Data/fitting result/Exp3/'
+    file_name = '{}fitting_results.dat'.format(file_path)
+    fitting_results = shelve.open(file_name)
+    participants = fitting_results['participants']
+    fitting_results.close()
+
+    return participants
+
     
 def merge(simulationData, tmpData):
     for pID in simulationData.keys():
+        print('Merging: {}'.format(pID))
         for model in tmpData[pID].fitting_result.keys():
             simulationData[pID].fitting_result[model] = tmpData[pID].fitting_result[model]
             
-            for i, trial in enumerate(simulationData[pID].trials):
-                trial.simulation[model] = tmpData[pID].trials[i].simulation[model]
-                
+            if 'trials' in tmpData[pID].__dict__.keys():
+                try:
+                    for i, trial in enumerate(simulationData[pID].trials):
+                        trial.simulation[model] = tmpData[pID].trials[i].simulation[model]
+                except:
+                    pass
+            try:
+                if 'recall_trials' in tmpData[pID].__dict__.keys():
+                    if 'recall_trials' in simulationData[pID].__dict__.keys():
+                        for i, recall_trial in enumerate(simulationData[pID].recall_trials):
+                            recall_trial.simulation[model] = tmpData[pID].recall_trials[i].simulation[model]
+                    else:
+                        simulationData[pID].recall_trials = tmpData[pID].recall_trials
+            except:
+                pass
+
     return simulationData
 
 
@@ -144,7 +221,27 @@ def fitExp1():
     d = shelve.open('Data/fitting result/Exp1/fitting_results.dat')
     d['participants'] = participants
     d.close()
+
+def fitExp3():
+    participants = loadExp3()
+
+    # fit(participants[1], 'recall')
+
+    with Pool(20) as p:
+        p.starmap(fit, [(participants[pID], 'recall') for pID in participants.keys()])
+    # with Pool(1) as p:
+    #     p.map(fit, [participants[pID] for pID in participants.keys()])
+    
+    try:
+        old_simulation_data = loadExp3SimulationData()
+    except:
+        old_simulation_data = participants
+    participants = merge(old_simulation_data, loadTmpData())
+    
+    d = shelve.open('Data/fitting result/Exp3/fitting_results.dat')
+    d['participants'] = participants
+    d.close()
     
 if __name__ == '__main__':
-    fitExp1()
+    fitExp3()
     pass

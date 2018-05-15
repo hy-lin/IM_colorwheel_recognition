@@ -28,7 +28,7 @@ class IMM(object):
         
         self.c = 1.0 # fixed
         
-        self.model_name_prefix = 'Interference Model Model'
+        self.model_name_prefix = 'Interference Model'
         self.major_version = 1
         self.middle_version = 1
         self.minor_version = 1
