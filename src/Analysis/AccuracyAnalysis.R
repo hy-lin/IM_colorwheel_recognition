@@ -153,8 +153,6 @@ classifyProbeType <- function(data, exp){
 exp3.data <- loadData(3)
 exp3.data <- classifyProbeType(exp3.data, 3)
 
-exp2.data <- loadSimulationData(2)
-exp2.data <- classifyProbeType(exp2.data)
 
 data <- data.frame(aggregate(list(exp2.data$Correctness, exp2.data$RT, exp2.data$SimPC), list(exp2.data$ID, exp2.data$ProbeType, exp2.data$Setsize), mean))
 names(data) <- c('ID', 'ProbeType', 'Setsize', 'PC', 'RT', 'IM')

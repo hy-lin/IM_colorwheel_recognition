@@ -85,6 +85,7 @@ class BasicParser(object):
                     trial_type = 'recognition'
             except:
                 trial = self.trial_factory(participants[pID])
+                trial_type = 'recognition'
                
             for i in range(int(val[self.data_format.set_size])):
                 color = int(val[self.data_format.color[i]])

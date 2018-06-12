@@ -235,7 +235,7 @@ def outputParameters(participants, model_name, n_parameter, displayed_model_name
             AIC += participants[pID].fitting_result[model_name].fun * 2 + 2*numpy.log(n_parameter)
             # print(participants[pID].fitting_result[model_name].x, participants[pID].fitting_result[model_name].fun)
             parms[i] = participants[pID].fitting_result[model_name].x
-            print(participants[pID].fitting_result[model_name].fun * 2, participants[pID].fitting_result[model_name].x)
+            # print(participants[pID].fitting_result[model_name].fun * 2, participants[pID].fitting_result[model_name].x)
         except:
             ll = 0
             for trial in participants[pID].trials:
@@ -267,6 +267,52 @@ def outputParameters(participants, model_name, n_parameter, displayed_model_name
         output_string += '{:.3f}\t'.format(parameter)
     print(output_string)
 
+def outputMeasurementModelParameters(participants, model_name, n_parameter=3, displayed_model_name = None):
+    AIC = 0
+    # print(model_name, participants[1].fitting_result[model_name].x)
+    parms = numpy.zeros((len(participants), len(participants[1].fitting_result[model_name].x), len(participants[1].fitting_result[model_name].x[0])))
+    for i, pID in enumerate(participants.keys()):
+
+        #         print(participants[pID].fitting_result[model_name].fun, participants[pID].fitting_result[model_name].x)
+        try:
+            AIC += participants[pID].fitting_result[model_name].fun * 2 + 2*numpy.log(n_parameter)
+            for l in range(len(participants[pID].fitting_result[model_name].x)):
+                parms[i, l] = participants[pID].fitting_result[model_name].x[l]
+            # print(participants[pID].fitting_result[model_name].fun * 2, participants[pID].fitting_result[model_name].x)
+        except:
+            ll = 0
+            for trial in participants[pID].trials:
+                ll_t = numpy.log((trial.response==1) * trial.simulation[model_name] + \
+                                (trial.response==2) * (1-trial.simulation[model_name]))
+                # print(ll_t)
+                if not numpy.isneginf(ll_t):
+                    ll -= ll_t
+            # else:
+                # ll -= 99999999
+            AIC += ll
+
+
+    if displayed_model_name is not None:
+        print('Model Name: {}, AIC: {}'.format(displayed_model_name, AIC))
+    else:
+        print('Model Name: {}, AIC: {}'.format(model_name, AIC))
+    
+    parameters_median = numpy.median(parms, axis = 0)
+    parameters_mean = numpy.mean(parms, axis = 0)
+
+    output_string = 'Parameters median: '
+    for parameter in parameters_median:
+        for single_parm in parameter:
+            output_string += '{:.3f}, '.format(single_parm)
+        output_string += '\n'
+    print(output_string)
+
+    output_string = 'Parameters mean: '
+    for parameter in parameters_mean:
+        for single_parm in parameter:
+            output_string += '{:.3f}, '.format(single_parm)
+        output_string += '\n'
+    print(output_string)
 
 def simulateWithDefault(participants, model):
     for pID in participants.keys():
@@ -274,7 +320,7 @@ def simulateWithDefault(participants, model):
             trial.simulation[model.model_name] = model.getPrediction(trial)
 
 def outputMeasurementParameters(participants, model_name):
-    parameter_names = ['A', 'B', 's', 'kappa']
+    parameter_names = ['A', 'B', 's']
     parameters = {}
     for parameter_name in parameter_names:
         parameters[parameter_name] = [[] for sz in range(6)]
@@ -330,6 +376,69 @@ def outputExp1ResultAsDataFile(participants, models):
 
     output_file.close()
 
+def outputExp3ResultAsDataFile(participants, recognition_models = [], recall_models = []):
+    output_file = open('Data\\fitting result\\exp3.dat', 'w')
+
+    for pID in participants.keys():
+        participant = participants[pID]
+        for tInd, trial in enumerate(participant.trials):
+            output_string = ''
+            output_string += '{}\t'.format(pID)
+            output_string += '{}\t'.format(-1) # session
+            output_string += '{}\t'.format('mix') # session condition
+            output_string += '{}\t'.format(tInd) # trial index
+            output_string += '{}\t'.format('recognition')
+            output_string += '{}\t{}\t'.format(trial.set_size, trial.probe_type)
+            for i in range(trial.set_size):
+                output_string += '{}\t{}\t'.format(trial.stimuli[i].color, trial.stimuli[i].location)
+
+            for i in range(6-trial.set_size):
+                output_string += '-1\t-1\t'
+            
+            output_string += '{}\t{}\t'.format(trial.probe.color, trial.probe.location)
+
+            output_string += '{}\t{}\t{}'.format(trial.RT, trial.response, trial.correctness)
+
+            for model in recognition_models:
+                output_string += '\t{}'.format(trial.simulation[model])
+
+            for model in recall_models:
+                output_string += '\t{}'.format(-1)
+
+            output_string += '\n'
+
+            output_file.write(output_string)
+
+        for tInd, trial in enumerate(participant.recall_trials):
+            output_string = ''
+            output_string += '{}\t'.format(pID)
+            output_string += '{}\t'.format(-1) # session
+            output_string += '{}\t'.format('mix') # session condition
+            output_string += '{}\t'.format(tInd) # trial index
+            output_string += '{}\t'.format('recall')
+            output_string += '{}\t{}\t'.format(trial.set_size, 'recall')
+            for i in range(trial.set_size):
+                output_string += '{}\t{}\t'.format(trial.stimuli[i].color, trial.stimuli[i].location)
+
+            for i in range(6-trial.set_size):
+                output_string += '-1\t-1\t'
+            
+            output_string += '{}\t{}\t'.format(trial.probe.color, trial.probe.location)
+
+            output_string += '{}\t{}\t{}'.format(trial.RT, trial.response, trial.correctness)
+
+            for model in recognition_models:
+                output_string += '\t{}'.format(-1)
+
+            for model in recall_models:
+                output_string += '\t{}'.format(trial.simulation[model][trial.response])
+
+            output_string += '\n'
+
+            output_file.write(output_string)
+
+    output_file.close()
+
 def main():
     participants = loadSimulationData(3)
     # participants = loadParticipants(2)
@@ -339,7 +448,9 @@ def main():
     # plotSpatialGradient(participants)
 
     models = [
-              'Interference Model with Bayes focus trial_specific v2.00.00',
+            #   'Interference Model with Bayes focus trial_specific v2.00.00',
+            #   'Mixture model  with Bayes v1.01.01',
+            #   'Mixture Model v1.01.01',
             #   'Interference Model with Bayes no_focus trial_specific v2.00.00',
             # #   'Interference Model with Bayes v1.01.01',
             # #   'Interference Model with Bayes and Swap v1.01.02',
@@ -354,37 +465,56 @@ def main():
     models = participants[1].trials[1].simulation.keys()
               
     displayed_model_names = [
-        'Interference Model',
         # 'Interference Model',
+        'Mixture model + Bayes',
+        'Mixture Model'
 
-        # 'Slot Averaging Model',
-        # # 'Slot Averaging Model v2',
-        # # 'Slot Averaging Model with Binding (constant)',
-        # 'Slot Averaging Model with Binding (growing)',
-        # 'Variable Precision Model', 
-        # 'Variable Precision Model with Binding',
+        'Interference Model',
+
+        'Slot Averaging Model',
+        # 'Slot Averaging Model v2',
+        # 'Slot Averaging Model with Binding (constant)',
+        'Slot Averaging Model with Binding (growing)',
+        'Variable Precision Model', 
+        'Variable Precision Model with Binding',
     ]
 
     n_parameters = [
         6,
         2,
-        # 3, 
+        3, 
         3, 
         3,
         4,
+        8, 
+        8,
     ]
 
-    n_parameters = [6, 6, 6, 6]
+    # n_parameters = [6, 6, 6, 6]
 
     # IMDual = IMBayes.IMBayesDual()
     # simulateWithDefault(participants, IMDual)
+    outputMeasurementModelParameters(participants, 'Mixture model  with Bayes v1.01.01')
+    outputMeasurementModelParameters(participants, 'Mixture Model Boundary v1.01.01')
+    outputMeasurementModelParameters(participants, 'Murry Complementary Gaussian Error Function Model v1.01.01')
+    outputMeasurementModelParameters(participants, 'Mixture Model v1.01.01')
 
-    for i, model_name in enumerate(models):
-        plotProbeType(participants, model_name)
-        plotPC(participants, model_name, save_fig=True)
+
+    outputExp3ResultAsDataFile(participants, [
+        'Mixture model  with Bayes v1.01.01',
+        'Mixture Model Boundary v1.01.01',
+        'Murry Complementary Gaussian Error Function Model v1.01.01'
+    ], [
+        'Mixture Model v1.01.01'
+    ])
+
+    # for i, model_name in enumerate(models):
+        # plotProbeType(participants, model_name)
+        # plotPC(participants, model_name, save_fig=True)
         # plotYesDistribution(participants, model_name, displayed_model_names[i], True)
         # plotSpatialGradient(participants, model_name, displayed_model_names[i], True)
-        outputParameters(participants, model_name, n_parameters[i])
+        # outputParameters(participants, model_name, n_parameters[i])
+        # outputMeasurementModelParameters(participants, model_name, n_parameters[i])
 
 
     # outputExp1ResultAsDataFile(participants, models)

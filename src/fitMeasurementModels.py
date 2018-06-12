@@ -20,7 +20,7 @@ import MixtureModelsBayes
 def loadExp1():
     data_file = open('Data\\colorwheelr1.dat')
     data_format = Parser.BasicDataFormat()
-    parser = Parser.BasicParser(data_file, data_format)
+    parser = Parser.BasicParser(data_file, data_format, Parser.Exp1TrialFactory)
     
     participants = parser.parse()
     
@@ -124,8 +124,8 @@ class Wrapper(object):
     
         return ll + 2*self.model.n_parameters
     
-def fit(participant, fit_mode = 'recognition'):
-    model = 'MM'
+def fit(participant, model, fit_mode = 'recognition'):
+    # model = 'Murry'
     if model == 'IMM':
         immbayes = IMMBayes.IMMABBayes()
         immbayes.major_version = 1
@@ -140,9 +140,21 @@ def fit(participant, fit_mode = 'recognition'):
         mixture_model = MixtureModelsBayes.MixtureModelsBayes()
         wrapper = Wrapper(participant, mixture_model, fit_mode)
 
+    if model == 'MMBayesBias':
+        mixture_model = MixtureModelsBayes.MixtureModelsBayesBias()
+        wrapper = Wrapper(participant, mixture_model, fit_mode)
+
+    if model == 'Murry':
+        murry = MixtureModels.MurryERFC()
+        wrapper = Wrapper(participant, murry, fit_mode)
+
     if model == 'MM':
         mixture_model = MixtureModels.MixtureModel()
         wrapper = Wrapper(participant, mixture_model, 'recall')
+
+    if model == 'MMBoundary':
+        mmb = MixtureModels.MixtureModelBoundary()
+        wrapper = Wrapper(participant, mmb, fit_mode)
 
     wrapper.fit()
     
@@ -213,8 +225,12 @@ def merge(simulationData, tmpData):
 def fitExp1():
     participants = loadExp1()
     
+    # fit(participants[1], 'MMBoundary', 'recognition')
+
+    # print(participants[1].fitting_result)
+
     with Pool(20) as p:
-        p.map(fit, [participants[pID] for pID in participants.keys()])
+        p.starmap(fit, [(participants[pID], 'Murry', 'recognition') for pID in participants.keys()])
     
     participants = merge(loadSimulationData(), loadTmpData())
     
@@ -222,25 +238,43 @@ def fitExp1():
     d['participants'] = participants
     d.close()
 
+def fitExp2():
+    participants = loadExp2()
+    
+    # fit(participants[1], 'MMBoundary', 'recognition')
+
+    # print(participants[1].fitting_result)
+
+    with Pool(20) as p:
+        p.starmap(fit, [(participants[pID], 'MMBoundary', 'recognition') for pID in participants.keys()])
+    
+    participants = merge(loadSimulationData(), loadTmpData())
+    
+    d = shelve.open('Data/fitting result/Exp2/fitting_results.dat')
+    d['participants'] = participants
+    d.close()
+
 def fitExp3():
     participants = loadExp3()
 
-    # fit(participants[1], 'recall')
+    fit(participants[1], 'MMBayesBias', 'recognition')
 
-    with Pool(20) as p:
-        p.starmap(fit, [(participants[pID], 'recall') for pID in participants.keys()])
+    print(participants[1].fitting_result)
+
+    # with Pool(20) as p:
+        # p.starmap(fit, [(participants[pID], 'Murry', 'recognition') for pID in participants.keys()])
     # with Pool(1) as p:
     #     p.map(fit, [participants[pID] for pID in participants.keys()])
     
-    try:
-        old_simulation_data = loadExp3SimulationData()
-    except:
-        old_simulation_data = participants
-    participants = merge(old_simulation_data, loadTmpData())
+    # try:
+    #     old_simulation_data = loadExp3SimulationData()
+    # except:
+    #     old_simulation_data = participants
+    # participants = merge(old_simulation_data, loadTmpData())
     
-    d = shelve.open('Data/fitting result/Exp3/fitting_results.dat')
-    d['participants'] = participants
-    d.close()
+    # d = shelve.open('Data/fitting result/Exp3/fitting_results.dat')
+    # d['participants'] = participants
+    # d.close()
     
 if __name__ == '__main__':
     fitExp3()
