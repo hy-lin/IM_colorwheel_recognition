@@ -38,13 +38,15 @@ class IM(object):
         self.major_version = 1
         self.middle_version = 1
         self.minor_version = 4
-        self.model_name = self.updateModelName()
+        # self.model_name = self.updateModelName()
         self.n_parameters = 6
 
         self.description = 'This is the vanilla IM model.'
         
         self.xmax = [1.0, 1.0, 20.0, 100.0, 100.0, 1.0]
         self.xmin = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+        self.inference_knowledge = ['focus', 'trial_specific']
 
         # self.reset_activation = True
         

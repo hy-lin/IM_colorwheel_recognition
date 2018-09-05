@@ -139,6 +139,19 @@ def fit(participant, model = 'IMBayes', fit_mode = 'recognition', inference_know
         tbf_model.inference_knowledge = inference_knowledge
         tbf_model.model_name = tbf_model.updateModelName()
         tbf_model.discription = 'The vanilla IM Bayes model with different level of knowledge in inference rule'
+    
+    if model == 'IMBayesBias':
+        tbf_model = IMBayes.IMBayesBias()
+        tbf_model.inference_knowledge = inference_knowledge
+        tbf_model.model_name = tbf_model.updateModelName()
+        tbf_model.discription = 'The IM Bayes model with different level of knowledge in inference rule and Bias in inference rule'
+
+    if model == 'IMBayesNonOptimalPS':
+        tbf_model = IMBayes.IMBayesNonOptimalPS()
+        tbf_model.inference_knowledge = inference_knowledge
+        tbf_model.model_name = tbf_model.updateModelName()
+        tbf_model.discription = 'The IM Bayes model with not always optimal knowledge in inference rule and Bias in inference rule'
+    
 
     if model == 'IM':
         if fit_mode == 'recognitoin':
@@ -158,7 +171,8 @@ def fit(participant, model = 'IMBayes', fit_mode = 'recognition', inference_know
     
 def loadTmpData():
     file_path = 'Data/fitting result/tmp/'
-    pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    # pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
 
     participants ={}
     
@@ -206,12 +220,15 @@ def merge(simulationData, tmpData):
             for i, trial in enumerate(simulationData[pID].trials):
                 trial.simulation[model] = tmpData[pID].trials[i].simulation[model]
 
-            if 'recall_trials' in tmpData[pID].__dict__.keys():
-                if 'recall_trials' in simulationData[pID].__dict__.keys():
-                    for i, recall_trial in enumerate(simulationData[pID].trials):
-                        recall_trial.simulation[model] = tmpData[pID].recall_trials[i].simulation[model]
-                else:
-                    simulationData[pID].recall_trials = tmpData[pID].recall_trials
+            # if 'recall_trials' in tmpData[pID].__dict__.keys():
+            #     if 'recall_trials' in simulationData[pID].__dict__.keys():
+            #         try:
+            #             for i, recall_trial in enumerate(simulationData[pID].trials):
+            #                 recall_trial.simulation[model] = tmpData[pID].recall_trials[i].simulation[model]
+            #         except:
+            #             pass
+            #     else:
+            #         simulationData[pID].recall_trials = tmpData[pID].recall_trials
 
     return simulationData
 
@@ -229,11 +246,15 @@ def fitExp1():
     d.close()
 
 def fitExp2():
+    inference_knowledge = ['focus', 'experiment_specific']
+
     participants = loadExp2()
-#     fit(participants[1])
-     
-    with Pool(1) as p:
-        p.map(fit, [participants[pID] for pID in participants.keys()])
+
+    # fit(participants[1], 'IMBayesBias', 'recognition', inference_knowledge)
+
+
+    with Pool(6) as p:
+        p.starmap(fit, [(participants[pID], 'IMBayesNonOptimalPS', 'recognition', inference_knowledge) for pID in participants.keys()])
     
     try:
         old_simulation_data = loadExp2SimulationData()
@@ -244,30 +265,48 @@ def fitExp2():
     d = shelve.open('Data/fitting result/Exp2/fitting_results.dat')
     d['participants'] = participants
     d.close()
-    
+
 def fitExp3():
-    inference_knowledges = [
-        ['focus', 'trial_specific'],
-        ['no_focus', 'trial_specific'],
-        ['focus', 'experiment_specific'],
-        ['no_focus', 'experiment_specific']
-    ]
+    # inference_knowledges = [
+    #     ['focus', 'trial_specific'],
+    #     ['no_focus', 'trial_specific'],
+    #     ['focus', 'experiment_specific'],
+    #     ['no_focus', 'experiment_specific']
+    # ]
 
-    for inference_knowledge in inference_knowledges:
-        participants = loadExp3()
+    inference_knowledge = ['focus', 'experiment_specific']
 
-        with Pool(20) as p:
-            p.starmap(fit, [(participants[pID], 'IMBayes', 'recognitoin', inference_knowledge) for pID in participants.keys()])
+    participants = loadExp3()
+
+    with Pool(20) as p:
+        p.starmap(fit, [(participants[pID], 'IMBayesBias', 'recognition', inference_knowledge) for pID in participants.keys()])
+    
+    try:
+        old_simulation_data = loadExp3SimulationData()
+    except:
+        old_simulation_data = participants
+    participants = merge(old_simulation_data, loadTmpData())
+    
+    d = shelve.open('Data/fitting result/Exp3/fitting_results.dat')
+    d['participants'] = participants
+    d.close()
+
+
+    # for inference_knowledge in inference_knowledges:
+    #     participants = loadExp3()
+
+    #     with Pool(20) as p:
+    #         p.starmap(fit, [(participants[pID], 'IMBayes', 'recognitoin', inference_knowledge) for pID in participants.keys()])
         
-        try:
-            old_simulation_data = loadExp3SimulationData()
-        except:
-            old_simulation_data = participants
-        participants = merge(old_simulation_data, loadTmpData())
+    #     try:
+    #         old_simulation_data = loadExp3SimulationData()
+    #     except:
+    #         old_simulation_data = participants
+    #     participants = merge(old_simulation_data, loadTmpData())
         
-        d = shelve.open('Data/fitting result/Exp3/fitting_results.dat')
-        d['participants'] = participants
-        d.close()
+    #     d = shelve.open('Data/fitting result/Exp3/fitting_results.dat')
+    #     d['participants'] = participants
+    #     d.close()
 
 def fitExp3Recall():
     participants = loadExp3()
@@ -285,6 +324,21 @@ def fitExp3Recall():
     d['participants'] = participants
     d.close()
 
+def fixingMerges():
+    participants = loadExp2()
+
+    # fit(participants[1], 'IMBayesBias', 'recognition', inference_knowledge)
+
+    try:
+        old_simulation_data = loadExp2SimulationData()
+    except:
+        old_simulation_data = participants
+    participants = merge(old_simulation_data, loadTmpData())
+    
+    d = shelve.open('Data/fitting result/Exp2/fitting_results.dat')
+    d['participants'] = participants
+    d.close()
+
 if __name__ == '__main__':
-    fitExp3Recall()
+    fitExp2()
     pass

@@ -67,8 +67,8 @@ class MixtureModelsBayesBias(MixtureModels.MixtureModel):
 
         self.model_name = self.updateModelName()
 
-        self.xmax = [100.0, 1.0, 100.0]
-        self.xmin = [0.0, 0.0, -100.0]
+        self.xmax = [100.0, 1.0, 25.0]
+        self.xmin = [0.0, 0.0, -25.0]
 
     def getInitialParameters(self):
         return [8.0, 0.1, 0.0]

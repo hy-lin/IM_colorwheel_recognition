@@ -232,7 +232,7 @@ def outputParameters(participants, model_name, n_parameter, displayed_model_name
 
         #         print(participants[pID].fitting_result[model_name].fun, participants[pID].fitting_result[model_name].x)
         try:
-            AIC += participants[pID].fitting_result[model_name].fun * 2 + 2*numpy.log(n_parameter)
+            AIC += participants[pID].fitting_result[model_name].fun
             # print(participants[pID].fitting_result[model_name].x, participants[pID].fitting_result[model_name].fun)
             parms[i] = participants[pID].fitting_result[model_name].x
             # print(participants[pID].fitting_result[model_name].fun * 2, participants[pID].fitting_result[model_name].x)
@@ -440,29 +440,31 @@ def outputExp3ResultAsDataFile(participants, recognition_models = [], recall_mod
     output_file.close()
 
 def main():
-    participants = loadSimulationData(3)
+    participants = loadSimulationData(2)
     # participants = loadParticipants(2)
     # plotProbeType(participants)
     # plotPC(participants)
     # plotYesDistribution(participants)
     # plotSpatialGradient(participants)
 
-    models = [
-            #   'Interference Model with Bayes focus trial_specific v2.00.00',
-            #   'Mixture model  with Bayes v1.01.01',
-            #   'Mixture Model v1.01.01',
-            #   'Interference Model with Bayes no_focus trial_specific v2.00.00',
-            # #   'Interference Model with Bayes v1.01.01',
-            # #   'Interference Model with Bayes and Swap v1.01.02',
-            #   'Slot Averaging Model with Bayes v1.02.02',
-            # #   'Slot Averaging Model with Bayes v1.02.02',
-            # #   'Slot Averaging Model with Binding errors and Bayes v1.01.02',
-            #   'Slot Averaging Model with Binding errors and Bayes v1.01.05',
-            #   'Variable Precision Model with Bayes v1.01.02', 
-            #   'Variable Precision Swap Model with Bayes v1.01.01'
-              ]
+    # models = [
+    #         #   'Interference Model with Bayes focus trial_specific v2.00.00',
+    #         #   'Mixture model  with Bayes v1.01.01',
+    #         #   'Mixture Model v1.01.01',
+    #         #   'Interference Model with Bayes no_focus trial_specific v2.00.00',
+    #         # #   'Interference Model with Bayes v1.01.01',
+    #         # #   'Interference Model with Bayes and Swap v1.01.02',
+    #         #   'Slot Averaging Model with Bayes v1.02.02',
+    #         # #   'Slot Averaging Model with Bayes v1.02.02',
+    #         # #   'Slot Averaging Model with Binding errors and Bayes v1.01.02',
+    #         #   'Slot Averaging Model with Binding errors and Bayes v1.01.05',
+    #         #   'Variable Precision Model with Bayes v1.01.02', 
+    #         #   'Variable Precision Swap Model with Bayes v1.01.01'
+    #         'Mixture Model Boundary v1.01.01', 
+    #         'Mixture model with Bayes and bias v1.01.01'
+    #           ]
 
-    models = participants[1].trials[1].simulation.keys()
+    models = participants[2].trials[1].simulation.keys()
               
     displayed_model_names = [
         # 'Interference Model',
@@ -481,47 +483,59 @@ def main():
 
     n_parameters = [
         6,
-        2,
-        3, 
-        3, 
-        3,
-        4,
-        8, 
-        8,
+        6, 
+        6, 
+        6, 
+        6, 
+        6, 
+        6, 
+        6,
+        6, 
+        6,
+        6,
+        6,
+        6,
+        6
     ]
+    # outputParameters(participants, 'Interference Model with Bayes v1.02.02', 6)
+    # outputParameters(participants, 'Interference Model with Bayes and Bias focus experiment_specific v1.00.00', 7)
 
-    # n_parameters = [6, 6, 6, 6]
+    # # n_parameters = [6, 6, 6, 6]
 
-    # IMDual = IMBayes.IMBayesDual()
-    # simulateWithDefault(participants, IMDual)
+    # # IMDual = IMBayes.IMBayesDual()
+    # # simulateWithDefault(participants, IMDual)
     outputMeasurementModelParameters(participants, 'Mixture model  with Bayes v1.01.01')
-    outputMeasurementModelParameters(participants, 'Mixture Model Boundary v1.01.01')
-    outputMeasurementModelParameters(participants, 'Murry Complementary Gaussian Error Function Model v1.01.01')
-    outputMeasurementModelParameters(participants, 'Mixture Model v1.01.01')
+    # outputMeasurementModelParameters(participants, 'Mixture Model Boundary v1.01.01')
+    # # outputMeasurementModelParameters(participants, 'Murry Complementary Gaussian Error Function Model v1.01.01')
+    # outputMeasurementModelParameters(participants, 'Mixture model with Bayes and bias v1.01.01')
+    # # outputMeasurementModelParameters(participants, 'Mixture Model v1.01.01')
 
 
-    outputExp3ResultAsDataFile(participants, [
-        'Mixture model  with Bayes v1.01.01',
-        'Mixture Model Boundary v1.01.01',
-        'Murry Complementary Gaussian Error Function Model v1.01.01'
-    ], [
-        'Mixture Model v1.01.01'
-    ])
+    # outputExp3ResultAsDataFile(participants, [
+    #     'Mixture model  with Bayes v1.01.01',
+    #     'Mixture Model Boundary v1.01.01',
+    #     'Murry Complementary Gaussian Error Function Model v1.01.01',
+    #     'Mixture model with Bayes and bias v1.01.01'
+    # ], [
+    #     'Mixture Model v1.01.01'
+    # ])
 
-    # for i, model_name in enumerate(models):
+    for i, model_name in enumerate(models):
         # plotProbeType(participants, model_name)
         # plotPC(participants, model_name, save_fig=True)
         # plotYesDistribution(participants, model_name, displayed_model_names[i], True)
         # plotSpatialGradient(participants, model_name, displayed_model_names[i], True)
         # outputParameters(participants, model_name, n_parameters[i])
         # outputMeasurementModelParameters(participants, model_name, n_parameters[i])
+        # print(model_name)
+        pass
 
 
     # outputExp1ResultAsDataFile(participants, models)
 
     # outputMeasurementParameters(participants, 'Interference Measurement Model with Bayes v1.01.01')
 
-    matplotlib.pyplot.show()
+    # matplotlib.pyplot.show()
 
 
 if __name__ == '__main__':
