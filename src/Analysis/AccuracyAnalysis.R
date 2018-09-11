@@ -2,7 +2,20 @@ library(ggplot2)
 library(BayesFactor)
 
 loadData <- function(exp){
-  if (exp == 1 | exp == 2){
+  if (exp == 1){
+    data <- read.table(sprintf('Data/Experiment%d/recognition%d.dat', exp, exp), header = FALSE, fill = FALSE)
+    names(data) <- c('ID', 'SessionIndex', 'TrialIndex', 'Setsize', 
+                     'ColorTarget', 'LocationTarget',
+                     'ColorNonTarget1', 'LocationNonTarget1',
+                     'ColorNonTarget2', 'LocationNonTarget2',
+                     'ColorNonTarget3', 'LocationNonTarget3',
+                     'ColorNonTarget4', 'LocationNonTarget4',
+                     'ColorNonTarget5', 'LocationNonTarget5',
+                     'TrialCondition', 'ColorProbe',
+                     'Response', 'RT', 'Correctness')
+    data$TrialCondition <- factor(data$TrialCondition)
+  }
+  if (exp == 2){
     data <- read.table(sprintf('Data/Experiment%d/recognition%d.dat', exp, exp), header = FALSE, fill = FALSE)
     names(data) <- c('ID', 'TrialIndex', 'Setsize', 'TrialCondition',
                      'ColorTarget', 'LocationTarget',
@@ -31,7 +44,7 @@ loadData <- function(exp){
                     )
   }
   
-  data$ID <- factor(data$ID)
+  #data$ID <- factor(data$ID)
   data$TrialIndex <- factor(data$TrialIndex)
   
   data$Response <- factor(data$Response)
@@ -50,7 +63,7 @@ loadSimulationData <- function(exp){
                    'ColorProbe', 'LocationProbe',
                    'Response', 'Correctness', 'RT',
                    'IM', 'SA', 'SB-Binding', 'VP', 'VP-Binding')
-  data$ID <- factor(data$ID)
+  #data$ID <- factor(data$ID)
   data$TrialIndex <- factor(data$TrialIndex)
   data$TrialCondition <- factor(data$TrialCondition)
   data$Response <- factor(data$Response)
@@ -68,32 +81,54 @@ wrapDistance <- function(color1, color2){
 classifyProbeType <- function(data, exp){
   data$ProbeType <- 1
   data$dissimilarity <- 1
+  data$exp <- 1
   for (i in 1:length(data$ProbeType)){
-    if (exp == 1 | exp == 2){
-      if (data$ColorProbe[i] == data$ColorTarget[i]){
-        data$ProbeType[i] = 'Same'
-        data$SimPC[i] = 1-data$IM[i]
-      }
-      else {
-        intrusion = FALSE
-        if (data$Setsize[i] > 1){
-          for (l in 1:(data$Setsize[i]-1)){
-            nontargetvar <- sprintf('ColorNonTarget%d', l)
-            if (wrapDistance(data$ColorProbe[i], data[i, nontargetvar]) < 13){
-              intrusion = TRUE
-            }
+    
+    if (exp == 2 | exp == 1){
+      if (exp == 1){
+        if (data$TrialCondition[i] == 1){
+          data$ProbeType[i] = 'Same'
+        }else{
+          if (data$TrialCondition[i] == 2){
+            data$ProbeType[i] = 'External Change'
+          }
+          else{
+            data$ProbeType[i] = 'Internal Change'
           }
         }
         
-        if (intrusion == TRUE){
-          data$ProbeType[i] = 'Internal Change'
-        } else{
-          data$ProbeType[i] = 'External Change'
-        }
-        data$SimPC[i] = data$IM[i]
-      }
+        data$dissimilarity[i] <- wrapDistance(data$ColorProbe[i], data$ColorTarget[i])
+        data$exp <- 1
+        data$ID[i] <- data$ID[i] + 100
+      }else{
       
-      data$dissimilarity[i] <- wrapDistance(data$ColorProbe[i], data$ColorTarget[i])
+        if (data$ColorProbe[i] == data$ColorTarget[i]){
+          data$ProbeType[i] = 'Same'
+          data$SimPC[i] = 1-data$IM[i]
+        }
+        else {
+          intrusion = FALSE
+          if (data$Setsize[i] > 1){
+            for (l in 1:(data$Setsize[i]-1)){
+              nontargetvar <- sprintf('ColorNonTarget%d', l)
+              if (wrapDistance(data$ColorProbe[i], data[i, nontargetvar]) < 13){
+                intrusion = TRUE
+              }
+            }
+          }
+          
+          if (intrusion == TRUE){
+            data$ProbeType[i] = 'Internal Change'
+          } else{
+            data$ProbeType[i] = 'External Change'
+          }
+          data$SimPC[i] = data$IM[i]
+        }
+        
+        data$dissimilarity[i] <- wrapDistance(data$ColorProbe[i], data$ColorTarget[i])
+        data$exp <- 2
+        data$ID[i] <- data$ID[i] + 200
+      }
     }
     else{
       if (data$TrialType[i] == 'recognition'){
@@ -139,6 +174,7 @@ classifyProbeType <- function(data, exp){
     
   }
   data$ProbeType <- factor(data$ProbeType)
+  data$exp <- factor(data$exp)
   return(data)
 }
 
@@ -155,10 +191,55 @@ classifyProbeType <- function(data, exp){
 
 exp2.data <- loadData(2)
 exp2.data <- classifyProbeType(exp2.data, 2)
+exp2.data$LocationProbe <- NULL
 
+exp1.data <- loadData(1)
+exp1.data <- classifyProbeType(exp1.data, 1)
+exp1.data$SessionIndex <- NULL
 
-data <- data.frame(aggregate(list(exp2.data$Correctness, exp2.data$RT), list(exp2.data$ID, exp2.data$ProbeType, exp2.data$Setsize), mean))
-names(data) <- c('ID', 'ProbeType', 'Setsize', 'PC', 'RT')
+exp.data <- rbind(exp1.data, exp2.data)
+exp.data$ID <- factor(exp.data$ID)
+
+data <- data.frame(aggregate(list(exp.data$Correctness, exp.data$RT), list(exp.data$ID, exp.data$exp, exp.data$ProbeType, exp.data$Setsize), mean))
+names(data) <- c('ID', 'Exp', 'ProbeType', 'Setsize', 'PC', 'RT')
+
+# Exp effect
+exp0 <- lmBF(PC ~ ID + ProbeType*Setsize, whichRandom = 'ID', data = data)
+exp1 <- lmBF(PC ~ Exp + ID + ProbeType*Setsize, whichRandom = 'ID', data = data)
+
+exp0/exp1
+
+# Probetype * Setsize
+no.effect <- lmBF(PC ~ ID, whichRandom = 'ID', data = data)
+setsize <- lmBF(PC ~ Setsize + ID, whichRandom = 'ID', data = data)
+probetype <- lmBF(PC ~ ProbeType + ID, whichRandom = 'ID', data = data)
+probetype.setsize <- lmBF(PC ~ Setsize + ProbeType + ID, whichRandom = 'ID', data = data)
+interaction <- lmBF(PC ~ Setsize*ProbeType + ID, whichRandom = 'ID', data = data)
+
+#### setsize
+setsize/no.effect
+#### probetype
+probetype/no.effect
+#### interaction
+interaction/probetype.setsize
+
+# intrusion cost
+no.effect <- lmBF(PC ~ ID, whichRandom = 'ID', data = data[data$ProbeType!='Same', ])
+setsize <- lmBF(PC ~ Setsize + ID, whichRandom = 'ID', data = data[data$ProbeType!='Same', ])
+probetype <- lmBF(PC ~ ProbeType + ID, whichRandom = 'ID', data = data[data$ProbeType!='Same', ])
+probetype.setsize <- lmBF(PC ~ Setsize + ProbeType + ID, whichRandom = 'ID', data = data[data$ProbeType!='Same', ])
+interaction <- lmBF(PC ~ Setsize*ProbeType + ID, whichRandom = 'ID', data = data[data$ProbeType!='Same', ])
+
+#### setsize
+setsize/no.effect
+#### probetype
+probetype/no.effect
+#### interaction
+interaction/probetype.setsize
+
+# Sanity check
+data$Setsize <- factor(data$Setsize)
+bf = anovaBF(PC ~ Exp + ProbeType*Setsize + ID, whichRandom = 'ID', data = data)
 
 tmp_data <- data.frame(aggregate(list(data$PC, data$RT), list(data$ProbeType, data$Setsize), mean))
 tmp_data_sd <- data.frame(aggregate(list(data$PC, data$RT), list(data$ProbeType, data$Setsize), sd))
