@@ -1,5 +1,9 @@
 library(ggplot2)
 library(BayesFactor)
+library(jtools)
+library(cowplot)
+
+
 
 loadData <- function(exp){
   if (exp == 1 | exp == 2){
@@ -120,7 +124,6 @@ classifyProbeType <- function(data, exp){
       if (data$TrialType[i] == 'recognition'){
         if (data$ColorProbe[i] == data$ColorTarget[i]){
           data$ProbeType[i] = 'Same'
-          data$SimPC[i] = 1-data$Murry[i]
         }
         else {
           intrusion = FALSE
@@ -138,25 +141,24 @@ classifyProbeType <- function(data, exp){
           } else{
             data$ProbeType[i] = 'External Change'
           }
-          data$SimPC[i] = data$Murry[i]
         }
-        # if (data$ProbeType[i] == 'Same'){
-        #   if (data$Response[i] == 'True'){
-        #     data$Correctness[i] <- 1
-        #     data$Response[i] = 1
-        #   }else{
-        #     data$Correctness[i] <- 0
-        #     data$Response[i] = 0
-        #   }
-        # }else{
-        #   if (data$Response[i] == 'True'){
-        #     data$Correctness[i] <- 0
-        #     data$Response[i] = 1
-        #   }else{
-        #     data$Correctness[i] <- 1
-        #     data$Response[i] = 0
-        #   }
-        # }
+        if (data$ProbeType[i] == 'Same'){
+          if (data$Response[i] == 'True'){
+            data$Correctness[i] <- 1
+            data$Response[i] = 1
+          }else{
+            data$Correctness[i] <- 0
+            data$Response[i] = 0
+          }
+        }else{
+          if (data$Response[i] == 'True'){
+            data$Correctness[i] <- 0
+            data$Response[i] = 1
+          }else{
+            data$Correctness[i] <- 1
+            data$Response[i] = 0
+          }
+        }
         data$dissimilarity[i] <- wrapDistance(data$ColorProbe[i], data$ColorTarget[i])
         data$dissimilarity_bin[i] <- which.max(data$dissimilarity[i] <= bins)
       }else{
@@ -171,25 +173,67 @@ classifyProbeType <- function(data, exp){
 }
 
 
-exp3.data <- loadSimulationData(3)
+exp3.data <- loadData(3)
 exp3.data <- classifyProbeType(exp3.data, 3)
 
-data <- data.frame(aggregate(list(exp3.data$Correctness, exp3.data$SimPC, exp3.data$RT), list(exp3.data$ID,exp3.data$TrialType, exp3.data$SessionCondition, exp3.data$ProbeType, exp3.data$Setsize), mean))
-names(data) <- c('ID','TrialType', 'SessionCondition', 'ProbeType', 'Setsize', 'PC', 'Murry', 'RT')
+## recognition
+data <- data.frame(aggregate(list(exp3.data$Correctness, exp3.data$RT), list(exp3.data$ID,exp3.data$TrialType, exp3.data$SessionCondition, exp3.data$ProbeType, exp3.data$Setsize), mean))
+names(data) <- c('ID','TrialType', 'SessionCondition', 'ProbeType', 'Setsize', 'PC', 'RT')
 
-tmp_data <- data.frame(aggregate(list(data[data$TrialType!='recall',]$PC, data[data$TrialType!='recall',]$RT, data[data$TrialType!='recall',]$Murry), list(data[data$TrialType!='recall',]$ProbeType, data[data$TrialType!='recall',]$Setsize), mean))
-tmp_data_sd <- data.frame(aggregate(list(data[data$TrialType!='recall',]$PC, data[data$TrialType!='recall',]$RT), list(data[data$TrialType!='recall',]$ProbeType, data[data$TrialType!='recall',]$Setsize), sd))
-tmp_data[, 6] <- tmp_data_sd[, 3] / sqrt(20)
-tmp_data[, 7] <- tmp_data_sd[, 4] / sqrt(20)
-names(tmp_data) <- c('ProbeType', 'Setsize', 'PC', 'RT', 'Murry', 'PC_SE', 'RT_SE')
+pure_recognition_data <- data[data$TrialType!='recall' & data$SessionCondition =='recognition',]
+tmp_data <- data.frame(aggregate(list(pure_recognition_data$PC, pure_recognition_data$RT), list(pure_recognition_data$ProbeType, pure_recognition_data$Setsize), mean))
+tmp_data_sd <- data.frame(aggregate(list(pure_recognition_data$PC, pure_recognition_data$RT), list(pure_recognition_data$ProbeType, pure_recognition_data$Setsize), sd))
+tmp_data[, 5] <- tmp_data_sd[, 3] / sqrt(20)
+tmp_data[, 6] <- tmp_data_sd[, 4] / sqrt(20)
+names(tmp_data) <- c('ProbeType', 'Setsize', 'PC', 'RT', 'PC_SE', 'RT_SE')
 pd <- position_dodge(.1)
-ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = ProbeType) + 
+pure_recognition = ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = ProbeType) + 
   geom_line(position = pd, size = 1) + 
   geom_errorbar(aes(ymin=PC-PC_SE, ymax=PC+PC_SE), width=.1, position = pd, size = 1) + 
   geom_point(position = pd, size = 1) +
-  geom_line(position = pd, aes(x=Setsize, y = Murry, linetype = ProbeType, group = ProbeType), color = 'red', size = 1) +
+  #geom_line(position = pd, aes(x=Setsize, y = Murry, linetype = ProbeType, group = ProbeType), color = 'red', size = 1) +
   xlab('Set Size') +
-  ylab('Propotion of Correct')
+  ylab('Propotion of Correct') +
+  jtools::theme_apa() +
+  theme(legend.position=c(0.3, 0.2))
+
+
+mixed_data <- data[data$TrialType!='recall' & data$SessionCondition =='mix',]
+tmp_data <- data.frame(aggregate(list(mixed_data$PC, mixed_data$RT), list(mixed_data$ProbeType, mixed_data$Setsize), mean))
+tmp_data_sd <- data.frame(aggregate(list(mixed_data$PC, mixed_data$RT), list(mixed_data$ProbeType, mixed_data$Setsize), sd))
+tmp_data[, 5] <- tmp_data_sd[, 3] / sqrt(20)
+tmp_data[, 6] <- tmp_data_sd[, 4] / sqrt(20)
+names(tmp_data) <- c('ProbeType', 'Setsize', 'PC', 'RT', 'PC_SE', 'RT_SE')
+pd <- position_dodge(.1)
+mix_recognition = ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = ProbeType) + 
+  geom_line(position = pd, size = 1) + 
+  geom_errorbar(aes(ymin=PC-PC_SE, ymax=PC+PC_SE), width=.1, position = pd, size = 1) + 
+  geom_point(position = pd, size = 1) +
+  #geom_line(position = pd, aes(x=Setsize, y = Murry, linetype = ProbeType, group = ProbeType), color = 'red', size = 1) +
+  xlab('Set Size') +
+  ylab('Propotion of Correct') +
+  jtools::theme_apa() +
+  theme(legend.position=c(0.3, 0.2))
+
+
+plot_grid(pure_recognition, mix_recognition, nrow=1, ncol = 2)
+
+recall_data <- data[data$TrialType=='recall',]
+tmp_data <- data.frame(aggregate(list(recall_data$PC, recall_data$RT), list(recall_data$Setsize, recall_data$SessionCondition), mean))
+tmp_data_sd <- data.frame(aggregate(list(recall_data$PC, recall_data$RT), list(recall_data$Setsize, recall_data$SessionCondition), sd))
+tmp_data[, 5] <- tmp_data_sd[, 3] / sqrt(20)
+tmp_data[, 6] <- tmp_data_sd[, 4] / sqrt(20)
+names(tmp_data) <- c('Setsize', 'SessionCondition', 'Accuracy', 'RT', 'PC_SE', 'RT_SE')
+pure_recall = ggplot(data=tmp_data) + aes(x=Setsize, y = Accuracy, linetype = SessionCondition) + 
+  geom_line(position = pd, size = 1) + 
+  geom_errorbar(aes(ymin=Accuracy-PC_SE, ymax=Accuracy+PC_SE), width=.1, position = pd, size = 1) + 
+  geom_point(position = pd, size = 1) +
+  #geom_line(position = pd, aes(x=Setsize, y = Murry, linetype = ProbeType, group = ProbeType), color = 'red', size = 1) +
+  xlab('Set Size') +
+  ylab('Mean deviance') +
+  jtools::theme_apa() +
+  theme(legend.position=c(0.3, 0.8))
+
 # 
 # pd <- position_dodge(.1)
 # ggplot(data=tmp_data) + aes(x=Setsize, y = RT, linetype = ProbeType, group = ProbeType) + 

@@ -72,6 +72,18 @@ class IM(object):
         
     def getPrediction(self, trial):
         return self.getPRecall(trial)
+
+    def getRTPrediction(self, trial):
+        A = self._getActivationA(trial)
+        B = self._getActivationB(trial)
+        
+        C = self._getActivationC(trial)
+        C_f = self._getActivationC_f(trial)
+        
+        p_focus = trial.getPFocus()
+
+        activation_no_f = A + B + C
+        activation_f = (A+B) * self.r + C_f 
     
     def updateParameters(self, x):
         self.b = x[0]

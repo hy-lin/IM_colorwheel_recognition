@@ -166,8 +166,8 @@ def fit(participant, model, fit_mode = 'recognition'):
     
 def loadTmpData():
     file_path = 'Data/fitting result/tmp/'
-    # pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-    pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    # pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
 
     participants ={}
     
@@ -275,12 +275,14 @@ def fitExp2():
 def fitExp3():
     participants = loadExp3()
 
-    # fit(participants[1], 'MMBayesBias', 'recognition')
+    # fit(participants[1], 'MM', 'recall')
 
     # print(participants[1].fitting_result)
 
+    # fit(participants[1], 'MMBayesBias', 'recognition')
+
     with Pool(20) as p:
-        p.starmap(fit, [(participants[pID], 'MMBayesBias', 'recognition') for pID in participants.keys()])
+        p.starmap(fit, [(participants[pID], 'MM', 'recall') for pID in participants.keys()])
     
     try:
         old_simulation_data = loadExp3SimulationData()
@@ -307,5 +309,5 @@ def fixMerge():
     d.close()
 
 if __name__ == '__main__':
-    fixMerge()
+    fitExp3()
     pass

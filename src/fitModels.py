@@ -55,9 +55,10 @@ def loadExp3():
 
 
 class Wrapper(object):
-    def __init__(self, participant, model, fit_mode = 'recognition'):
+    def __init__(self, participant, model, recall_model = None, fit_mode = 'recognition'):
         self.participant = participant
         self.model = model
+        self.recall_model = recall_model
         self.fit_mode = fit_mode
         
         self.t0 = time.time()
@@ -73,6 +74,9 @@ class Wrapper(object):
         
         self.t0 = time.time()
         self.model.updateParameters(x)
+
+        if self.recall_model is not None:
+            self.recall_model.updateParameters(x)
         
         try:
             self.model.cachePS(self.participant.trials)
@@ -91,10 +95,14 @@ class Wrapper(object):
         if self.fit_mode == 'recognition':
             for trial in self.participant.trials:
                 trial.simulation[self.model.model_name] = self.model.getPrediction(trial)
-        else:
+        elif self.fit_mode == 'recall':
             for trial in self.participant.recall_trials:
                 trial.simulation[self.model.model_name] = self.model.getPrediction(trial)
-                # print(trial.simulation)
+        else:
+            for trial in self.participant.recall_trials:
+                trial.simulation[self.model.model_name] = self.recall_model.getPrediction(trial)
+            for trial in self.participant.trials:
+                trial.simulation[self.model.model_name] = self.model.getPrediction(trial)
         
     def _calculateLL(self):
         ll = 0
@@ -107,11 +115,27 @@ class Wrapper(object):
                     ll -= ll_t
                 else:
                     ll += 99999999
-        else:
+        elif self.fit_mode == 'recall':
             for trial in self.participant.recall_trials:
                 ll_t = numpy.log(
                     trial.simulation[self.model.model_name][trial.response]
                 )
+                if not numpy.isneginf(ll_t):
+                    ll -= ll_t
+                else:
+                    ll += 99999999
+        else:
+            for trial in self.participant.recall_trials:
+                ll_t = numpy.log(
+                    trial.simulation[self.model.model_name][int(trial.response)]
+                )
+                if not numpy.isneginf(ll_t):
+                    ll -= ll_t
+                else:
+                    ll += 99999999
+            for trial in self.participant.trials:
+                ll_t = numpy.log((trial.response==1) * trial.simulation[self.model.model_name] + \
+                                (trial.response!=1) * (1-trial.simulation[self.model.model_name]))
                 if not numpy.isneginf(ll_t):
                     ll -= ll_t
                 else:
@@ -127,12 +151,14 @@ class Wrapper(object):
     
         return ll + 2*self.model.n_parameters
     
-def fit(participant, model = 'IMBayes', fit_mode = 'recognition', inference_knowledge = ['focus', 'trial_specific']):
+def fit(participant, model = 'IMBayes', fit_mode = 'recognition', inference_knowledge = ['focus', 'experiment_specific']):
     # vpbayes = ResourceModelsBayes.VariablePrecisionBindingBayes()
     # vpbayes.discription = 'The VariablePrecisionBayes with binding'
     
     # boundary_model = SummedActivation.IMBoundary()
     # boundary_model.discription = 'The boundary model'
+
+    recall_model = None
 
     if model == 'IMBayes':
         tbf_model = IMBayes.IMBayes()
@@ -140,11 +166,19 @@ def fit(participant, model = 'IMBayes', fit_mode = 'recognition', inference_know
         tbf_model.model_name = tbf_model.updateModelName()
         tbf_model.discription = 'The vanilla IM Bayes model with different level of knowledge in inference rule'
     
-    if model == 'IMBayesBias':
+    if model == 'IMBayesBias' and fit_mode == 'recognition':
         tbf_model = IMBayes.IMBayesBias()
         tbf_model.inference_knowledge = inference_knowledge
         tbf_model.model_name = tbf_model.updateModelName()
         tbf_model.discription = 'The IM Bayes model with different level of knowledge in inference rule and Bias in inference rule'
+
+    if model == 'IMBayesBias' and fit_mode == 'recallNRecognition':
+        tbf_model = IMBayes.IMBayesBias()
+        tbf_model.inference_knowledge = inference_knowledge
+        tbf_model.model_name = tbf_model.updateModelName() + ' RecallNRecognition'
+        tbf_model.discription = 'The IM Bayes model with different level of knowledge in inference rule and Bias in inference rule'
+
+        recall_model = IM.IM()
 
     if model == 'IMBayesNonOptimalPS':
         tbf_model = IMBayes.IMBayesNonOptimalPS()
@@ -160,7 +194,7 @@ def fit(participant, model = 'IMBayes', fit_mode = 'recognition', inference_know
         tbf_model = IM.IM()
         tbf_model.model_name = tbf_model.updateModelName()
 
-    wrapper = Wrapper(participant, tbf_model, fit_mode)
+    wrapper = Wrapper(participant, tbf_model, recall_model, fit_mode)
     wrapper.fit()
     
     file_path = 'Data/fitting result/tmp/'
@@ -171,8 +205,8 @@ def fit(participant, model = 'IMBayes', fit_mode = 'recognition', inference_know
     
 def loadTmpData():
     file_path = 'Data/fitting result/tmp/'
-    # pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-    pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    # pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
 
     participants ={}
     
@@ -255,7 +289,6 @@ def fitExp2():
 
     with Pool(6) as p:
         p.starmap(fit, [(participants[pID], 'IMBayesNonOptimalPS', 'recognition', inference_knowledge) for pID in participants.keys()])
-    
     try:
         old_simulation_data = loadExp2SimulationData()
     except:
@@ -279,7 +312,7 @@ def fitExp3():
     participants = loadExp3()
 
     with Pool(20) as p:
-        p.starmap(fit, [(participants[pID], 'IMBayesBias', 'recognition', inference_knowledge) for pID in participants.keys()])
+        p.starmap(fit, [(participants[pID], 'IMBayesBias', 'recallNRecognition', inference_knowledge) for pID in participants.keys()])
     
     try:
         old_simulation_data = loadExp3SimulationData()
@@ -312,7 +345,7 @@ def fitExp3Recall():
     participants = loadExp3()
 
     with Pool(20) as p:
-        p.starmap(fit, [(participants[pID], 'IM', 'recall') for pID in participants.keys()])
+        p.starmap(fit, [(participants[pID], 'IMBayes', 'both') for pID in participants.keys()])
 
     try:
         old_simulation_data = loadExp3SimulationData()
@@ -340,5 +373,5 @@ def fixingMerges():
     d.close()
 
 if __name__ == '__main__':
-    fitExp2()
+    fitExp3()
     pass

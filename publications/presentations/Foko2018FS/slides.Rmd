@@ -1,0 +1,163 @@
+---
+title: "Recall and Recognition in Visual Working Memory"
+author: "Hsuan-Yu Lin"
+date: "October 8, 2018"
+output:
+  ioslides_presentation:
+    logo: images\logo-large.png
+    widescreen: yes
+  beamer_presentation: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(ggplot2)
+library(circular)
+library(jtools)
+options(warn=-1)
+```
+
+## Previously, in the last episode ...
+
+- We fitted the Interference Model to Single-probe Change-detection task with the help of Bayesian inference rule.
+    - and we did good.
+
+// insert model fitting picture.
+
+## However
+
+- Since we have a model which can fit bot recall and recognition task.
+    - Can we do it at the same time?
+    - Why?
+
+- Do recall and recognition process share similar retrieval process?
+    - It seems intuitive
+    - But not many models can do it (cough)
+
+- Do recall and recognition process tape into the same memory representation?
+    - Check if the mixture model estimated similar parameters for both recall and recognition
+
+
+## Mixture model
+
+```{r, echo = FALSE, include = TRUE, fig.height=4, fig.width=5.5}
+x = seq(-pi, pi, 0.01)
+
+guessing = rep(1/(2*pi), length(x))
+memory = dvonmises(x, mu = 0, kappa = 5)
+p_m = 0.7
+recall = memory*p_m + guessing*(1-p_m)
+
+guessing = guessing / sum(guessing)
+memory = memory / sum(memory)
+recall = recall / sum(recall)
+
+mixture_model <- data.frame(cbind(x, guessing, memory, recall))
+
+ggplot(data=mixture_model, aes(x=x)) +
+  geom_line(aes(y=guessing, colour = 'Guessing'), linetype = 'dashed', size = 1) +
+  geom_line(aes(y=memory, colour = 'Memory'), linetype = 'dashed', size = 1) +
+  geom_line(aes(y=recall, colour = 'Recall'), linetype = 'solid', size = 2) +
+  scale_colour_manual(values=c(Guessing="red", Memory="black", Recall="black")) +
+  xlab('Deviant from target color') +
+  ylab('Probability of recall') +
+  scale_x_continuous(breaks = c(-pi, -pi/2, 0, pi/2, pi), labels = c(expression(-pi), expression(-pi/2), '0', expression(pi/2), expression(pi)))+
+  jtools::theme_apa() +
+  theme(legend.position=c(0.8, 0.8))
+```
+
+- Two parameters:
+    - $\kappa$: precision of recall
+    - $P_m$: probability of recalling the target
+
+## Bayesian inference rule
+
+- To adapt the recall model to recognition, we used the Bayesian inference rule.
+
+$$ d(x, \varphi) = \log[\frac{p("change"|x, \varphi)}{p("same"|x, \varphi)}] \\
+= \log[\frac{p(x, \varphi|"change")\cdot p("change")}{p(x, \varphi|"same")\cdot p("same")}]$$
+
+- You recall the color from the probed location $x$ and, given the probe color $\varphi$, evaluate the probability of _change_ or _same_.
+
+## Bayesian inference rule
+
+<div class="columns-2">
+
+```{r, echo = FALSE, include = TRUE, fig.height=3.3, fig.width=4.7}
+x = seq(-pi, pi, 0.01)
+
+change = rep(1/(2*pi), length(x))
+
+guessing = rep(1/(2*pi), length(x))
+memory = dvonmises(x, mu = 0, kappa = 5)
+p_m = 0.7
+same = memory*p_m + guessing*(1-p_m)
+
+change = change / sum(change)
+same = same / sum(same)
+
+mixture_model <- data.frame(cbind(x, change, same))
+
+ggplot(data=mixture_model, aes(x=x)) +
+  geom_line(aes(y=change, colour = 'Change'), size = 1) +
+  geom_line(aes(y=same, colour = 'Same'), size = 1) +
+  scale_colour_manual(values=c(Change="red", Same="black")) +
+  xlab('recalled color x') +
+  ylab('Assumed probability of recall') +
+  scale_x_continuous(breaks = c(-pi, -pi/2, 0, pi/2, pi), labels = c(expression(varphi-pi), expression(varphi-pi/2), expression(varphi), expression(varphi+pi/2), expression(varphi+pi)))+
+  jtools::theme_apa() +
+  theme(legend.position=c(0.8, 0.8))
+```
+
+- If the recalled color is similar enough to the probe color, respond _same_
+- Otherwise, respond _change_
+- How similar is determined by the assumed recall distribution.
+
+</div>
+
+## Experiment
+
+- 20 participants
+- Four sessions, 512 trials per session
+    - 1 session of full recall
+    - 1 session of full recognition
+    - 2 session of recall and recognition
+- Setsize: 1, 2, 4, 6.
+
+<center>
+```{r, out.width = "720px", eval = TRUE, echo = FALSE}
+  knitr::include_graphics("images/recall.png")
+```
+</center>
+
+## Experiment
+
+- 20 participants
+- Four sessions, 512 trials per session
+    - 1 session of full recall
+    - 1 session of full recognition
+    - 2 session of recall and recognition
+- Setsize: 1, 2, 4, 6.
+
+<center>
+```{r, out.width = "720px", eval = TRUE, echo = FALSE}
+  knitr::include_graphics("images/recognition.png")
+```
+</center>
+
+
+## Mixture model result
+
+## Informationless and Bayesian inference with bias
+
+- Nosofsky & Donkin
+
+## Informationless and Bayesian inference with bias
+
+- Double checking the boundary
+
+## result
+
+## Now, about that Interference Model
+
+## And that's it
