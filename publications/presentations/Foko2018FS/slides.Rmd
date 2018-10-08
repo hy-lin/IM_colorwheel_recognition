@@ -14,6 +14,7 @@ knitr::opts_chunk$set(echo = FALSE)
 library(ggplot2)
 library(circular)
 library(jtools)
+library(cowplot)
 options(warn=-1)
 ```
 
@@ -22,8 +23,12 @@ options(warn=-1)
 - We fitted the Interference Model to Single-probe Change-detection task with the help of Bayesian inference rule.
     - and we did good.
 
-// insert model fitting picture.
-
+<center>
+```{r, out.width = "360px", eval = TRUE, echo = FALSE}
+  knitr::include_graphics("images/IM_setsize.png")
+  knitr::include_graphics("images/IM_distribution_reducted.png")
+```
+</center>
 ## However
 
 - Since we have a model which can fit bot recall and recognition task.
@@ -32,7 +37,7 @@ options(warn=-1)
 
 - Do recall and recognition process share similar retrieval process?
     - It seems intuitive
-    - But not many models can do it (cough)
+    - But not many models can do it.
 
 - Do recall and recognition process tape into the same memory representation?
     - Check if the mixture model estimated similar parameters for both recall and recognition
@@ -78,6 +83,8 @@ $$ d(x, \varphi) = \log[\frac{p("change"|x, \varphi)}{p("same"|x, \varphi)}] \\
 = \log[\frac{p(x, \varphi|"change")\cdot p("change")}{p(x, \varphi|"same")\cdot p("same")}]$$
 
 - You recall the color from the probed location $x$ and, given the probe color $\varphi$, evaluate the probability of _change_ or _same_.
+- When $d(x, \varphi) > 0$, the probe is more likely coming from _change_ condition, 
+- and vice versa.
 
 ## Bayesian inference rule
 
@@ -145,19 +152,180 @@ ggplot(data=mixture_model, aes(x=x)) +
 ```
 </center>
 
+## Experiment
+<center>
+```{r, out.width = "900px", eval = TRUE, echo = FALSE}
+  knitr::include_graphics("images/exp_results.png")
+```
+</center>
 
-## Mixture model result
+## Mixture model results
 
-## Informationless and Bayesian inference with bias
+```{r, echo = FALSE, include = TRUE, fig.width=9}
+data <-  read.table('measurement_parms.txt', header = FALSE, fill = FALSE)
+names(data) <- c('pID', 'setsize', 'model', 'kappa', 'pm', 'misc')
+data$setsize <- as.factor(data$setsize)
+data$setsize <- c(1, 2, 4, 6)
 
-- Nosofsky & Donkin
+levels(data$model)[levels(data$model)=="MM"] <- "Recall"
+levels(data$model)[levels(data$model)=="MMR"] <- "Recognition"
+levels(data$model)[levels(data$model)=="MMBoundary"] <- "RecognitionBoundary"
+levels(data$model)[levels(data$model)=="MMRBias"] <- "RecognitionBias"
 
-## Informationless and Bayesian inference with bias
+parameters <- data[data$model == 'Recall' | data$model == 'Recognition', ]
+tmp_data <- data.frame(aggregate(list(parameters$kappa, parameters$pm), list(parameters$setsize, parameters$model), mean))
+tmp_data_sd <- data.frame(aggregate(list(parameters$kappa, parameters$pm), list(parameters$setsize, parameters$model), sd))
+tmp_data[, 5] <- tmp_data_sd[, 3] / sqrt(20)
+tmp_data[, 6] <- tmp_data_sd[, 4] / sqrt(20)
+names(tmp_data) <- c('Setsize', 'Task', 'Kappa', 'PM', 'Kappa_SE', 'PM_SE')
+pd <- position_dodge(.1)
+p_kappa= ggplot(data=tmp_data) + aes(x=Setsize, y = Kappa, linetype = Task) + 
+  geom_line(position = pd, size = 1) + 
+  geom_errorbar(aes(ymin=Kappa-Kappa_SE, ymax=Kappa+Kappa_SE), width=.1, position = pd, size = 1) + 
+  geom_point(position = pd, size = 1) +
+  #geom_line(position = pd, aes(x=Setsize, y = Murry, linetype = ProbeType, group = ProbeType), color = 'red', size = 1) +
+  xlab('Set Size') +
+  ylab(expression(paste('Estimated ', kappa))) +
+  ggtitle(expression(kappa)) +
+  scale_x_continuous(breaks = c(1, 2, 4, 6))+
+  jtools::theme_apa() +
+  theme(legend.position=c(0.7, 0.85))
 
-- Double checking the boundary
+p_PM = ggplot(data=tmp_data) + aes(x=Setsize, y = PM, linetype = Task) + 
+  geom_line(position = pd, size = 1) + 
+  geom_errorbar(aes(ymin=PM-PM_SE, ymax=PM+PM_SE), width=.1, position = pd, size = 1) + 
+  geom_point(position = pd, size = 1) +
+  #geom_line(position = pd, aes(x=Setsize, y = Murry, linetype = ProbeType, group = ProbeType), color = 'red', size = 1) +
+  xlab('Set Size') +
+  ylab(expression(paste('Estimated ', P[m]))) +
+  ggtitle(expression(P[m])) +
+  scale_x_continuous(breaks = c(1, 2, 4, 6))+
+  jtools::theme_apa() +
+  theme(legend.position=c(0.7, 0.2))
 
-## result
+plot_grid(p_kappa, p_PM, nrow=1, ncol = 2)
+```
 
-## Now, about that Interference Model
+- Well, that's a problem.
+
+## Knowledge limited model
+
+- Nosofsky & Donkin (2016):
+    - One additional parameter $C$, how similar tht probe and the recalled color needs to be to be accepted.
+    
+```{r, echo = FALSE, include = TRUE, fig.height=3.3, fig.width=4.7}
+C = 2*pi/10
+
+mixture_model <- data.frame(cbind(x, change, same))
+
+ggplot(data=mixture_model, aes(x=x)) +
+  geom_line(aes(y=same), size = 1, color = 'black') +
+  xlab('recalled color x') +
+  ylab('Probability of recall') +
+  geom_vline(xintercept = -2*pi/10, linetype = 'dashed', color = 'black', size = 1) +
+  geom_vline(xintercept = 2*pi/10, linetype = 'dashed', color = 'black', size = 1) +
+  scale_x_continuous(breaks = c(-pi, -pi/2, -2*pi/10, 0, 2*pi/10, pi/2, pi), labels = c(expression(-pi), expression(-pi/2), '-C', '0', 'C', expression(+pi/2), expression(+pi)))+
+  jtools::theme_apa() +
+  theme(legend.position=c(0.8, 0.8))
+```
+
+## Bayesian inference with bias
+
+- Instead of responding _change_ when $d(x, \varphi) > 0$, the _change_ criterior is changed to
+$d(x, \varphi) > b$
+
+```{r, echo = FALSE, include = TRUE, fig.height=3.3, fig.width=4.7}
+x = seq(-pi, pi, 0.01)
+
+change = rep(1/(2*pi), length(x))
+
+guessing = rep(1/(2*pi), length(x))
+memory = dvonmises(x, mu = 0, kappa = 5)
+p_m = 0.7
+same = memory*p_m + guessing*(1-p_m)
+
+change = change / sum(change)
+same = same / sum(same)
+
+mixture_model <- data.frame(cbind(x, change, same))
+
+ggplot(data=mixture_model, aes(x=x)) +
+  geom_line(aes(y=change, colour = 'Change'), size = 1) +
+  geom_line(aes(y=same, colour = 'Same'), size = 1) +
+  scale_colour_manual(values=c(Change="red", Same="black")) +
+  xlab('recalled color x') +
+  ylab('Assumed probability of recall') +
+  scale_x_continuous(breaks = c(-pi, -pi/2, 0, pi/2, pi), labels = c(expression(varphi-pi), expression(varphi-pi/2), expression(varphi), expression(varphi+pi/2), expression(varphi+pi)))+
+  jtools::theme_apa() +
+  theme(legend.position=c(0.8, 0.8))
+```
+
+## Fitting results, again
+```{r, echo = FALSE, include = TRUE, fig.width=9}
+parameters <- data[data$model == 'Recall' | data$model == 'RecognitionBoundary' | data$model == 'RecognitionBias', ]
+tmp_data <- data.frame(aggregate(list(parameters$kappa, parameters$pm), list(parameters$setsize, parameters$model), mean))
+tmp_data_sd <- data.frame(aggregate(list(parameters$kappa, parameters$pm), list(parameters$setsize, parameters$model), sd))
+tmp_data[, 5] <- tmp_data_sd[, 3] / sqrt(20)
+tmp_data[, 6] <- tmp_data_sd[, 4] / sqrt(20)
+names(tmp_data) <- c('Setsize', 'Task', 'Kappa', 'PM', 'Kappa_SE', 'PM_SE')
+pd <- position_dodge(.1)
+p_kappa= ggplot(data=tmp_data) + aes(x=Setsize, y = Kappa, linetype = Task) + 
+  geom_line(position = pd, size = 1) + 
+  geom_errorbar(aes(ymin=Kappa-Kappa_SE, ymax=Kappa+Kappa_SE), width=.1, position = pd, size = 1) + 
+  geom_point(position = pd, size = 1) +
+  #geom_line(position = pd, aes(x=Setsize, y = Murry, linetype = ProbeType, group = ProbeType), color = 'red', size = 1) +
+  xlab('Set Size') +
+  ylab(expression(paste('Estimated ', kappa))) +
+  ggtitle(expression(kappa)) +
+  scale_x_continuous(breaks = c(1, 2, 4, 6))+
+  jtools::theme_apa() +
+  theme(legend.position=c(0.7, 0.85))
+
+p_PM = ggplot(data=tmp_data) + aes(x=Setsize, y = PM, linetype = Task) + 
+  geom_line(position = pd, size = 1) + 
+  geom_errorbar(aes(ymin=PM-PM_SE, ymax=PM+PM_SE), width=.1, position = pd, size = 1) + 
+  geom_point(position = pd, size = 1) +
+  #geom_line(position = pd, aes(x=Setsize, y = Murry, linetype = ProbeType, group = ProbeType), color = 'red', size = 1) +
+  xlab('Set Size') +
+  ylab(expression(paste('Estimated ', P[m]))) +
+  ggtitle(expression(P[m])) +
+  scale_x_continuous(breaks = c(1, 2, 4, 6))+
+  jtools::theme_apa() +
+  theme(legend.position=c(0.7, 0.2))
+
+plot_grid(p_kappa, p_PM, nrow=1, ncol = 2)
+```
+
+## Fitting results, again
+```{r, echo = FALSE, include = TRUE, fig.width=9}
+pm = data[data$model == 'Recall',]
+pm$recog.pm = data$pm[data$model == 'RecognitionBoundary']
+pm$recog.kappa = data$kappa[data$model == 'RecognitionBoundary']
+
+pm_plot = ggplot(data=pm) + aes(x = pm, y = recog.pm) +
+  xlab(expression(paste('Estimated ', P[m], ' from recall task'))) +
+  ylab(expression(paste('Estimated ', P[m], ' from recognition task'))) +
+  geom_point() +
+  jtools::theme_apa()
+
+kappa_plot = ggplot(data=pm) + aes(x = kappa, y = recog.kappa) +
+  xlab(expression(paste('Estimated ', kappa, ' from recall task'))) +
+  ylab(expression(paste('Estimated ', kappa, ' from recognition task'))) +
+  geom_point() +
+  jtools::theme_apa()
+
+plot_grid(kappa_plot, pm_plot, nrow=1, ncol = 2)
+```
+
+## Sum it up
+
+- Knowledge limited model is mathmatically identical to the Bayesian inference rule with bias.
+
+- After taking bias (or acceptance boundary) into account:
+    - Recall and recognition tasks estimated similar memory precision and probability of accesing the memory.
+    - Shared representation for both recall and recognition.
+    
+- But the process is a harder question to answer.
+    
 
 ## And that's it

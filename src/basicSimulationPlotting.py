@@ -269,50 +269,59 @@ def outputParameters(participants, model_name, n_parameter, displayed_model_name
 
 def outputMeasurementModelParameters(participants, model_name, n_parameter=3, displayed_model_name = None):
     AIC = 0
+    output_file = open('measurement_parms.txt', 'a')
     # print(model_name, participants[1].fitting_result[model_name].x)
     parms = numpy.zeros((len(participants), len(participants[1].fitting_result[model_name].x), len(participants[1].fitting_result[model_name].x[0])))
     for i, pID in enumerate(participants.keys()):
 
         #         print(participants[pID].fitting_result[model_name].fun, participants[pID].fitting_result[model_name].x)
-        try:
-            AIC += participants[pID].fitting_result[model_name].fun * 2 + 2*numpy.log(n_parameter)
-            for l in range(len(participants[pID].fitting_result[model_name].x)):
-                parms[i, l] = participants[pID].fitting_result[model_name].x[l]
-            # print(participants[pID].fitting_result[model_name].fun * 2, participants[pID].fitting_result[model_name].x)
-        except:
-            ll = 0
-            for trial in participants[pID].trials:
-                ll_t = numpy.log((trial.response==1) * trial.simulation[model_name] + \
-                                (trial.response==2) * (1-trial.simulation[model_name]))
-                # print(ll_t)
-                if not numpy.isneginf(ll_t):
-                    ll -= ll_t
-            # else:
-                # ll -= 99999999
-            AIC += ll
+        # try:
+            # AIC += participants[pID].fitting_result[model_name].fun * 2 + 2*numpy.log(n_parameter)
+        
+        for l in range(len(participants[pID].fitting_result[model_name].x)):
+            output_string = '{}\t{}\t{}\t'.format(pID, l, model_name)
+            parms[i, l] = participants[pID].fitting_result[model_name].x[l]
+            for parm in participants[pID].fitting_result[model_name].x[l]:
+                output_string += '{:.3f}\t'.format(parm)
 
+            if len(participants[pID].fitting_result[model_name].x[l] < 3):
+                output_string += '{:.3f}\t'.format(0)
+            output_file.write(output_string + '\n')
+        # except:
+            # ll = 0
+            # for trial in participants[pID].trials:
+            #     ll_t = numpy.log((trial.response==1) * trial.simulation[model_name] + \
+            #                     (trial.response==2) * (1-trial.simulation[model_name]))
+            #     # print(ll_t)
+            #     if not numpy.isneginf(ll_t):
+            #         ll -= ll_t
+            # # else:
+            #     # ll -= 99999999
+            # AIC += ll
+
+    output_file.close()
 
     if displayed_model_name is not None:
         print('Model Name: {}, AIC: {}'.format(displayed_model_name, AIC))
     else:
         print('Model Name: {}, AIC: {}'.format(model_name, AIC))
-    
-    parameters_median = numpy.median(parms, axis = 0)
-    parameters_mean = numpy.mean(parms, axis = 0)
 
-    output_string = 'Parameters median: '
-    for parameter in parameters_median:
-        for single_parm in parameter:
-            output_string += '{:.3f}, '.format(single_parm)
-        output_string += '\n'
-    print(output_string)
+    # parameters_median = numpy.median(parms, axis = 0)
+    # parameters_mean = numpy.mean(parms, axis = 0)
 
-    output_string = 'Parameters mean: '
-    for parameter in parameters_mean:
-        for single_parm in parameter:
-            output_string += '{:.3f}, '.format(single_parm)
-        output_string += '\n'
-    print(output_string)
+    # output_string = 'Parameters median: '
+    # for parameter in parameters_median:
+    #     for single_parm in parameter:
+    #         output_string += '{:.3f}, '.format(single_parm)
+    #     output_string += '\n'
+    # print(output_string)
+
+    # output_string = 'Parameters mean: '
+    # for parameter in parameters_mean:
+    #     for single_parm in parameter:
+    #         output_string += '{:.3f}, '.format(single_parm)
+    #     output_string += '\n'
+    # print(output_string)
 
 def simulateWithDefault(participants, model):
     for pID in participants.keys():
@@ -440,7 +449,7 @@ def outputExp3ResultAsDataFile(participants, recognition_models = [], recall_mod
     output_file.close()
 
 def main():
-    participants = loadSimulationData(2)
+    participants = loadSimulationData(3)
     # participants = loadParticipants(2)
     # plotProbeType(participants)
     # plotPC(participants)
@@ -465,6 +474,7 @@ def main():
     #           ]
 
     models = participants[2].trials[1].simulation.keys()
+    print(models)
               
     displayed_model_names = [
         # 'Interference Model',
@@ -504,7 +514,10 @@ def main():
 
     # # IMDual = IMBayes.IMBayesDual()
     # # simulateWithDefault(participants, IMDual)
+    outputMeasurementModelParameters(participants, 'Mixture Model v1.01.01')
     outputMeasurementModelParameters(participants, 'Mixture model  with Bayes v1.01.01')
+    outputMeasurementModelParameters(participants, 'Mixture Model Boundary v1.01.01')
+    outputMeasurementModelParameters(participants, 'Mixture model with Bayes and bias v1.01.01')
     # outputMeasurementModelParameters(participants, 'Mixture Model Boundary v1.01.01')
     # # outputMeasurementModelParameters(participants, 'Murry Complementary Gaussian Error Function Model v1.01.01')
     # outputMeasurementModelParameters(participants, 'Mixture model with Bayes and bias v1.01.01')

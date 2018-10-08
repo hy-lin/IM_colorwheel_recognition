@@ -14,7 +14,7 @@ class MixtureModelsBayes(MixtureModels.MixtureModel):
         self.model_name_prefix = 'Mixture model  with Bayes'
         
         self.major_version = 1
-        self.middle_version = 2
+        self.middle_version = 1
         self.minor_version = 1
 
         ## 1.1.1: 2 parameters
@@ -75,16 +75,16 @@ class MixtureModelsBayesBias(MixtureModels.MixtureModel):
         self.model_name_prefix = 'Mixture model with Bayes and bias'
         
         self.major_version = 1
-        self.middle_version = 2
+        self.middle_version = 1
         self.minor_version = 1
         ## 1.1.1: 2 parameters
         ## 1.2.1: 3 parameters
 
-        self.n_parameters = 4
+        self.n_parameters = 3
 
         self.model_name = self.updateModelName()
 
-        self.xmax = [100.0, 1.0, 1.0, 25.0]
+        self.xmax = [200.0, 1.0, 0.0, 25.0]
         self.xmin = [0.0, 0.0, 0.0, -25.0]
 
     def getInitialParameters(self):

@@ -282,7 +282,7 @@ def fitExp3():
     # fit(participants[1], 'MMBayesBias', 'recognition')
 
     with Pool(20) as p:
-        p.starmap(fit, [(participants[pID], 'MM', 'recall') for pID in participants.keys()])
+        p.starmap(fit, [(participants[pID], 'MMBayesBias', 'recognition') for pID in participants.keys()])
     
     try:
         old_simulation_data = loadExp3SimulationData()

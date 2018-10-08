@@ -194,6 +194,7 @@ pure_recognition = ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = Pro
   #geom_line(position = pd, aes(x=Setsize, y = Murry, linetype = ProbeType, group = ProbeType), color = 'red', size = 1) +
   xlab('Set Size') +
   ylab('Propotion of Correct') +
+  ggtitle('Recognition (pure recognition') +
   jtools::theme_apa() +
   theme(legend.position=c(0.3, 0.2))
 
@@ -212,11 +213,9 @@ mix_recognition = ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = Prob
   #geom_line(position = pd, aes(x=Setsize, y = Murry, linetype = ProbeType, group = ProbeType), color = 'red', size = 1) +
   xlab('Set Size') +
   ylab('Propotion of Correct') +
+  ggtitle('Recognition (mixed condition)') +
   jtools::theme_apa() +
   theme(legend.position=c(0.3, 0.2))
-
-
-plot_grid(pure_recognition, mix_recognition, nrow=1, ncol = 2)
 
 recall_data <- data[data$TrialType=='recall',]
 tmp_data <- data.frame(aggregate(list(recall_data$PC, recall_data$RT), list(recall_data$Setsize, recall_data$SessionCondition), mean))
@@ -231,8 +230,11 @@ pure_recall = ggplot(data=tmp_data) + aes(x=Setsize, y = Accuracy, linetype = Se
   #geom_line(position = pd, aes(x=Setsize, y = Murry, linetype = ProbeType, group = ProbeType), color = 'red', size = 1) +
   xlab('Set Size') +
   ylab('Mean deviance') +
+  ggtitle('Recall') +
   jtools::theme_apa() +
   theme(legend.position=c(0.3, 0.8))
+
+plot_grid(pure_recall, pure_recognition, mix_recognition, nrow=1, ncol = 3)
 
 # 
 # pd <- position_dodge(.1)
