@@ -514,15 +514,14 @@ def main():
 
     # # IMDual = IMBayes.IMBayesDual()
     # # simulateWithDefault(participants, IMDual)
-    outputMeasurementModelParameters(participants, 'Mixture Model v1.01.01')
-    outputMeasurementModelParameters(participants, 'Mixture model  with Bayes v1.01.01')
-    outputMeasurementModelParameters(participants, 'Mixture Model Boundary v1.01.01')
-    outputMeasurementModelParameters(participants, 'Mixture model with Bayes and bias v1.01.01')
+    # outputMeasurementModelParameters(participants, 'Mixture Model v1.02.02')
+    outputMeasurementModelParameters(participants, 'Mixture model with Bayes and bias v1.02.01')
+    outputMeasurementModelParameters(participants, 'Mixture Model Boundary v1.02.01')
+    # outputMeasurementModelParameters(participants, 'Mixture model with Bayes and bias v1.01.01')
     # outputMeasurementModelParameters(participants, 'Mixture Model Boundary v1.01.01')
     # # outputMeasurementModelParameters(participants, 'Murry Complementary Gaussian Error Function Model v1.01.01')
     # outputMeasurementModelParameters(participants, 'Mixture model with Bayes and bias v1.01.01')
     # # outputMeasurementModelParameters(participants, 'Mixture Model v1.01.01')
-
 
     # outputExp3ResultAsDataFile(participants, [
     #     'Mixture model  with Bayes v1.01.01',

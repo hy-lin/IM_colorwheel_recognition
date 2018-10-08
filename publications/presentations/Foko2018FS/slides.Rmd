@@ -35,11 +35,11 @@ options(warn=-1)
     - Can we do it at the same time?
     - Why?
 
-- Do recall and recognition process share similar retrieval process?
+- Do recall and recognition share similar retrieval process?
     - It seems intuitive
     - But not many models can do it.
 
-- Do recall and recognition process tape into the same memory representation?
+- Do recall and recognition process tap into the same memory representation?
     - Check if the mixture model estimated similar parameters for both recall and recognition
 
 
@@ -72,7 +72,7 @@ ggplot(data=mixture_model, aes(x=x)) +
 ```
 
 - Two parameters:
-    - $\kappa$: precision of recall
+    - $\kappa$: precision of the memory
     - $P_m$: probability of recalling the target
 
 ## Bayesian inference rule
@@ -206,7 +206,7 @@ p_PM = ggplot(data=tmp_data) + aes(x=Setsize, y = PM, linetype = Task) +
 plot_grid(p_kappa, p_PM, nrow=1, ncol = 2)
 ```
 
-- Well, that's a problem.
+- Well, that's a bit of a problem.
 
 ## Knowledge limited model
 
@@ -296,6 +296,7 @@ p_PM = ggplot(data=tmp_data) + aes(x=Setsize, y = PM, linetype = Task) +
 plot_grid(p_kappa, p_PM, nrow=1, ncol = 2)
 ```
 
+
 ## Fitting results, again
 ```{r, echo = FALSE, include = TRUE, fig.width=9}
 pm = data[data$model == 'Recall',]
@@ -312,9 +313,12 @@ kappa_plot = ggplot(data=pm) + aes(x = kappa, y = recog.kappa) +
   xlab(expression(paste('Estimated ', kappa, ' from recall task'))) +
   ylab(expression(paste('Estimated ', kappa, ' from recognition task'))) +
   geom_point() +
+  xlim(0, 100) +
+  ylim(0, 100) +
   jtools::theme_apa()
 
 plot_grid(kappa_plot, pm_plot, nrow=1, ncol = 2)
+
 ```
 
 ## Sum it up
@@ -322,10 +326,32 @@ plot_grid(kappa_plot, pm_plot, nrow=1, ncol = 2)
 - Knowledge limited model is mathmatically identical to the Bayesian inference rule with bias.
 
 - After taking bias (or acceptance boundary) into account:
-    - Recall and recognition tasks estimated similar memory precision and probability of accesing the memory.
-    - Shared representation for both recall and recognition.
-    
-- But the process is a harder question to answer.
-    
+    - Recall and recognition tasks estimated similar memory precision.
+    - The probability of recalling the target is ... off.
+    - Shared representation for both recall and recognition, maybe?
 
-## And that's it
+# And that's it.
+
+
+## Fitting results, again
+```{r, echo = FALSE, include = TRUE, fig.width=9}
+pm = data[data$model == 'RecognitionBias',]
+pm$recog.pm = data$pm[data$model == 'RecognitionBoundary']
+pm$recog.kappa = data$kappa[data$model == 'RecognitionBoundary']
+
+pm_plot = ggplot(data=pm) + aes(x = pm, y = recog.pm) +
+  xlab(expression(paste('Estimated ', P[m], ' from Bayesian bias'))) +
+  ylab(expression(paste('Estimated ', P[m], ' from boundary task'))) +
+  geom_point() +
+  jtools::theme_apa()
+
+kappa_plot = ggplot(data=pm) + aes(x = kappa, y = recog.kappa) +
+  xlab(expression(paste('Estimated ', kappa, ' from Bayesian bias'))) +
+  ylab(expression(paste('Estimated ', kappa, ' from boundary task'))) +
+  geom_point() +
+  xlim(0, 100) +
+  ylim(0, 100) +
+  jtools::theme_apa()
+
+plot_grid(kappa_plot, pm_plot, nrow=1, ncol = 2)
+```

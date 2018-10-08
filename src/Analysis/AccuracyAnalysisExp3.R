@@ -177,7 +177,7 @@ exp3.data <- loadData(3)
 exp3.data <- classifyProbeType(exp3.data, 3)
 
 ## recognition
-data <- data.frame(aggregate(list(exp3.data$Correctness, exp3.data$RT), list(exp3.data$ID,exp3.data$TrialType, exp3.data$SessionCondition, exp3.data$ProbeType, exp3.data$Setsize), mean))
+data <- data.frame(aggregate(list(exp3.data$Correctness, exp3.data$RT), list(exp3.data$ID,exp3.data$TrialType, exp3.data$SessionCondition, exp3.data$ProbeType, exp3.data$Setsize), sd))
 names(data) <- c('ID','TrialType', 'SessionCondition', 'ProbeType', 'Setsize', 'PC', 'RT')
 
 pure_recognition_data <- data[data$TrialType!='recall' & data$SessionCondition =='recognition',]

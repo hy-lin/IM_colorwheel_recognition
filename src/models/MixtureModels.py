@@ -16,14 +16,14 @@ class MixtureModel(object):
 
         self.model_name_prefix = 'Mixture Model'
         self.major_version = 1
-        self.middle_version = 1
-        self.minor_version = 3
+        self.middle_version = 2
+        self.minor_version = 2
         self.model_name = self.updateModelName()
         self.n_parameters = 2
         
         self.description = 'This is the mixture model'
 
-        self.xmax = [200.0, 1.0, 0.0]
+        self.xmax = [200.0, 1.0, 1.0]
         self.xmin = [0.0, 0.0, 0.0]
 
     def getInitialParameters(self):
@@ -44,16 +44,17 @@ class MixtureModel(object):
         pdf = self._getActivation(trial.target.color)
         pdf = pdf/numpy.sum(pdf)
 
-        # non_target_pdf = numpy.zeros((1, 360))
-        # for stimulus in trial.stimuli:
-        #     if stimulus != trial.target:
-        #         non_target_pdf += self._getActivation(stimulus.color)
-        # if numpy.sum(non_target_pdf) != 0:
-        #     # print(non_target_pdf)
-        #     non_target_pdf = non_target_pdf/numpy.sum(non_target_pdf)
+        non_target_pdf = numpy.zeros((1, 360))
+        for stimulus in trial.stimuli:
+            if stimulus != trial.target:
+                non_target_pdf += self._getActivation(stimulus.color)
+        if numpy.sum(non_target_pdf) != 0:
+            # print(non_target_pdf)
+            non_target_pdf = non_target_pdf/numpy.sum(non_target_pdf)
 
-        p_recall = (1.0 - self.p_guess) * pdf + \
-                   self.p_guess / 360.0
+        p_recall = (1.0 - self.p_guess - self.p_swap) * pdf + \
+                   self.p_guess / 360.0 + \
+                   self.p_swap * non_target_pdf
 
         return numpy.squeeze(p_recall)
 
