@@ -42,7 +42,7 @@ class IMBayes(IM.IM):
                 self.P_s_f = [[] for i in range(self.max_setsize)]
 
             for trial in trials:
-                self.P_s[trial.set_size-1].append(self._getPS(trial, 0))
+                self.P_s[trial.set_size-1].append(self._getPS(trial, 1))
 
                 if 'focus' in self.inference_knowledge:
                     self.P_s_f[trial.set_size-1].append(self._getPS(trial, self.r))
@@ -73,7 +73,7 @@ class IMBayes(IM.IM):
 
             if 'trial_specific' in self.inference_knowledge:
                 P_S1_f = self._getPS(trial, self.r)
-                P_S1_no_f = self._getPS(trial, 0)
+                P_S1_no_f = self._getPS(trial, 1)
             else:
                 P_S1_f = self.P_s[trial.set_size-1]
                 P_S1_no_f = self.P_s_f[trial.set_size-1]
@@ -88,7 +88,7 @@ class IMBayes(IM.IM):
             p_recall = trial.getPFocus() * p_recall_f + (1.0-trial.getPFocus()) * p_recall_no_f
 
             if 'trial_specific' in self.inference_knowledge:
-                P_S1 = self._getPS(trial, 0)
+                P_S1 = self._getPS(trial, 1)
             else:
                 P_S1 = self.P_s[trial.set_size-1]
 
@@ -103,7 +103,7 @@ class IMBayes(IM.IM):
             p_change = 0.000000001
         return p_change
 
-    def _getPS(self, trial, r=0):
+    def _getPS(self, trial, r=1):
         weighting = numpy.zeros(trial.set_size)
         for i, stimulus in enumerate(trial.stimuli):
             weighting[i] = self._getWeighting(

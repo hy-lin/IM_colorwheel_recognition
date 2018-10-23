@@ -515,32 +515,32 @@ def main():
     # # IMDual = IMBayes.IMBayesDual()
     # # simulateWithDefault(participants, IMDual)
     # outputMeasurementModelParameters(participants, 'Mixture Model v1.02.02')
-    outputMeasurementModelParameters(participants, 'Mixture model with Bayes and bias v1.02.01')
-    outputMeasurementModelParameters(participants, 'Mixture Model Boundary v1.02.01')
+    # outputMeasurementModelParameters(participants, 'Mixture model with Bayes and bias v1.02.01')
+    # outputMeasurementModelParameters(participants, 'Mixture Model Boundary v1.02.01')
     # outputMeasurementModelParameters(participants, 'Mixture model with Bayes and bias v1.01.01')
     # outputMeasurementModelParameters(participants, 'Mixture Model Boundary v1.01.01')
     # # outputMeasurementModelParameters(participants, 'Murry Complementary Gaussian Error Function Model v1.01.01')
     # outputMeasurementModelParameters(participants, 'Mixture model with Bayes and bias v1.01.01')
     # # outputMeasurementModelParameters(participants, 'Mixture Model v1.01.01')
 
-    # outputExp3ResultAsDataFile(participants, [
-    #     'Mixture model  with Bayes v1.01.01',
-    #     'Mixture Model Boundary v1.01.01',
-    #     'Murry Complementary Gaussian Error Function Model v1.01.01',
-    #     'Mixture model with Bayes and bias v1.01.01'
-    # ], [
-    #     'Mixture Model v1.01.01'
-    # ])
+    outputExp3ResultAsDataFile(participants, [
+        'Mixture model with Bayes and bias v1.01.01',
+        'Mixture model with Bayes and bias v1.02.01',
+        'Mixture Model Boundary v1.01.01',
+        'Mixture Model Boundary v1.02.01',
+    ], [
+        'Mixture Model v1.01.01',
+    ])
 
-    for i, model_name in enumerate(models):
-        # plotProbeType(participants, model_name)
-        # plotPC(participants, model_name, save_fig=True)
-        # plotYesDistribution(participants, model_name, displayed_model_names[i], True)
-        # plotSpatialGradient(participants, model_name, displayed_model_names[i], True)
-        # outputParameters(participants, model_name, n_parameters[i])
-        # outputMeasurementModelParameters(participants, model_name, n_parameters[i])
-        # print(model_name)
-        pass
+    # for i, model_name in enumerate(models):
+    #     # plotProbeType(participants, model_name)
+    #     # plotPC(participants, model_name, save_fig=True)
+    #     # plotYesDistribution(participants, model_name, displayed_model_names[i], True)
+    #     # plotSpatialGradient(participants, model_name, displayed_model_names[i], True)
+    #     # outputParameters(participants, model_name, n_parameters[i])
+    #     # outputMeasurementModelParameters(participants, model_name, n_parameters[i])
+    #     # print(model_name)
+    #     pass
 
 
     # outputExp1ResultAsDataFile(participants, models)

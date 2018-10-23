@@ -142,7 +142,7 @@ class IM(object):
         return numpy.squeeze(activation_B * self.b)
     
     def _getWeighting(self, location1, location2, max_distance = 7.0):
-        dist = self._getDistance(location1, location2) * 7.0 / max_distance
+        dist = self._getDistance(location1, location2) * 7.0
         
         return numpy.exp(-dist*self.s)
     

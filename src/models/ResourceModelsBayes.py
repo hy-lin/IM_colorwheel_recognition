@@ -7,29 +7,39 @@ import ResourceModels
 import numpy
 
 class SlotAveragingBayes(ResourceModels.SlotAveraging):
-    def __init__(self, k = 2.2, kappa = 7.2):
+    def __init__(self, k = 2.2, kappa = 7.2, interface_knowledge = 'memory'):
         super(SlotAveragingBayes, self).__init__(k, kappa)
 
         self.model_name_prefix = 'Slot Averaging Model with Bayes'
+        self.interface_knowledge = interface_knowledge
 
         self.major_version = 1
         self.middle_version = 2
         self.minor_version = 3
 
         self.model_name = self.updateModelName()
+        self.model_name += self.interface_knowledge
 
     def getPrediction(self, trial):
-        pm = self._getPMemory(trial)
-
+        pm = self._getPMemory(trials)
         d = self._getD(trial)
 
-        p_recall = self._getActivation(trial.target.color, self.kappa)
-        p_recall /= numpy.sum(p_recall)
+        if self.interface_knowledge == 'memory':
+            p_recall = self._getActivation(trial.target.color, self.kappa)
+            p_recall /= numpy.sum(p_recall)
 
-        return numpy.sum((d > 0) * p_recall)
+            return numpy.sum((d > 0) * p_recall) * pm + (1.0-pm) * 0.5
+        else:
+            p_recall = self._getPred(trial.target.color, self.kappa)
+            p_recall /= numpy.sum(p_recall)
+
+            return numpy.sum((d > 0) * p_recall)
 
     def _getD(self, trial):
-        act = self._getActivation(trial.probe.color, self.kappa)
+        if self.interface_knowledge == 'memory':
+            act = self._getActivation(trial.probe.color, self.kappa)
+        else:
+            act = self._getPred(trial.probe.color, self.kappa)
 
         return -numpy.log(2.0 * numpy.pi * act)
 

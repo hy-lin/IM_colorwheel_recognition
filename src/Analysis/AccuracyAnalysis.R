@@ -1,5 +1,7 @@
 library(ggplot2)
 library(BayesFactor)
+library(jtools)
+library(cowplot)
 
 loadData <- function(exp){
   if (exp == 1){
@@ -74,6 +76,9 @@ wrapDistance <- function(color1, color2){
   dist <- abs(color1-color2)
   if (dist >= 180){
     dist <- 360 - dist
+  }
+  if (dist == 180){
+    dist <- 0
   }
   return(dist)
 }
@@ -247,35 +252,49 @@ tmp_data[, 5] <- tmp_data_sd[, 3] / sqrt(20)
 tmp_data[, 6] <- tmp_data_sd[, 4] / sqrt(20)
 names(tmp_data) <- c('ProbeType', 'Setsize', 'PC', 'RT', 'PC_SE', 'RT_SE')
 pd <- position_dodge(.1)
-ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = ProbeType) + 
+plot_probetype <- ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = ProbeType, group = ProbeType) + 
   geom_line(position = pd, size = 1) + 
   geom_errorbar(aes(ymin=PC-PC_SE, ymax=PC+PC_SE), width=.1, position = pd, size = 1) + 
   geom_point(position = pd, size = 1) +
   # geom_line(position = pd, aes(x=Setsize, y = IM, linetype = ProbeType, group = ProbeType), color = 'red', size = 1) +
   xlab('Set Size') +
   ylab('Propotion of Correct') +
+  jtools::theme_apa() +
+  scale_linetype_discrete(name = 'Probe types') +
   theme(text = element_text(size=14)) +
-  theme(legend.text = element_text(size=14))
+  theme(legend.text = element_text(size=12))  +
+  theme(legend.position=c(0.3, 0.2))
+# 
+# pd <- position_dodge(.1)
+# ggplot(data=tmp_data) + aes(x=Setsize, y = RT, linetype = ProbeType, group = ProbeType) + 
+#   geom_line(position = pd, size = 1) + 
+#   geom_errorbar(aes(ymin=RT-RT_SE, ymax=RT+RT_SE), width=.1, position = pd, size = 1) + 
+#   geom_point(position = pd, size = 1) +
+#   jtools::theme_apa() +
+#   xlab('Set Size') +
+#   ylab('Reaction Time (s)')
 
-pd <- position_dodge(.1)
-ggplot(data=tmp_data) + aes(x=Setsize, y = RT, linetype = ProbeType, group = ProbeType) + 
-  geom_line(position = pd, size = 1) + 
-  geom_errorbar(aes(ymin=RT-RT_SE, ymax=RT+RT_SE), width=.1, position = pd, size = 1) + 
-  geom_point(position = pd, size = 1) +
-  xlab('Set Size') +
-  ylab('Reaction Time (s)')
+bins <- seq(0, 180, 5)
+tmp_data <- data.frame()
+for (sz in 1:6){
+  h1 <- hist(x = exp2.data[exp2.data$Setsize==sz & exp2.data$Response==0,]$dissimilarity, breaks = bins, plot = 0)
+  h2 <- hist(x = exp2.data[exp2.data$Setsize==sz,]$dissimilarity, breaks = bins, plot = 0)
+  tmp_data <- rbind(tmp_data, cbind(sz, bins[-length(bins)], h1$counts/h2$counts))
+}
 
-bins <- seq(0, 180, 20)
-h1 <- hist(x = exp2.data[exp2.data$Setsize==6 & exp2.data$Response==0,]$dissimilarity, breaks = bins, plot = 0)
-h2 <- hist(x = exp2.data[exp2.data$Setsize==6,]$dissimilarity, breaks = bins, plot = 0)
+names(tmp_data) <- c('Setsize', 'breaks', 'frequency')
+tmp_data$Setsize <- factor(tmp_data$Setsize)
 
-tmp_data <- data.frame(cbind(bins[-10], h1$counts/h2$counts))
-names(tmp_data) <- c('breaks', 'frequency')
-
-ggplot(data=tmp_data)+aes(breaks, frequency)+
-  geom_col() +
+plot_simgradient <- ggplot(data=tmp_data)+aes(x = breaks, y = frequency, linetype = Setsize)+
+  geom_line(position = pd, size = 1) +
   ylim(0, 1) +
   xlab('Similarity between target and probe') +
   ylab('Proportion of "no change" response') +
+  jtools::theme_apa() +
   #geom_line(aes(breaks, IM), color = 'red', size = 2) +
-  theme(text = element_text(size=14))
+  theme(text = element_text(size=14)) +
+  theme(legend.position=c(0.7, 0.8))
+
+
+plot_grid(plot_probetype, plot_simgradient, nrow=1, ncol = 2)
+

@@ -160,6 +160,12 @@ def fit(participant, model = 'IMBayes', fit_mode = 'recognition', inference_know
 
     recall_model = None
 
+    if model == 'SA':
+        tbf_model = ResourceModelsBayes.SlotAveragingBayes()
+        tbf_model.inference_knowledge = inference_knowledge
+        tbf_model.model_name = tbf_model.updateModelName()
+        tbf_model.discription = 'The Slot Averaging Model with different level of knowledge in inference rule'
+        
     if model == 'IMBayes':
         tbf_model = IMBayes.IMBayes()
         tbf_model.inference_knowledge = inference_knowledge
@@ -203,10 +209,12 @@ def fit(participant, model = 'IMBayes', fit_mode = 'recognition', inference_know
     d['participant'] = participant
     d.close()
     
-def loadTmpData():
+def loadTmpData(exp = 1):
     file_path = 'Data/fitting result/tmp/'
-    pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-    # pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    if exp == 1 or exp == 3:
+        pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    else:
+        pID_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
 
     participants ={}
     
@@ -267,37 +275,46 @@ def merge(simulationData, tmpData):
     return simulationData
 
 def fitExp1():
+    inference_knowledges = [
+        'memory',
+        'no memory state'
+    ]
     participants = loadExp1()
-#     fit(participants[1])
      
-    with Pool(1) as p:
-        p.map(fit, [participants[pID] for pID in participants.keys()])
-     
-    participants = merge(loadExp1SimulationData(), loadTmpData())
-    
-    d = shelve.open('Data/fitting result/Exp1/fitting_results.dat')
-    d['participants'] = participants
-    d.close()
+    for inference_knowledge in inference_knowledges:
+        with Pool(20) as p:
+            p.starmap(fit, [(participants[pID], 'SA', 'recognition', inference_knowledge) for pID in participants.keys()])
+        try:
+            old_simulation_data = loadExp1SimulationData()
+        except:
+            old_simulation_data = participants
+        participants = merge(old_simulation_data, loadTmpData(1))
+        
+        d = shelve.open('Data/fitting result/Exp1/fitting_results.dat')
+        d['participants'] = participants
+        d.close()
 
 def fitExp2():
-    inference_knowledge = ['focus', 'experiment_specific']
-
+    inference_knowledges = [
+        'memory',
+        'no memory state'
+    ]
     participants = loadExp2()
 
     # fit(participants[1], 'IMBayesBias', 'recognition', inference_knowledge)
 
-
-    with Pool(6) as p:
-        p.starmap(fit, [(participants[pID], 'IMBayesNonOptimalPS', 'recognition', inference_knowledge) for pID in participants.keys()])
-    try:
-        old_simulation_data = loadExp2SimulationData()
-    except:
-        old_simulation_data = participants
-    participants = merge(old_simulation_data, loadTmpData())
-    
-    d = shelve.open('Data/fitting result/Exp2/fitting_results.dat')
-    d['participants'] = participants
-    d.close()
+    for inference_knowledge in inference_knowledges:
+        with Pool(20) as p:
+            p.starmap(fit, [(participants[pID], 'SA', 'recognition', inference_knowledge) for pID in participants.keys()])
+        try:
+            old_simulation_data = loadExp2SimulationData()
+        except:
+            old_simulation_data = participants
+        participants = merge(old_simulation_data, loadTmpData(2))
+        
+        d = shelve.open('Data/fitting result/Exp2/fitting_results.dat')
+        d['participants'] = participants
+        d.close()
 
 def fitExp3():
     # inference_knowledges = [
@@ -373,5 +390,6 @@ def fixingMerges():
     d.close()
 
 if __name__ == '__main__':
-    fitExp3()
+    fitExp1()
+    fitExp2()
     pass

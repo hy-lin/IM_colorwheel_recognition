@@ -70,7 +70,7 @@ loadSimulationData <- function(exp){
                      'ColorNonTarget5', 'LocationNonTarget5',
                      'ColorProbe', 'LocationProbe',
                      'RT', 'Response', 'Correctness',
-                     'MMBayes', 'MMBoundary', 'Murry', 'MMRecall'
+                     'MMBayesBias2', 'MMBayesBias3', 'MMBoundary2', 'MMBoundary3', 'MM'
     )
   }
   data$ID <- factor(data$ID)
@@ -87,7 +87,7 @@ wrapDistance <- function(color1, color2){
   return(dist)
 }
 
-classifyProbeType <- function(data, exp){
+classifyProbeType <- function(data, exp, is.simulation = FALSE){
   bins <- seq(0, 180, 20)
   data$ProbeType <- 1
   data$dissimilarity <- 1
@@ -142,27 +142,31 @@ classifyProbeType <- function(data, exp){
             data$ProbeType[i] = 'External Change'
           }
         }
-        if (data$ProbeType[i] == 'Same'){
-          if (data$Response[i] == 'True'){
-            data$Correctness[i] <- 1
-            data$Response[i] = 1
+        if (! is.simulation){
+          if (data$ProbeType[i] == 'Same'){
+            if (data$Response[i] == 'True'){
+              data$Correctness[i] <- 1
+              data$Response[i] = 1
+            }else{
+              data$Correctness[i] <- 0
+              data$Response[i] = 0
+            }
           }else{
-            data$Correctness[i] <- 0
-            data$Response[i] = 0
-          }
-        }else{
-          if (data$Response[i] == 'True'){
-            data$Correctness[i] <- 0
-            data$Response[i] = 1
-          }else{
-            data$Correctness[i] <- 1
-            data$Response[i] = 0
+            if (data$Response[i] == 'True'){
+              data$Correctness[i] <- 0
+              data$Response[i] = 1
+            }else{
+              data$Correctness[i] <- 1
+              data$Response[i] = 0
+            }
           }
         }
         data$dissimilarity[i] <- wrapDistance(data$ColorProbe[i], data$ColorTarget[i])
         data$dissimilarity_bin[i] <- which.max(data$dissimilarity[i] <= bins)
       }else{
-        data$Correctness[i] <- wrapDistance(data$ColorTarget[i], data$ColorProbe[i])
+        if (!is.simulation){
+          data$Correctness[i] <- wrapDistance(data$ColorTarget[i], data$ColorProbe[i])
+        }
         data$dissimilarity_bin[i] <- which.max(data$Correctness[i] <= bins)
       }
     }
@@ -210,6 +214,7 @@ mix_recognition = ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = Prob
   geom_line(position = pd, size = 1) + 
   geom_errorbar(aes(ymin=PC-PC_SE, ymax=PC+PC_SE), width=.1, position = pd, size = 1) + 
   geom_point(position = pd, size = 1) +
+  scale_fill_manual('Probe types')+
   #geom_line(position = pd, aes(x=Setsize, y = Murry, linetype = ProbeType, group = ProbeType), color = 'red', size = 1) +
   xlab('Set Size') +
   ylab('Propotion of Correct') +
@@ -236,52 +241,5 @@ pure_recall = ggplot(data=tmp_data) + aes(x=Setsize, y = Accuracy, linetype = Se
 
 plot_grid(pure_recall, pure_recognition, mix_recognition, nrow=1, ncol = 3)
 
-# 
-# pd <- position_dodge(.1)
-# ggplot(data=tmp_data) + aes(x=Setsize, y = RT, linetype = ProbeType, group = ProbeType) + 
-#   geom_line(position = pd, size = 1) + 
-#   geom_errorbar(aes(ymin=RT-RT_SE, ymax=RT+RT_SE), width=.1, position = pd, size = 1) + 
-#   geom_point(position = pd, size = 1) +
-#   xlab('Set Size') +
-#   ylab('Reaction Time (s)')
-# 
-# tmp_data <- data.frame(aggregate(list(data[data$TrialType!='recall',]$PC, data[data$TrialType!='recall',]$RT), list(data[data$TrialType!='recall',]$ProbeType, data[data$TrialType!='recall',]$SessionCondition, data[data$TrialType!='recall',]$Setsize), mean))
-# tmp_data_sd <- data.frame(aggregate(list(data[data$TrialType!='recall',]$PC, data[data$TrialType!='recall',]$RT), list(data[data$TrialType!='recall',]$ProbeType, data[data$TrialType!='recall',]$SessionCondition, data[data$TrialType!='recall',]$Setsize), sd))
-# tmp_data[, 6] <- tmp_data_sd[, 4] / sqrt(20)
-# tmp_data[, 7] <- tmp_data_sd[, 5] / sqrt(20)
-# names(tmp_data) <- c('ProbeType', 'SessionCondition', 'Setsize', 'PC', 'RT', 'PC_SE', 'RT_SE')
-# pd <- position_dodge(.25)
-# ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = ProbeType, color = SessionCondition) + 
-#   geom_line(position = pd, size = 1) + 
-#   geom_errorbar(aes(ymin=PC-PC_SE, ymax=PC+PC_SE), width=.1, position = pd, size = 1) + 
-#   geom_point(position = pd, size = 1) +
-#   #  geom_line(position = pd, aes(x=Setsize, y = IM, linetype = ProbeType, group = ProbeType), color = 'red', size = 1) +
-#   xlab('Set Size') +
-#   ylab('Propotion of Correct') +
-#   scale_color_manual(values = c(mix = 'black', recognition = 'gray')) +
-#   theme_bw()
-# 
-# pd <- position_dodge(.1)
-# ggplot(data=tmp_data) + aes(x=Setsize, y = RT, linetype = ProbeType, color = SessionCondition) + 
-#   geom_line(position = pd, size = 1) + 
-#   geom_errorbar(aes(ymin=RT-RT_SE, ymax=RT+RT_SE), width=.1, position = pd, size = 1) + 
-#   geom_point(position = pd, size = 1) +
-#   xlab('Set Size') +
-#   ylab('Reaction Time (s)') 
-# 
-# tmp_data <- data.frame(
-#   aggregate(list(as.numeric(exp3.data[exp3.data$TrialType!='recall',]$Response)-2),
-#             list(exp3.data[exp3.data$TrialType!='recall',]$dissimilarity_bin, exp3.data[exp3.data$TrialType!='recall',]$Setsize, exp3.data[exp3.data$TrialType!='recall',]$SessionCondition),
-#             mean, 
-#             na.action = na.omit)
-# )
-# names(tmp_data) <- c('breaks', 'setsize', 'SessionCondition', 'frequency')
-# tmp_data$setsize <- factor(tmp_data$setsize)
-# tmp_data$breaks <- tmp_data$breaks / 10 * 180
-# 
-# pd <- position_dodge(.1)
-# ggplot(data=tmp_data) + aes(x=breaks, y = frequency, linetype = setsize, color = SessionCondition) + 
-#   geom_line(position = pd, size = 1) + 
-#   geom_point(position = pd, size = 1) +
-#   xlab('Target-probe similarity') +
-#   ylab('Propotion of Same')
+exp3.sim.data <- loadSimulationData(3)
+exp3.sim.data <- classifyProbeType(exp3.sim.data, 3, is.simulation = TRUE)

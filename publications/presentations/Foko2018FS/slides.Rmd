@@ -287,7 +287,7 @@ p_PM = ggplot(data=tmp_data) + aes(x=Setsize, y = PM, linetype = Task) +
   geom_point(position = pd, size = 1) +
   #geom_line(position = pd, aes(x=Setsize, y = Murry, linetype = ProbeType, group = ProbeType), color = 'red', size = 1) +
   xlab('Set Size') +
-  ylab(expression(paste('Estimated ', P[m]))) +
+  ylab(expression(paste('Estimated ', 1-P[m]))) +
   ggtitle(expression(P[m])) +
   scale_x_continuous(breaks = c(1, 2, 4, 6))+
   jtools::theme_apa() +
@@ -304,8 +304,8 @@ pm$recog.pm = data$pm[data$model == 'RecognitionBoundary']
 pm$recog.kappa = data$kappa[data$model == 'RecognitionBoundary']
 
 pm_plot = ggplot(data=pm) + aes(x = pm, y = recog.pm) +
-  xlab(expression(paste('Estimated ', P[m], ' from recall task'))) +
-  ylab(expression(paste('Estimated ', P[m], ' from recognition task'))) +
+  xlab(expression(paste('Estimated ', 1-P[m], ' from recall task'))) +
+  ylab(expression(paste('Estimated ', 1-P[m], ' from recognition task'))) +
   geom_point() +
   jtools::theme_apa()
 
@@ -340,8 +340,8 @@ pm$recog.pm = data$pm[data$model == 'RecognitionBoundary']
 pm$recog.kappa = data$kappa[data$model == 'RecognitionBoundary']
 
 pm_plot = ggplot(data=pm) + aes(x = pm, y = recog.pm) +
-  xlab(expression(paste('Estimated ', P[m], ' from Bayesian bias'))) +
-  ylab(expression(paste('Estimated ', P[m], ' from boundary task'))) +
+  xlab(expression(paste('Estimated ', 1-P[m], ' from Bayesian bias'))) +
+  ylab(expression(paste('Estimated ', 1-P[m], ' from boundary task'))) +
   geom_point() +
   jtools::theme_apa()
 
