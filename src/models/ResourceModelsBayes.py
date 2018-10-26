@@ -21,7 +21,7 @@ class SlotAveragingBayes(ResourceModels.SlotAveraging):
         self.model_name += self.interface_knowledge
 
     def getPrediction(self, trial):
-        pm = self._getPMemory(trials)
+        pm = self._getPMemory(trial)
         d = self._getD(trial)
 
         if self.interface_knowledge == 'memory':

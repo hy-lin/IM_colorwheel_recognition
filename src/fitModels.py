@@ -161,9 +161,9 @@ def fit(participant, model = 'IMBayes', fit_mode = 'recognition', inference_know
     recall_model = None
 
     if model == 'SA':
-        tbf_model = ResourceModelsBayes.SlotAveragingBayes()
-        tbf_model.inference_knowledge = inference_knowledge
-        tbf_model.model_name = tbf_model.updateModelName()
+        tbf_model = ResourceModelsBayes.SlotAveragingBayes(interface_knowledge = inference_knowledge)
+        # tbf_model.inference_knowledge = inference_knowledge
+        # tbf_model.model_name = tbf_model.updateModelName()
         tbf_model.discription = 'The Slot Averaging Model with different level of knowledge in inference rule'
         
     if model == 'IMBayes':
