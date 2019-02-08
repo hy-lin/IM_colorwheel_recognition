@@ -283,7 +283,6 @@ def merge(simulationData, tmpData):
 def fitExp1():
     inference_knowledges = [
         'trialbytrial',
-        'aggregated'
     ]
     participants = loadExp1()
 
@@ -291,7 +290,7 @@ def fitExp1():
      
     for inference_knowledge in inference_knowledges:
         with Pool(20) as p:
-            p.starmap(fit, [(participants[pID], 'VPBinding', 'recognition', inference_knowledge) for pID in participants.keys()])
+            p.starmap(fit, [(participants[pID], 'VP', 'recognition', inference_knowledge) for pID in participants.keys()])
         try:
             old_simulation_data = loadExp1SimulationData()
         except:
@@ -305,13 +304,12 @@ def fitExp1():
 def fitExp2():
     inference_knowledges = [
         'trialbytrial',
-        'aggregated'
     ]
     participants = loadExp2()
 
     for inference_knowledge in inference_knowledges:
         with Pool(20) as p:
-            p.starmap(fit, [(participants[pID], 'VPBinding', 'recognition', inference_knowledge) for pID in participants.keys()])
+            p.starmap(fit, [(participants[pID], 'VP', 'recognition', inference_knowledge) for pID in participants.keys()])
         try:
             old_simulation_data = loadExp2SimulationData()
         except:

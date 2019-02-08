@@ -142,7 +142,8 @@ class VariablePrecision(object):
         self.xmin = [0.0, 0.000001, 0.0]
 
         self.updating_distribution = True
-        self.n_sim = 5000
+        self.steps = 0.005
+        self.quantiles = numpy.arange(self.steps/2, 1, self.steps)
         self.max_set_size = 6
 
     def updateModelName(self):
@@ -163,7 +164,7 @@ class VariablePrecision(object):
         self.updating_distribution = True
 
     def getPRecall(self, trial, return_mode = 'aggregated'):
-        if return_model == 'aggregated':
+        if return_mode == 'aggregated':
             pred = self._getActivation(trial.target.color, trial.set_size, 'aggregated')
             pred /= numpy.sum(pred)
 
@@ -190,13 +191,12 @@ class VariablePrecision(object):
         angs = numpy.arange(0, 360)
         rads = angs * numpy.pi / 180.0
 
-        self.distribution = [numpy.zeros((self.n_sim, 360)) for i in range(self.max_set_size)]
+        self.distribution = [numpy.zeros((len(self.quantiles), 360)) for i in range(self.max_set_size)]
         for sz in range(self.max_set_size):
             J = self.J1 / ((sz+1) ** self.alpha)
-            for iteration in range(self.n_sim):
-                kappa = numpy.random.gamma(J/self.tau, self.tau)
-                if kappa >= 650:
-                    kappa = 650
+            kappas = scipy.stats.gamma.ppf(self.quantiles, J)
+
+            for iteration, kappa in enumerate(kappas):
                 distribution = scipy.stats.vonmises(kappa).pdf(rads)
                 self.distribution[sz][iteration] = distribution
 
@@ -263,12 +263,13 @@ class VariablePrecisionBinding(VariablePrecision):
         spatial_angs = numpy.arange(0, self.max_spatial_distance+1)
         spatial_rads = spatial_angs * numpy.pi / (self.max_spatial_distance+1)
 
-        self.distribution = [numpy.zeros((self.n_sim, 360)) for i in range(self.max_set_size)]
-        self.spatial_distribution = [numpy.zeros((self.n_sim, len(spatial_rads))) for i in range(self.max_set_size)]
+        self.distribution = [numpy.zeros((len(self.quantiles), 360)) for i in range(self.max_set_size)]
+        self.spatial_distribution = [numpy.zeros((len(self.quantiles), len(spatial_rads))) for i in range(self.max_set_size)]
         for sz in range(self.max_set_size):
             J = self.J1 / ((sz+1) ** self.alpha)
-            for iteration in range(self.n_sim):
-                kappa = numpy.random.gamma(J/self.tau, self.tau)
+            kappas = scipy.stats.gamma.ppf(self.quantiles, J)
+
+            for iteration, kappa in enumerate(kappas):
                 kappa_s = kappa * self.kappa_s_scaling
                 if kappa >= 650:
                     kappa = 650
@@ -281,7 +282,7 @@ class VariablePrecisionBinding(VariablePrecision):
         self.updating_distribution = False
 
     def getPRecall(self, trial, return_mode = 'aggregated'):
-        act = numpy.zeros((self.n_sim, 360))
+        act = numpy.zeros((len(self.quantiles), 360))
         for stimulus in trial.stimuli:
             act += self._getActivation(stimulus.color, trial.set_size, 'trialbytrial') *  \
                 numpy.transpose(numpy.tile(self._getSpatialActivation(stimulus.location, trial.target.location, trial.set_size, 'trialbytrial'), (360, 1)))
