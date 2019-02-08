@@ -161,10 +161,16 @@ def fit(participant, model = 'IMBayes', fit_mode = 'recognition', inference_know
     recall_model = None
 
     if model == 'SA':
-        tbf_model = ResourceModelsBayes.SlotAveragingBayes(interface_knowledge = inference_knowledge)
-        # tbf_model.inference_knowledge = inference_knowledge
-        # tbf_model.model_name = tbf_model.updateModelName()
+        tbf_model = ResourceModelsBayes.SlotAveragingBayes(inference_knowledge = inference_knowledge)
         tbf_model.discription = 'The Slot Averaging Model with different level of knowledge in inference rule'
+
+    if model == 'VP':
+        tbf_model = ResourceModelsBayes.VariablePrecisionBayes(inference_knowledge = inference_knowledge)
+        tbf_model.discription = 'The Variable Precision Model with different level of knowledge in inference rule'
+
+    if model == 'VPBinding':
+        tbf_model = ResourceModelsBayes.VariablePrecisionBindingBayes(inference_knowledge = inference_knowledge)
+        tbf_model.discription = 'The Variable Precision Model with swap and different level of knowledge in inference rule'
         
     if model == 'IMBayes':
         tbf_model = IMBayes.IMBayes()
@@ -276,14 +282,16 @@ def merge(simulationData, tmpData):
 
 def fitExp1():
     inference_knowledges = [
-        'memory',
-        'no memory state'
+        'trialbytrial',
+        'aggregated'
     ]
     participants = loadExp1()
+
+    # fit(participants[1], 'VP', 'recognition', 'trialbytrial')
      
     for inference_knowledge in inference_knowledges:
         with Pool(20) as p:
-            p.starmap(fit, [(participants[pID], 'SA', 'recognition', inference_knowledge) for pID in participants.keys()])
+            p.starmap(fit, [(participants[pID], 'VPBinding', 'recognition', inference_knowledge) for pID in participants.keys()])
         try:
             old_simulation_data = loadExp1SimulationData()
         except:
@@ -296,16 +304,14 @@ def fitExp1():
 
 def fitExp2():
     inference_knowledges = [
-        'memory',
-        'no memory state'
+        'trialbytrial',
+        'aggregated'
     ]
     participants = loadExp2()
 
-    # fit(participants[1], 'IMBayesBias', 'recognition', inference_knowledge)
-
     for inference_knowledge in inference_knowledges:
         with Pool(20) as p:
-            p.starmap(fit, [(participants[pID], 'SA', 'recognition', inference_knowledge) for pID in participants.keys()])
+            p.starmap(fit, [(participants[pID], 'VPBinding', 'recognition', inference_knowledge) for pID in participants.keys()])
         try:
             old_simulation_data = loadExp2SimulationData()
         except:

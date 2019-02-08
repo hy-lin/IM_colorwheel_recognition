@@ -449,63 +449,54 @@ def outputExp3ResultAsDataFile(participants, recognition_models = [], recall_mod
     output_file.close()
 
 def main():
-    participants = loadSimulationData(3)
+    participants = loadSimulationData(2)
     # participants = loadParticipants(2)
     # plotProbeType(participants)
     # plotPC(participants)
     # plotYesDistribution(participants)
     # plotSpatialGradient(participants)
 
-    # models = [
-    #         #   'Interference Model with Bayes focus trial_specific v2.00.00',
-    #         #   'Mixture model  with Bayes v1.01.01',
-    #         #   'Mixture Model v1.01.01',
-    #         #   'Interference Model with Bayes no_focus trial_specific v2.00.00',
-    #         # #   'Interference Model with Bayes v1.01.01',
-    #         # #   'Interference Model with Bayes and Swap v1.01.02',
-    #         #   'Slot Averaging Model with Bayes v1.02.02',
-    #         # #   'Slot Averaging Model with Bayes v1.02.02',
-    #         # #   'Slot Averaging Model with Binding errors and Bayes v1.01.02',
-    #         #   'Slot Averaging Model with Binding errors and Bayes v1.01.05',
-    #         #   'Variable Precision Model with Bayes v1.01.02', 
-    #         #   'Variable Precision Swap Model with Bayes v1.01.01'
-    #         'Mixture Model Boundary v1.01.01', 
-    #         'Mixture model with Bayes and bias v1.01.01'
-    #           ]
-
-    models = participants[2].trials[1].simulation.keys()
-    print(models)
-              
-    displayed_model_names = [
-        # 'Interference Model',
-        'Mixture model + Bayes',
-        'Mixture Model'
-
-        'Interference Model',
-
-        'Slot Averaging Model',
-        # 'Slot Averaging Model v2',
-        # 'Slot Averaging Model with Binding (constant)',
-        'Slot Averaging Model with Binding (growing)',
-        'Variable Precision Model', 
-        'Variable Precision Model with Binding',
+    models = [
+        'Interference Model with Bayes focus experiment_specific v2.00.00',
+        'Interference Model with Bayes focus trial_specific v2.00.00',
+        'Interference Model with Bayes no_focus trial_specific v2.00.00',
+        'Interference Model with Bayes no_focus experiment_specific v2.00.00',
+        'Variable Precision Model with Bayes v1.01.02trialbytrial',
+        'Variable Precision Model with Bayes v1.01.02aggregated',
+        'Variable Precision Binding Model with Bayes v1.01.02',
+        'Slot Averaging Model with Bayes v1.02.03memory',
+        'Slot Averaging Model with Bayes v1.02.03no memory state'
     ]
+
+
+    # models = participants[2].trials[1].simulation.keys()
+    # print(models)
+              
+    # displayed_model_names = [
+    #     # 'Interference Model',
+    #     'Mixture model + Bayes',
+    #     'Mixture Model'
+
+    #     'Interference Model',
+
+    #     'Slot Averaging Model',
+    #     # 'Slot Averaging Model v2',
+    #     # 'Slot Averaging Model with Binding (constant)',
+    #     'Slot Averaging Model with Binding (growing)',
+    #     'Variable Precision Model', 
+    #     'Variable Precision Model with Binding',
+    # ]
 
     n_parameters = [
         6,
-        6, 
-        6, 
-        6, 
-        6, 
-        6, 
-        6, 
-        6,
-        6, 
         6,
         6,
         6,
-        6,
-        6
+        3,
+        3,
+        4,
+        2,
+        2
     ]
     # outputParameters(participants, 'Interference Model with Bayes v1.02.02', 6)
     # outputParameters(participants, 'Interference Model with Bayes and Bias focus experiment_specific v1.00.00', 7)
@@ -523,24 +514,27 @@ def main():
     # outputMeasurementModelParameters(participants, 'Mixture model with Bayes and bias v1.01.01')
     # # outputMeasurementModelParameters(participants, 'Mixture Model v1.01.01')
 
-    outputExp3ResultAsDataFile(participants, [
-        'Mixture model with Bayes and bias v1.01.01',
-        'Mixture model with Bayes and bias v1.02.01',
-        'Mixture Model Boundary v1.01.01',
-        'Mixture Model Boundary v1.02.01',
-    ], [
-        'Mixture Model v1.01.01',
+    outputExp1ResultAsDataFile(participants, [
+        'Interference Model with Bayes focus experiment_specific v2.00.00',
+        'Interference Model with Bayes focus trial_specific v2.00.00',
+        'Interference Model with Bayes no_focus trial_specific v2.00.00',
+        'Interference Model with Bayes no_focus experiment_specific v2.00.00',
+        'Variable Precision Model with Bayes v1.01.02trialbytrial',
+        'Variable Precision Model with Bayes v1.01.02aggregated',
+        'Variable Precision Binding Model with Bayes v1.01.02',
+        'Slot Averaging Model with Bayes v1.02.03memory',
+        'Slot Averaging Model with Bayes v1.02.03no memory state'
     ])
 
-    # for i, model_name in enumerate(models):
-    #     # plotProbeType(participants, model_name)
-    #     # plotPC(participants, model_name, save_fig=True)
-    #     # plotYesDistribution(participants, model_name, displayed_model_names[i], True)
-    #     # plotSpatialGradient(participants, model_name, displayed_model_names[i], True)
-    #     # outputParameters(participants, model_name, n_parameters[i])
-    #     # outputMeasurementModelParameters(participants, model_name, n_parameters[i])
-    #     # print(model_name)
-    #     pass
+    for i, model_name in enumerate(models):
+        # plotProbeType(participants, model_name)
+        # plotPC(participants, model_name, save_fig=True)
+        # plotYesDistribution(participants, model_name, displayed_model_names[i], True)
+        # plotSpatialGradient(participants, model_name, displayed_model_names[i], True)
+        outputParameters(participants, model_name, n_parameters[i])
+        # outputMeasurementModelParameters(participants, model_name, n_parameters[i])
+        # print(model_name)
+        pass
 
 
     # outputExp1ResultAsDataFile(participants, models)

@@ -1,5 +1,8 @@
 library(ggplot2)
 library(BayesFactor)
+library(jtools)
+library(cowplot)
+
 
 loadSimulationData <- function(exp){
   data <- read.table(sprintf('Data/fitting result/exp%d.dat', exp, exp), header = FALSE, fill = FALSE)

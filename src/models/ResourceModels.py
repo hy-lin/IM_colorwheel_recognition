@@ -56,7 +56,7 @@ class SlotAveraging(object):
 
         sigma_sz = sigma/numpy.sqrt(lower_slot_number) * lower_slot_precentage + sigma/numpy.sqrt(higher_slot_number) * higher_slot_precentage
 
-        return 1.0/(sigma**2)
+        return 1.0/(sigma_sz**2)
 
     def _getPMemory(self, trial):
         if self.k >= trial.set_size:
@@ -162,25 +162,35 @@ class VariablePrecision(object):
 
         self.updating_distribution = True
 
-    def getPRecall(self, trial):
-        pred = self._getActivation(trial.target.color, trial.set_size)
-        pred /= numpy.sum(pred)
+    def getPRecall(self, trial, return_mode = 'aggregated'):
+        if return_model == 'aggregated':
+            pred = self._getActivation(trial.target.color, trial.set_size, 'aggregated')
+            pred /= numpy.sum(pred)
 
-        return pred
+            return pred
+        else:
+            pred = self._getActivation(trial.target.color, trial.set_size, 'trialbytrial')
+            pred /= numpy.transpose(numpy.tile(numpy.sum(pred, axis = 1), (360, 1)))
 
-    def _getActivation(self, mu, set_size):
+            return pred
+
+    def _getActivation(self, mu, set_size, return_mode = 'aggregated'):
         if self.updating_distribution:
             self._resimulate_distribution()
 
         x_ind = numpy.arange(360) - mu
-        return self.distribution[set_size-1, x_ind]
 
+        if return_mode == 'aggregated':
+            aggregated_distribution = numpy.mean(self.distribution[set_size-1], axis = 0)
+            return aggregated_distribution[x_ind]
+        else:
+            return self.distribution[set_size-1][:, x_ind]
         
     def _resimulate_distribution(self):
         angs = numpy.arange(0, 360)
         rads = angs * numpy.pi / 180.0
 
-        self.distribution = numpy.zeros((self.max_set_size, 360))
+        self.distribution = [numpy.zeros((self.n_sim, 360)) for i in range(self.max_set_size)]
         for sz in range(self.max_set_size):
             J = self.J1 / ((sz+1) ** self.alpha)
             for iteration in range(self.n_sim):
@@ -188,9 +198,7 @@ class VariablePrecision(object):
                 if kappa >= 650:
                     kappa = 650
                 distribution = scipy.stats.vonmises(kappa).pdf(rads)
-                self.distribution[sz] += distribution
-
-            self.distribution[sz] /= self.n_sim
+                self.distribution[sz][iteration] = distribution
 
         self.updating_distribution = False
 
@@ -232,7 +240,7 @@ class VariablePrecisionBinding(VariablePrecision):
     def _getEmptyActivation(self):
         return numpy.zeros((1, 360))
 
-    def _getSpatialActivation(self, location, target_location, set_size):
+    def _getSpatialActivation(self, location, target_location, set_size, return_mode = 'aggregated'):
         if self.updating_distribution:
             self._resimulate_distribution()
 
@@ -242,7 +250,12 @@ class VariablePrecisionBinding(VariablePrecision):
 
         dist_ind = dist
 
-        return self.spatial_distribution[set_size-1, dist_ind]
+        if return_mode == 'aggregated':
+            aggregated_distribution = numpy.mean(self.spatial_distribution[set_size-1], axis = 0)
+            return aggregated_distribution[dist_ind]
+        else:
+            return self.spatial_distribution[set_size-1][:, dist_ind]
+
 
     def _resimulate_distribution(self):
         angs = numpy.arange(0, 360)
@@ -250,8 +263,8 @@ class VariablePrecisionBinding(VariablePrecision):
         spatial_angs = numpy.arange(0, self.max_spatial_distance+1)
         spatial_rads = spatial_angs * numpy.pi / (self.max_spatial_distance+1)
 
-        self.distribution = numpy.zeros((self.max_set_size, 360))
-        self.spatial_distribution = numpy.zeros((self.max_set_size, len(spatial_rads)))
+        self.distribution = [numpy.zeros((self.n_sim, 360)) for i in range(self.max_set_size)]
+        self.spatial_distribution = [numpy.zeros((self.n_sim, len(spatial_rads))) for i in range(self.max_set_size)]
         for sz in range(self.max_set_size):
             J = self.J1 / ((sz+1) ** self.alpha)
             for iteration in range(self.n_sim):
@@ -259,25 +272,27 @@ class VariablePrecisionBinding(VariablePrecision):
                 kappa_s = kappa * self.kappa_s_scaling
                 if kappa >= 650:
                     kappa = 650
+
                 if kappa_s >= 650:
                     kappa_s = 650
-
-                distribution = scipy.stats.vonmises(kappa).pdf(rads)
-                self.distribution[sz] += distribution
-                distribution = scipy.stats.vonmises(kappa_s).pdf(spatial_rads)
-                self.spatial_distribution[sz] += distribution
-
-            self.distribution[sz] /= self.n_sim
-            self.spatial_distribution[sz] /= self.n_sim
+                self.distribution[sz][iteration] = scipy.stats.vonmises(kappa).pdf(rads)
+                self.spatial_distribution[sz][iteration] = scipy.stats.vonmises(kappa_s).pdf(spatial_rads)
 
         self.updating_distribution = False
 
-    def getPRecall(self, trial):
-        act = self._getEmptyActivation()
+    def getPRecall(self, trial, return_mode = 'aggregated'):
+        act = numpy.zeros((self.n_sim, 360))
         for stimulus in trial.stimuli:
-            act += self._getActivation(trial.target.color, trial.set_size) *  \
-                self._getSpatialActivation(stimulus.location, trial.target.location, trial.set_size)
-        pred = act / numpy.sum(act)
+            act += self._getActivation(stimulus.color, trial.set_size, 'trialbytrial') *  \
+                numpy.transpose(numpy.tile(self._getSpatialActivation(stimulus.location, trial.target.location, trial.set_size, 'trialbytrial'), (360, 1)))
+
+        act = numpy.transpose(numpy.transpose(act) / numpy.sum(act, axis = 1))
+
+        if return_mode == 'aggregated':
+            pred = numpy.mean(act, axis = 0)
+
+        else:
+            pred = act
 
         return pred
 
