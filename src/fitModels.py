@@ -110,7 +110,7 @@ class Wrapper(object):
         if self.fit_mode == 'recognition':
             for trial in self.participant.trials:
                 ll_t = numpy.log((trial.response==1) * trial.simulation[self.model.model_name] + \
-                                (trial.response!=1) * (1-trial.simulation[self.model.model_name]))
+                                (trial.response!=1) * (1.0-trial.simulation[self.model.model_name]))
                 if not numpy.isneginf(ll_t):
                     ll -= ll_t
                 else:

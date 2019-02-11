@@ -358,7 +358,7 @@ def outputMeasurementParameters(participants, model_name):
     median_plot = figures.MultiLineFigures(median)
 
 def outputExp1ResultAsDataFile(participants, models):
-    output_file = open('Data\\fitting result\\exp2.dat', 'w')
+    output_file = open('Data\\fitting result\\exp1.dat', 'w')
 
     for pID in participants.keys():
         participant = participants[pID]
@@ -449,7 +449,7 @@ def outputExp3ResultAsDataFile(participants, recognition_models = [], recall_mod
     output_file.close()
 
 def main():
-    participants = loadSimulationData(2)
+    participants = loadSimulationData(1)
     # participants = loadParticipants(2)
     # plotProbeType(participants)
     # plotPC(participants)

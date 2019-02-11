@@ -194,7 +194,7 @@ class VariablePrecision(object):
         self.distribution = [numpy.zeros((len(self.quantiles), 360)) for i in range(self.max_set_size)]
         for sz in range(self.max_set_size):
             J = self.J1 / ((sz+1) ** self.alpha)
-            kappas = scipy.stats.gamma.ppf(self.quantiles, J)
+            kappas = scipy.stats.gamma.ppf(self.quantiles, J/self.tau, scale = self.tau)
 
             for iteration, kappa in enumerate(kappas):
                 distribution = scipy.stats.vonmises(kappa).pdf(rads)
@@ -267,7 +267,7 @@ class VariablePrecisionBinding(VariablePrecision):
         self.spatial_distribution = [numpy.zeros((len(self.quantiles), len(spatial_rads))) for i in range(self.max_set_size)]
         for sz in range(self.max_set_size):
             J = self.J1 / ((sz+1) ** self.alpha)
-            kappas = scipy.stats.gamma.ppf(self.quantiles, J)
+            kappas = scipy.stats.gamma.ppf(self.quantiles, J/self.tau, scale = self.tau)
 
             for iteration, kappa in enumerate(kappas):
                 kappa_s = kappa * self.kappa_s_scaling
