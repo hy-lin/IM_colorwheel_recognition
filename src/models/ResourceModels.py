@@ -138,11 +138,11 @@ class VariablePrecision(object):
 
         self.description = 'This is the vanilla IM model.'
 
-        self.xmax = [100.0, 100.0, 1.0]
+        self.xmax = [400.0, 400.0, 2.0]
         self.xmin = [0.0, 0.000001, 0.0]
 
         self.updating_distribution = True
-        self.steps = 0.005
+        self.steps = 0.002
         self.quantiles = numpy.arange(self.steps/2, 1, self.steps)
         self.max_set_size = 6
 
@@ -219,7 +219,7 @@ class VariablePrecisionBinding(VariablePrecision):
 
         self.description = 'This is the VP with binding model in IM paper'
 
-        self.xmax = [100.0, 100.0, 1.0, 5.0]
+        self.xmax = [400.0, 400.0, 15.0, 5.0]
         self.xmin = [0.0, 0.000001, 0.0, 0.0]
 
 
@@ -308,7 +308,6 @@ class VariablePrecisionBinding(VariablePrecision):
             )
         
         return numerator / denominator
-
 
 class VariablePrecisionSwap(VariablePrecision):
     def __init__(self, J1 = 60.0, tau = 44.47, alpha = 0.7386, p_swap = 0.05):

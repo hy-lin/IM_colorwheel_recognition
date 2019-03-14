@@ -15,7 +15,9 @@ loadSimulationData <- function(exp){
                    'ColorNonTarget5', 'LocationNonTarget5',
                    'ColorProbe', 'LocationProbe',
                    'Response', 'Correctness', 'RT',
-                   'IM', 'SA', 'SB-Binding', 'VP', 'VP-Binding')
+                   'IM_focus_exp', 'IM_focus_trial', 'IM_nofocus_exp', 'IM_nofocus_trial',
+                   'VP_trial', 'VP_exp', 'VP_Binding_trial', 'VP_Binding_exp',
+                   'SA_memory', 'SBno_memory')
   data$ID <- factor(data$ID)
   data$TrialIndex <- factor(data$TrialIndex)
   data$TrialCondition <- factor(data$TrialCondition)
@@ -28,9 +30,9 @@ classifyProbeType <- function(data, exp){
   data$dissimilarity <- 1
   for (i in 1:length(data$ProbeType)){
     if (exp == 1 | exp == 2){
-      if (data$ColorProbe[i] == data$ColorTarget[i]){
+      if (data$TrialCondition[i] == 'positive'){
         data$ProbeType[i] = 'Same'
-        data$SimPC[i] = 1-data$IM[i]
+        data$SimPC[i] = 1-data$VP_trial[i]
       }
       else {
         intrusion = FALSE
@@ -48,7 +50,7 @@ classifyProbeType <- function(data, exp){
         } else{
           data$ProbeType[i] = 'External Change'
         }
-        data$SimPC[i] = data$IM[i]
+        data$SimPC[i] = data$VP_trial[i]
       }
       
       data$dissimilarity[i] <- wrapDistance(data$ColorProbe[i], data$ColorTarget[i])
@@ -57,7 +59,7 @@ classifyProbeType <- function(data, exp){
       if (data$TrialType[i] == 'recognition'){
         if (data$ColorProbe[i] == data$ColorTarget[i]){
           data$ProbeType[i] = 'Same'
-          data$SimPC[i] = 1-data$IM[i]
+          data$SimPC[i] = 1-data$IM_focus_trial[i]
         }
         else {
           intrusion = FALSE
@@ -75,7 +77,7 @@ classifyProbeType <- function(data, exp){
           } else{
             data$ProbeType[i] = 'External Change'
           }
-          data$SimPC[i] = data$IM[i]
+          data$SimPC[i] = data$IM_focus_trial[i]
         }
         if (data$ProbeType[i] == 'Same'){
           if (data$Response[i] == 'True'){
@@ -98,6 +100,17 @@ classifyProbeType <- function(data, exp){
   }
   data$ProbeType <- factor(data$ProbeType)
   return(data)
+}
+
+wrapDistance <- function(color1, color2){
+  dist <- abs(color1-color2)
+  if (dist >= 180){
+    dist <- 360 - dist
+  }
+  if (dist == 180){
+    dist <- 0
+  }
+  return(dist)
 }
 
 exp2.data <- loadSimulationData(1)

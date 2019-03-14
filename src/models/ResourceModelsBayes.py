@@ -113,6 +113,7 @@ class VariablePrecisionBindingBayes(ResourceModels.VariablePrecisionBinding):
         self.inference_knowledge = inference_knowledge
 
         self.model_name = self.updateModelName()
+        self.model_name += self.inference_knowledge
 
     def getPrediction(self, trial):
         d = self._getD(trial)

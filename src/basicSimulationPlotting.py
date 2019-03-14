@@ -463,7 +463,8 @@ def main():
         'Interference Model with Bayes no_focus experiment_specific v2.00.00',
         'Variable Precision Model with Bayes v1.01.02trialbytrial',
         'Variable Precision Model with Bayes v1.01.02aggregated',
-        'Variable Precision Binding Model with Bayes v1.01.02',
+        'Variable Precision Binding Model with Bayes v1.01.02trialbytrial',
+        'Variable Precision Binding Model with Bayes v1.01.02aggregated',
         'Slot Averaging Model with Bayes v1.02.03memory',
         'Slot Averaging Model with Bayes v1.02.03no memory state'
     ]
@@ -494,7 +495,8 @@ def main():
         6,
         3,
         3,
-        4,
+        3,
+        3,
         2,
         2
     ]
@@ -521,10 +523,12 @@ def main():
         'Interference Model with Bayes no_focus experiment_specific v2.00.00',
         'Variable Precision Model with Bayes v1.01.02trialbytrial',
         'Variable Precision Model with Bayes v1.01.02aggregated',
-        'Variable Precision Binding Model with Bayes v1.01.02',
+        'Variable Precision Binding Model with Bayes v1.01.02trialbytrial',
+        'Variable Precision Binding Model with Bayes v1.01.02aggregated',
         'Slot Averaging Model with Bayes v1.02.03memory',
         'Slot Averaging Model with Bayes v1.02.03no memory state'
-    ])
+    ]
+)
 
     for i, model_name in enumerate(models):
         # plotProbeType(participants, model_name)
