@@ -92,13 +92,13 @@ classifyProbeType <- function(data, exp){
     if (exp == 2 | exp == 1){
       if (exp == 1){
         if (data$TrialCondition[i] == 1){
-          data$ProbeType[i] = 'Same'
+          data$ProbeType[i] = 'positive'
         }else{
           if (data$TrialCondition[i] == 2){
-            data$ProbeType[i] = 'External Change'
+            data$ProbeType[i] = 'new'
           }
           else{
-            data$ProbeType[i] = 'Internal Change'
+            data$ProbeType[i] = 'intrusion'
           }
         }
         
@@ -108,7 +108,7 @@ classifyProbeType <- function(data, exp){
       }else{
       
         if (data$ColorProbe[i] == data$ColorTarget[i]){
-          data$ProbeType[i] = 'Same'
+          data$ProbeType[i] = 'positive'
           data$SimPC[i] = 1-data$IM[i]
         }
         else {
@@ -123,9 +123,9 @@ classifyProbeType <- function(data, exp){
           }
           
           if (intrusion == TRUE){
-            data$ProbeType[i] = 'Internal Change'
+            data$ProbeType[i] = 'intrusion'
           } else{
-            data$ProbeType[i] = 'External Change'
+            data$ProbeType[i] = 'new'
           }
           data$SimPC[i] = data$IM[i]
         }
@@ -210,7 +210,7 @@ names(data) <- c('ID', 'Exp', 'ProbeType', 'Setsize', 'PC', 'RT')
 
 # Exp effect
 exp0 <- lmBF(PC ~ ID + ProbeType*Setsize, whichRandom = 'ID', data = data)
-exp1 <- lmBF(PC ~ Exp + ID + ProbeType*Setsize, whichRandom = 'ID', data = data)
+exp1 <- lmBF(PC ~ ID + ProbeType*Setsize*Exp, whichRandom = 'ID', data = data)
 
 exp0/exp1
 
@@ -252,7 +252,7 @@ tmp_data[, 5] <- tmp_data_sd[, 3] / sqrt(20)
 tmp_data[, 6] <- tmp_data_sd[, 4] / sqrt(20)
 names(tmp_data) <- c('ProbeType', 'Setsize', 'PC', 'RT', 'PC_SE', 'RT_SE')
 pd <- position_dodge(.1)
-plot_probetype <- ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = ProbeType, group = ProbeType) + 
+plot_probetype <- ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = ProbeType, colour = ProbeType, group = ProbeType) + 
   geom_line(position = pd, size = 1) + 
   geom_errorbar(aes(ymin=PC-PC_SE, ymax=PC+PC_SE), width=.1, position = pd, size = 1) + 
   geom_point(position = pd, size = 1) +
@@ -260,7 +260,7 @@ plot_probetype <- ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = Prob
   xlab('Set Size') +
   ylab('Propotion of Correct') +
   jtools::theme_apa() +
-  scale_linetype_discrete(name = 'Probe types') +
+  # scale_linetype_discrete(name = 'Probe types') +
   theme(text = element_text(size=14)) +
   theme(legend.text = element_text(size=12))  +
   theme(legend.position=c(0.3, 0.2))
@@ -274,18 +274,18 @@ plot_probetype <- ggplot(data=tmp_data) + aes(x=Setsize, y = PC, linetype = Prob
 #   xlab('Set Size') +
 #   ylab('Reaction Time (s)')
 
-bins <- seq(0, 180, 5)
+bins <- seq(0, 180, 10)
 tmp_data <- data.frame()
 for (sz in 1:6){
-  h1 <- hist(x = exp2.data[exp2.data$Setsize==sz & exp2.data$Response==0,]$dissimilarity, breaks = bins, plot = 0)
-  h2 <- hist(x = exp2.data[exp2.data$Setsize==sz,]$dissimilarity, breaks = bins, plot = 0)
+  h1 <- hist(x = exp.data[exp.data$Setsize==sz & exp.data$Response!=1,]$dissimilarity, breaks = bins, plot = 0)
+  h2 <- hist(x = exp.data[exp.data$Setsize==sz,]$dissimilarity, breaks = bins, plot = 0)
   tmp_data <- rbind(tmp_data, cbind(sz, bins[-length(bins)], h1$counts/h2$counts))
 }
 
 names(tmp_data) <- c('Setsize', 'breaks', 'frequency')
 tmp_data$Setsize <- factor(tmp_data$Setsize)
 
-plot_simgradient <- ggplot(data=tmp_data)+aes(x = breaks, y = frequency, linetype = Setsize)+
+plot_simgradient <- ggplot(data=tmp_data)+aes(x = breaks, y = frequency, colour = Setsize, linetype = Setsize)+
   geom_line(position = pd, size = 1) +
   ylim(0, 1) +
   xlab('Similarity between target and probe') +
@@ -293,8 +293,10 @@ plot_simgradient <- ggplot(data=tmp_data)+aes(x = breaks, y = frequency, linetyp
   jtools::theme_apa() +
   #geom_line(aes(breaks, IM), color = 'red', size = 2) +
   theme(text = element_text(size=14)) +
-  theme(legend.position=c(0.7, 0.8))
+  theme(legend.position=c(0.7, 0.7))
 
+png("Analysis/Figs/data.png", width = 800, height = 400)
+plot_grid(plot_simgradient, plot_probetype, nrow=1, ncol = 2)
+dev.off()
 
-plot_grid(plot_probetype, plot_simgradient, nrow=1, ncol = 2)
 

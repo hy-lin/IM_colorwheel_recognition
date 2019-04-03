@@ -164,6 +164,10 @@ def fit(participant, model = 'IMBayes', fit_mode = 'recognition', inference_know
         tbf_model = ResourceModelsBayes.SlotAveragingBayes(inference_knowledge = inference_knowledge)
         tbf_model.discription = 'The Slot Averaging Model with different level of knowledge in inference rule'
 
+    if model == 'SASwap':
+        tbf_model = ResourceModelsBayes.SlotAveragingBindingBayes(inference_knowledge = inference_knowledge)
+        tbf_model.discription = 'The Slot Averaging Model with different level of knowledge in inference rule'
+
     if model == 'VP':
         tbf_model = ResourceModelsBayes.VariablePrecisionBayes(inference_knowledge = inference_knowledge)
         tbf_model.discription = 'The Variable Precision Model with different level of knowledge in inference rule'
@@ -291,7 +295,7 @@ def fitExp1():
      
     for inference_knowledge in inference_knowledges:
         with Pool(20) as p:
-            p.starmap(fit, [(participants[pID], 'SA', 'recognition', inference_knowledge) for pID in participants.keys()])
+            p.starmap(fit, [(participants[pID], 'SASwap', 'recognition', inference_knowledge) for pID in participants.keys()])
         try:
             old_simulation_data = loadExp1SimulationData()
         except:
@@ -311,7 +315,7 @@ def fitExp2():
 
     for inference_knowledge in inference_knowledges:
         with Pool(20) as p:
-            p.starmap(fit, [(participants[pID], 'SA', 'recognition', inference_knowledge) for pID in participants.keys()])
+            p.starmap(fit, [(participants[pID], 'SASwap', 'recognition', inference_knowledge) for pID in participants.keys()])
         try:
             old_simulation_data = loadExp2SimulationData()
         except:
