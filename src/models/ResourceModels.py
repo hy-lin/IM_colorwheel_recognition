@@ -47,7 +47,7 @@ class SlotAveraging(object):
             return self.kappa
 
         sigma = numpy.sqrt(1.0/self.kappa)
-        
+
         k_sz_ratio = self.k / trial.set_size
         lower_slot_number = numpy.floor(k_sz_ratio)
         higher_slot_number = lower_slot_number + 1

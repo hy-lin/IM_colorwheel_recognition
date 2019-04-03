@@ -36,11 +36,7 @@ class SlotAveragingBayes(ResourceModels.SlotAveraging):
             return numpy.sum((d > 0) * p_recall)
 
     def _getD(self, trial):
-        if self.inference_knowledge == 'memory':
-            act = self._getActivation(trial.probe.color, self.kappa)
-        else:
-            pm = self._getPMemory(trial)
-            act = self._getPred(trial, self.kappa, pm)
+        act = self._getActivation(trial.probe.color, self.kappa)
 
         return -numpy.log(2.0 * numpy.pi * act)
 
