@@ -147,11 +147,11 @@ class VariablePrecision(object):
         self.quantiles = numpy.arange(self.steps/2, 1, self.steps)
         self.max_set_size = 6
 
-        self.max_k = 650
+        self.max_k = 750
         self._create_j2k()
 
     def _create_j2k(self):
-        ks = numpy.arange(0.05, self.max_k, 0.05)
+        ks = numpy.arange(0.0, self.max_k, 0.1)
         js = ks * scipy.special.i1(ks) / scipy.special.i0(ks)
         self.j2k = scipy.interpolate.interp1d(js, ks)
 
