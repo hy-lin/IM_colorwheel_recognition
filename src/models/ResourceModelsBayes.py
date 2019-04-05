@@ -111,9 +111,9 @@ class VariablePrecisionBindingBayes(ResourceModels.VariablePrecisionBinding):
 
         self.model_name_prefix = 'Variable Precision Binding Model with Bayes'
 
-        self.major_version = 1
+        self.major_version = 2
         self.middle_version = 1
-        self.minor_version = 2
+        self.minor_version = 1
 
         self.inference_knowledge = inference_knowledge
 

@@ -147,11 +147,11 @@ class VariablePrecision(object):
         self.quantiles = numpy.arange(self.steps/2, 1, self.steps)
         self.max_set_size = 6
 
-        self.max_k = 750
+        self.max_k = 650
         self._create_j2k()
 
     def _create_j2k(self):
-        ks = numpy.arange(0.0, self.max_k, 0.05)
+        ks = numpy.arange(0.05, self.max_k, 0.05)
         js = ks * scipy.special.i1(ks) / scipy.special.i0(ks)
         self.j2k = scipy.interpolate.interp1d(js, ks)
 
@@ -192,13 +192,9 @@ class VariablePrecision(object):
         x_ind = numpy.arange(360) - mu
 
         if return_mode == 'aggregated':
-            J = self.J1 / ((sz+1) ** self.alpha)
-            kappa = float(self.j2k(J))
+            aggregated_distribution = numpy.mean(self.distribution[set_size-1], axis = 0)
+            return aggregated_distribution[x_ind]
 
-            angs = mu - numpy.arange(0, 360)
-            rads = angs * numpy.pi / 180.0
-
-            return distribution = scipy.stats.vonmises(kappa).pdf(rads)
         else:
             return self.distribution[set_size-1][:, x_ind]
         
@@ -224,7 +220,7 @@ class VariablePrecisionBinding(VariablePrecision):
         self.kappa_s_scaling = kappa_s_scaling
 
         self.model_name_prefix = 'Variable Precision Binding Model'
-        self.major_version = 1
+        self.major_version = 2
         self.middle_version = 1
         self.minor_version = 1
         self.model_name = self.updateModelName()
@@ -283,10 +279,13 @@ class VariablePrecisionBinding(VariablePrecision):
         self.spatial_distribution = [numpy.zeros((len(self.quantiles), len(spatial_rads))) for i in range(self.max_set_size)]
         for sz in range(self.max_set_size):
             J = self.J1 / ((sz+1) ** self.alpha)
-            kappas = scipy.stats.gamma.ppf(self.quantiles, J/self.tau, scale = self.tau)
+            Js = scipy.stats.gamma.ppf(self.quantiles, J/self.tau, scale = self.tau)
+            kappas = self.j2k(Js)
+            Js_s = Js * self.kappa_s_scaling
+            kappas_s = self.j2k(Js_s)
 
             for iteration, kappa in enumerate(kappas):
-                kappa_s = kappa * self.kappa_s_scaling
+                kappa_s = kappas_s[iteration]
                 if kappa >= 650:
                     kappa = 650
 
