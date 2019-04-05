@@ -92,7 +92,7 @@ classifyProbeType <- function(data, exp){
     if (exp == 2 | exp == 1){
       if (exp == 1){
         if (data$TrialCondition[i] == 1){
-          data$ProbeType[i] = 'positive'
+          data$ProbeType[i] = 'same'
         }else{
           if (data$TrialCondition[i] == 2){
             data$ProbeType[i] = 'new'
@@ -108,7 +108,7 @@ classifyProbeType <- function(data, exp){
       }else{
       
         if (data$ColorProbe[i] == data$ColorTarget[i]){
-          data$ProbeType[i] = 'positive'
+          data$ProbeType[i] = 'same'
           data$SimPC[i] = 1-data$IM[i]
         }
         else {

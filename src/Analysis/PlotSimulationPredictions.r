@@ -18,7 +18,7 @@ loadSimulationData <- function(exp){
                    'Response', 'Correctness', 'RT',
                    'IM_focus_exp', 'IM_focus_trial', 'IM_nofocus_exp', 'IM_nofocus_trial',
                    'VP_trial', 'VP_exp', 'VP_Binding_trial', 'VP_Binding_exp',
-                   'SA_memory', 'SA_no_memory')
+                   'SA_memory', 'SA_no_memory', 'SA_Swap_memory', 'SA_Swap_no_memory')
   data$ID <- factor(data$ID)
   data$TrialIndex <- factor(data$TrialIndex)
   data$TrialCondition <- factor(data$TrialCondition)
@@ -32,7 +32,7 @@ classifyProbeType <- function(data, exp, model){
   for (i in 1:length(data$ProbeType)){
     if (exp == 1 | exp == 2){
       if (data$TrialCondition[i] == 'positive'){
-        data$ProbeType[i] = 'positive'
+        data$ProbeType[i] = 'same'
         data$SimPC[i] = 1-data[i, model]
       }
       else {
@@ -116,10 +116,10 @@ wrapDistance <- function(color1, color2){
 
 #######################
 
-model1 = 'VP_trial'
-model1_name = 'VP with knowledge of the precision of the target'
-model2 = 'VP_exp'
-model2_name = 'VP without the knowledge of the precision of the target'
+model1 = 'SA_Swap_no_memory'
+model1_name = 'SA Swap without the knowledge of the state of the target'
+model2 = 'VP_Binding_exp'
+model2_name = 'VP Binding without the knowledge of the precision of the target'
 
 exp2.data <- loadSimulationData(2)
 exp2.data <- classifyProbeType(exp2.data, 2, model1)
@@ -185,7 +185,8 @@ plot_simgradient1 <- ggplot(data=tmp_data)+aes(x = breaks, y = frequency, linety
   #geom_line(aes(breaks, IM), color = 'red', size = 2) +
   theme(text = element_text(size=14)) +
   theme(legend.position=c(0.7, 0.7)) +
-  ggtitle(model1_name)
+  ggtitle(model1_name) +
+  theme(plot.title = element_text(size = 12))
 
 
 ######################################
@@ -256,10 +257,11 @@ plot_simgradient2 <- ggplot(data=tmp_data)+aes(x = breaks, y = frequency, linety
   #geom_line(aes(breaks, IM), color = 'red', size = 2) +
   theme(text = element_text(size=14)) +
   theme(legend.position=c(0.7, 0.7)) +
-  ggtitle(model2_name)
+  ggtitle(model2_name) +
+  theme(plot.title = element_text(size = 12))
 
 
 
-png("Analysis/Figs/VPfitting.png", width = 800, height = 800)
+png("Analysis/Figs/VPBindingSASwapfitting.png", width = 800, height = 800)
 plot_grid(plot_simgradient1, plot_probetype1, plot_simgradient2, plot_probetype2, nrow=2, ncol = 2)
 dev.off()

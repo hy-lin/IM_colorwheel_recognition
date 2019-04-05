@@ -466,7 +466,9 @@ def main():
         'Variable Precision Binding Model with Bayes v1.01.02trialbytrial',
         'Variable Precision Binding Model with Bayes v1.01.02aggregated',
         'Slot Averaging Model with Bayes v1.02.03memory',
-        'Slot Averaging Model with Bayes v1.02.03no memory state'
+        'Slot Averaging Model with Bayes v1.02.03no memory state',
+        'Slot Averaging Model with Binding errors and Bayes v1.02.01memory',
+        'Slot Averaging Model with Binding errors and Bayes v1.02.01no memory state'
     ]
 
 
@@ -498,7 +500,9 @@ def main():
         3,
         3,
         2,
-        2
+        2,
+        3,
+        3
     ]
     # outputParameters(participants, 'Interference Model with Bayes v1.02.02', 6)
     # outputParameters(participants, 'Interference Model with Bayes and Bias focus experiment_specific v1.00.00', 7)
@@ -516,19 +520,7 @@ def main():
     # outputMeasurementModelParameters(participants, 'Mixture model with Bayes and bias v1.01.01')
     # # outputMeasurementModelParameters(participants, 'Mixture Model v1.01.01')
 
-    outputExp1ResultAsDataFile(participants, [
-        'Interference Model with Bayes focus experiment_specific v2.00.00',
-        'Interference Model with Bayes focus trial_specific v2.00.00',
-        'Interference Model with Bayes no_focus trial_specific v2.00.00',
-        'Interference Model with Bayes no_focus experiment_specific v2.00.00',
-        'Variable Precision Model with Bayes v1.01.02trialbytrial',
-        'Variable Precision Model with Bayes v1.01.02aggregated',
-        'Variable Precision Binding Model with Bayes v1.01.02trialbytrial',
-        'Variable Precision Binding Model with Bayes v1.01.02aggregated',
-        'Slot Averaging Model with Bayes v1.02.03memory',
-        'Slot Averaging Model with Bayes v1.02.03no memory state'
-    ]
-)
+    outputExp1ResultAsDataFile(participants, models)
 
     for i, model_name in enumerate(models):
         # plotProbeType(participants, model_name)
