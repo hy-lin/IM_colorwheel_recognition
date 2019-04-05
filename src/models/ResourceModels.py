@@ -1,6 +1,7 @@
 import numpy
 import scipy.stats
 import scipy.special
+import scipy.interpolate
 import time
 
 class SlotAveraging(object):
@@ -130,9 +131,9 @@ class VariablePrecision(object):
         self.alpha = alpha
 
         self.model_name_prefix = 'Variable precision Model'
-        self.major_version = 1
+        self.major_version = 2
         self.middle_version = 1
-        self.minor_version = 3
+        self.minor_version = 1
         self.model_name = self.updateModelName()
         self.n_parameters = 3
 
@@ -145,6 +146,15 @@ class VariablePrecision(object):
         self.steps = 0.002
         self.quantiles = numpy.arange(self.steps/2, 1, self.steps)
         self.max_set_size = 6
+
+        self.max_k = 750
+        self._create_j2k()
+
+    def _create_j2k(self):
+        ks = numpy.arange(0.0, self.max_k, 0.05)
+        js = ks * scipy.special.i1(ks) / scipy.special.i0(ks)
+        self.j2k = scipy.interpolate.interp1d(js, ks)
+
 
     def updateModelName(self):
         self.model_name = self.model_name_prefix + ' v{}.{:02d}.{:02d}'.format(self.major_version, self.middle_version, self.minor_version)
@@ -182,8 +192,13 @@ class VariablePrecision(object):
         x_ind = numpy.arange(360) - mu
 
         if return_mode == 'aggregated':
-            aggregated_distribution = numpy.mean(self.distribution[set_size-1], axis = 0)
-            return aggregated_distribution[x_ind]
+            J = self.J1 / ((sz+1) ** self.alpha)
+            kappa = float(self.j2k(J))
+
+            angs = mu - numpy.arange(0, 360)
+            rads = angs * numpy.pi / 180.0
+
+            return distribution = scipy.stats.vonmises(kappa).pdf(rads)
         else:
             return self.distribution[set_size-1][:, x_ind]
         
@@ -194,7 +209,8 @@ class VariablePrecision(object):
         self.distribution = [numpy.zeros((len(self.quantiles), 360)) for i in range(self.max_set_size)]
         for sz in range(self.max_set_size):
             J = self.J1 / ((sz+1) ** self.alpha)
-            kappas = scipy.stats.gamma.ppf(self.quantiles, J/self.tau, scale = self.tau)
+            Js = scipy.stats.gamma.ppf(self.quantiles, J/self.tau, scale = self.tau)
+            kappas = self.j2k(Js)
 
             for iteration, kappa in enumerate(kappas):
                 distribution = scipy.stats.vonmises(kappa).pdf(rads)
