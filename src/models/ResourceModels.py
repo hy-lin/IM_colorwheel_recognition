@@ -215,9 +215,9 @@ class VariablePrecision(object):
         self.updating_distribution = False
 
 class VariablePrecisionBinding(VariablePrecision):
-    def __init__(self, J1 = 60.0, tau = 44.47, alpha = 0.7386, kappa_s_scaling = 0.05):
+    def __init__(self, J1 = 60.0, tau = 44.47, alpha = 0.7386, J_s_scaling = 0.05):
         super(VariablePrecisionBinding, self).__init__(J1, tau, alpha)
-        self.kappa_s_scaling = kappa_s_scaling
+        self.J_s_scaling = J_s_scaling
 
         self.model_name_prefix = 'Variable Precision Binding Model'
         self.major_version = 2
@@ -231,7 +231,7 @@ class VariablePrecisionBinding(VariablePrecision):
 
         self.description = 'This is the VP with binding model in IM paper'
 
-        self.xmax = [400.0, 400.0, 15.0, 5.0]
+        self.xmax = [400.0, 400.0, 2.0, 5.0]
         self.xmin = [0.0, 0.000001, 0.0, 0.0]
 
 
@@ -272,8 +272,8 @@ class VariablePrecisionBinding(VariablePrecision):
     def _resimulate_distribution(self):
         angs = numpy.arange(0, 360)
         rads = angs * numpy.pi / 180.0
-        spatial_angs = numpy.arange(0, self.max_spatial_distance+1)
-        spatial_rads = spatial_angs * numpy.pi / (self.max_spatial_distance+1)
+        spatial_angs = numpy.arange(0, self.n_spatial_locations)
+        spatial_rads = spatial_angs * 2 * numpy.pi / self.n_spatial_locations
 
         self.distribution = [numpy.zeros((len(self.quantiles), 360)) for i in range(self.max_set_size)]
         self.spatial_distribution = [numpy.zeros((len(self.quantiles), len(spatial_rads))) for i in range(self.max_set_size)]
@@ -281,7 +281,7 @@ class VariablePrecisionBinding(VariablePrecision):
             J = self.J1 / ((sz+1) ** self.alpha)
             Js = scipy.stats.gamma.ppf(self.quantiles, J/self.tau, scale = self.tau)
             kappas = self.j2k(Js)
-            Js_s = Js * self.kappa_s_scaling
+            Js_s = Js * self.J_s_scaling
             kappas_s = self.j2k(Js_s)
 
             for iteration, kappa in enumerate(kappas):

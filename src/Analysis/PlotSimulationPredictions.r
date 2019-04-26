@@ -190,9 +190,6 @@ plot_simgradient1 <- ggplot(data=tmp_data)+aes(x = breaks, y = frequency, linety
 
 
 ######################################
-
-
-
 exp2.data <- loadSimulationData(2)
 exp2.data <- classifyProbeType(exp2.data, 2, model2)
 

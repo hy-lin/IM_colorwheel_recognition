@@ -106,8 +106,8 @@ class VariablePrecisionBayes(ResourceModels.VariablePrecision):
         return -numpy.log(2.0 * numpy.pi * act)
 
 class VariablePrecisionBindingBayes(ResourceModels.VariablePrecisionBinding):
-    def __init__(self, J1 = 60.0, tau = 44.47, alpha = 0.7386, kappa_s_scaling = 0.05, inference_knowledge = 'trialbytrial'):
-        super(VariablePrecisionBindingBayes, self).__init__(J1, tau, alpha, kappa_s_scaling)
+    def __init__(self, J1 = 60.0, tau = 44.47, alpha = 0.7386, J_s_scaling = 0.05, inference_knowledge = 'trialbytrial'):
+        super(VariablePrecisionBindingBayes, self).__init__(J1, tau, alpha, J_s_scaling)
 
         self.model_name_prefix = 'Variable Precision Binding Model with Bayes'
 
