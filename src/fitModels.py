@@ -15,6 +15,7 @@ import sys
 sys.path.insert(0, 'models\\')
 import IMBayes
 import ResourceModelsBayes
+import ResourceModels
 import SummedActivation
 import IM
 
@@ -71,7 +72,6 @@ class Wrapper(object):
         self.participant.fitting_result[self.model.model_name] = result
     
     def _wrapper(self, x):
-        
         self.t0 = time.time()
         self.model.updateParameters(x)
 
@@ -97,7 +97,7 @@ class Wrapper(object):
                 trial.simulation[self.model.model_name] = self.model.getPrediction(trial)
         elif self.fit_mode == 'recall':
             for trial in self.participant.recall_trials:
-                trial.simulation[self.model.model_name] = self.model.getPrediction(trial)
+                trial.simulation[self.model.model_name] = self.recall_model.getPrediction(trial)
         else:
             for trial in self.participant.recall_trials:
                 trial.simulation[self.model.model_name] = self.recall_model.getPrediction(trial)
@@ -118,7 +118,7 @@ class Wrapper(object):
         elif self.fit_mode == 'recall':
             for trial in self.participant.recall_trials:
                 ll_t = numpy.log(
-                    trial.simulation[self.model.model_name][trial.response]
+                    trial.simulation[self.model.model_name][int(trial.response)]
                 )
                 if not numpy.isneginf(ll_t):
                     ll -= ll_t
@@ -149,9 +149,9 @@ class Wrapper(object):
             
         print(self.model.getParametersAsVector())
     
-        return ll + 2*self.model.n_parameters
+        return 2*ll + 2*self.model.n_parameters
     
-def fit(participant, model = 'IMBayes', fit_mode = 'recognition', inference_knowledge = ['focus', 'experiment_specific']):
+def fit(participant, model = 'IMBayes', fit_mode = 'recognition', inference_knowledge = ['focus', 'trial_specific']):
     # vpbayes = ResourceModelsBayes.VariablePrecisionBindingBayes()
     # vpbayes.discription = 'The VariablePrecisionBayes with binding'
     
@@ -163,6 +163,9 @@ def fit(participant, model = 'IMBayes', fit_mode = 'recognition', inference_know
     if model == 'SA':
         tbf_model = ResourceModelsBayes.SlotAveragingBayes(inference_knowledge = inference_knowledge)
         tbf_model.discription = 'The Slot Averaging Model with different level of knowledge in inference rule'
+        tbf_model.model_name = tbf_model.updateModelName() + fit_mode
+
+        recall_model = ResourceModels.SlotAveraging()
 
     if model == 'SASwap':
         tbf_model = ResourceModelsBayes.SlotAveragingBindingBayes(inference_knowledge = inference_knowledge)
@@ -171,16 +174,21 @@ def fit(participant, model = 'IMBayes', fit_mode = 'recognition', inference_know
     if model == 'VP':
         tbf_model = ResourceModelsBayes.VariablePrecisionBayes(inference_knowledge = inference_knowledge)
         tbf_model.discription = 'The Variable Precision Model with different level of knowledge in inference rule'
+        tbf_model.model_name = tbf_model.updateModelName() + fit_mode
+
+        recall_model = ResourceModels.VariablePrecision()
 
     if model == 'VPBinding':
         tbf_model = ResourceModelsBayes.VariablePrecisionBindingBayes(inference_knowledge = inference_knowledge)
         tbf_model.discription = 'The Variable Precision Model with swap and different level of knowledge in inference rule'
         
-    if model == 'IMBayes':
+    if model == 'IM':
         tbf_model = IMBayes.IMBayes()
         tbf_model.inference_knowledge = inference_knowledge
-        tbf_model.model_name = tbf_model.updateModelName()
+        tbf_model.model_name = tbf_model.updateModelName() + fit_mode
         tbf_model.discription = 'The vanilla IM Bayes model with different level of knowledge in inference rule'
+
+        recall_model = IM.IM()
     
     if model == 'IMBayesBias' and fit_mode == 'recognition':
         tbf_model = IMBayes.IMBayesBias()
@@ -203,12 +211,12 @@ def fit(participant, model = 'IMBayes', fit_mode = 'recognition', inference_know
         tbf_model.discription = 'The IM Bayes model with not always optimal knowledge in inference rule and Bias in inference rule'
     
 
-    if model == 'IM':
-        if fit_mode == 'recognitoin':
-            raise ValueError('IM can not fit to recognition data directly.')
+    # if model == 'IM':
+    #     if fit_mode == 'recognitoin':
+    #         raise ValueError('IM can not fit to recognition data directly.')
 
-        tbf_model = IM.IM()
-        tbf_model.model_name = tbf_model.updateModelName()
+    #     tbf_model = IM.IM()
+    #     tbf_model.model_name = tbf_model.updateModelName()
 
     wrapper = Wrapper(participant, tbf_model, recall_model, fit_mode)
     wrapper.fit()
@@ -269,18 +277,20 @@ def merge(simulationData, tmpData):
         for model in tmpData[pID].fitting_result.keys():
             simulationData[pID].fitting_result[model] = tmpData[pID].fitting_result[model]
             
-            for i, trial in enumerate(simulationData[pID].trials):
-                trial.simulation[model] = tmpData[pID].trials[i].simulation[model]
+            if model in tmpData[pID].trials[0].simulation.keys():
+                try:
+                    for i, trial in enumerate(simulationData[pID].trials):
+                        trial.simulation[model] = tmpData[pID].trials[i].simulation[model]
+                except:
+                    print('failed to merge recognition trials')
 
-            # if 'recall_trials' in tmpData[pID].__dict__.keys():
-            #     if 'recall_trials' in simulationData[pID].__dict__.keys():
-            #         try:
-            #             for i, recall_trial in enumerate(simulationData[pID].trials):
-            #                 recall_trial.simulation[model] = tmpData[pID].recall_trials[i].simulation[model]
-            #         except:
-            #             pass
-            #     else:
-            #         simulationData[pID].recall_trials = tmpData[pID].recall_trials
+            if model in tmpData[pID].recall_trials[0].simulation.keys():
+                try:
+                    for i, recall_trial in enumerate(simulationData[pID].recall_trials):
+                        recall_trial.simulation[model] = tmpData[pID].recall_trials[i].simulation[model]
+                except:
+                    print(recall_trial)
+                    print('failed to merge recall trials')
 
     return simulationData
 
@@ -332,12 +342,14 @@ def fitExp3():
     #     ['no_focus', 'experiment_specific']
     # ]
 
-    inference_knowledge = ['focus', 'experiment_specific']
+    # inference_knowledge = ['focus', 'trial_specific']
+
+    inference_knowledge = ['focus', 'trial_specific']
 
     participants = loadExp3()
 
     with Pool(20) as p:
-        p.starmap(fit, [(participants[pID], 'IMBayesBias', 'recallNRecognition', inference_knowledge) for pID in participants.keys()])
+        p.starmap(fit, [(participants[pID], 'IM', 'both', inference_knowledge) for pID in participants.keys()])
     
     try:
         old_simulation_data = loadExp3SimulationData()
@@ -366,11 +378,31 @@ def fitExp3():
     #     d['participants'] = participants
     #     d.close()
 
+def fitExp3Recognition():
+    participants = loadExp3()
+
+    inference_knowledge = ['focus', 'trial_specific']
+
+    with Pool(20) as p:
+        p.starmap(fit, [(participants[pID], 'IM', 'recognition', inference_knowledge) for pID in participants.keys()])
+
+    try:
+        old_simulation_data = loadExp3SimulationData()
+    except:
+        old_simulation_data = participants
+    participants = merge(old_simulation_data, loadTmpData())
+    
+    d = shelve.open('Data/fitting result/Exp3/fitting_results.dat')
+    d['participants'] = participants
+    d.close()
+
 def fitExp3Recall():
     participants = loadExp3()
 
+    inference_knowledge = ['focus', 'trial_specific']
+
     with Pool(20) as p:
-        p.starmap(fit, [(participants[pID], 'IMBayes', 'both') for pID in participants.keys()])
+        p.starmap(fit, [(participants[pID], 'IM', 'recall', inference_knowledge) for pID in participants.keys()])
 
     try:
         old_simulation_data = loadExp3SimulationData()
@@ -383,21 +415,24 @@ def fitExp3Recall():
     d.close()
 
 def fixingMerges():
-    participants = loadExp2()
-
     # fit(participants[1], 'IMBayesBias', 'recognition', inference_knowledge)
 
     try:
-        old_simulation_data = loadExp2SimulationData()
+        old_simulation_data = loadExp3SimulationData()
     except:
+        participants = loadExp3()
         old_simulation_data = participants
+    
     participants = merge(old_simulation_data, loadTmpData())
     
-    d = shelve.open('Data/fitting result/Exp2/fitting_results.dat')
+    d = shelve.open('Data/fitting result/Exp3/fitting_results.dat')
     d['participants'] = participants
     d.close()
 
 if __name__ == '__main__':
-    fitExp1()
-    fitExp2()
+    fitExp3()
+    fitExp3Recognition()
+    fitExp3Recall()
+    # fixingMerges()
+
     pass

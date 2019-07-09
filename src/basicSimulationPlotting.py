@@ -225,34 +225,75 @@ def loadParticipants(exp_number):
     return participants
 
 
-def outputParameters(participants, model_name, displayed_model_name = None):
+def outputParameters(participants, model_name, displayed_model_name = None, seperate_AIC = False):
     AIC = 0
     parms = numpy.zeros((len(participants), len(participants[1].fitting_result[model_name].x)))
-    for i, pID in enumerate(participants.keys()):
+    
 
-        #         print(participants[pID].fitting_result[model_name].fun, participants[pID].fitting_result[model_name].x)
-        try:
-            AIC += participants[pID].fitting_result[model_name].fun
-            # print(participants[pID].fitting_result[model_name].x, participants[pID].fitting_result[model_name].fun)
+    if seperate_AIC:
+        
+        recognition_AIC = 0
+        recall_AIC = 0
+
+        for i, pID in enumerate(participants.keys()):
             parms[i] = participants[pID].fitting_result[model_name].x
-            # print(participants[pID].fitting_result[model_name].fun * 2, participants[pID].fitting_result[model_name].x)
-        except:
-            ll = 0
-            for trial in participants[pID].trials:
-                ll_t = numpy.log((trial.response==1) * trial.simulation[model_name] + \
-                                (trial.response==2) * (1-trial.simulation[model_name]))
-                # print(ll_t)
-                if not numpy.isneginf(ll_t):
-                    ll -= ll_t
-            # else:
-                # ll -= 99999999
-            AIC += ll
+            try:
+                ll = 0
+                for trial in participants[pID].trials:
+                    ll_t = numpy.log((trial.response==1) * trial.simulation[model_name] + \
+                                    (trial.response==2) * (1-trial.simulation[model_name]))
+                    if not numpy.isneginf(ll_t):
+                        ll -= ll_t
+                recognition_AIC += ll
+            except:
+                pass
 
+            try:
+                ll = 0
+                for trial in participants[pID].recall_trials:
+                    #print(trial.simulation.keys())
+                    ll_t = numpy.log(
+                        trial.simulation[model_name][int(trial.response)]
+                    )
+                    if not numpy.isneginf(ll_t):
+                        ll -= ll_t
+                    else:
+                        ll += 99999999
+                recall_AIC += ll
+            except BaseException  as e:
+                #print(e)
+                pass
 
-    if displayed_model_name is not None:
-        print('Model Name: {}, AIC: {}'.format(displayed_model_name, AIC))
+        if displayed_model_name is not None:
+            print('Model Name: {}, Recognition AIC: {}, Recall AIC: {}'.format(displayed_model_name, recognition_AIC*2, recall_AIC*2))
+        else:
+            print('Model Name: {}, Recognition AIC: {}, Recall AIC: {}'.format(model_name, recognition_AIC*2, recall_AIC*2))
+
     else:
-        print('Model Name: {}, AIC: {}'.format(model_name, AIC))
+        for i, pID in enumerate(participants.keys()):
+            #         print(participants[pID].fitting_result[model_name].fun, participants[pID].fitting_result[model_name].x)
+            try:
+                AIC += participants[pID].fitting_result[model_name].fun
+                # print(participants[pID].fitting_result[model_name].x, participants[pID].fitting_result[model_name].fun)
+                parms[i] = participants[pID].fitting_result[model_name].x
+                # print(participants[pID].fitting_result[model_name].fun * 2, participants[pID].fitting_result[model_name].x)
+            except:
+                ll = 0
+                for trial in participants[pID].trials:
+                    ll_t = 2 * numpy.log((trial.response==1) * trial.simulation[model_name] + \
+                                    (trial.response==2) * (1-trial.simulation[model_name]))
+                    # print(ll_t)
+                    if not numpy.isneginf(ll_t):
+                        ll -= ll_t
+                # else:
+                    # ll -= 99999999
+                AIC += ll
+
+
+        if displayed_model_name is not None:
+            print('Model Name: {}, AIC: {}'.format(displayed_model_name, AIC))
+        else:
+            print('Model Name: {}, AIC: {}'.format(model_name, AIC))
     
     parameters_median = numpy.median(parms, axis = 0)
     parameters_mean = numpy.mean(parms, axis = 0)
@@ -268,7 +309,8 @@ def outputParameters(participants, model_name, displayed_model_name = None):
     print(output_string)
 
     # print('Individual parameters')
-    # print(parms)
+    # for parm in parms:
+    #     print(parm)
 
 def outputMeasurementModelParameters(participants, model_name, n_parameter=3, displayed_model_name = None):
     AIC = 0
@@ -458,6 +500,10 @@ def standardOutput(exp):
         'Interference Model with Bayes focus trial_specific v2.00.00',
         'Interference Model with Bayes no_focus trial_specific v2.00.00',
         'Interference Model with Bayes no_focus experiment_specific v2.00.00',
+        'Interference Model with Bayes focus experiment_specific v2.00.00recognition',
+        'Interference Model with Bayes focus experiment_specific v2.00.00recall',
+        'Interference Model with Bayes a g v2.00.00both',
+        'Variable Precision Model with Bayes v2.01.01recallNRecognition',
         'Variable Precision Model with Bayes v2.01.01trialbytrial',
         'Variable Precision Model with Bayes v2.01.01aggregated',
         'Variable Precision Binding Model with Bayes v1.01.02trialbytrial',
@@ -468,15 +514,18 @@ def standardOutput(exp):
         'Slot Averaging Model with Binding errors and Bayes v1.02.01no memory state'
     ]
 
-    outputExp12ResultAsDataFile(participants, models, exp)
+    # outputExp12ResultAsDataFile(participants, models, exp)
 
     for i, model_name in enumerate(models):
-        outputParameters(participants, model_name)
+        try:
+            outputParameters(participants, model_name, seperate_AIC=True)
+        except:
+            continue
 
 
 def main():
-    standardOutput(1)
     standardOutput(2)
+    # standardOutput(2)
    
 if __name__ == '__main__':
     main()

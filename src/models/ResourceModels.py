@@ -36,6 +36,9 @@ class SlotAveraging(object):
         self.k = x[0]
         self.kappa = x[1]
 
+    def getPrediction(self, trial, return_mode = 'aggregated'):
+        return self.getPRecall(trial)
+
     def getPRecall(self, trial):
         kappa = self._getKappa(trial)
         pm = self._getPMemory(trial)
@@ -47,7 +50,7 @@ class SlotAveraging(object):
         if trial.set_size >= self.k:
             return self.kappa
 
-        sigma = numpy.sqrt(1.0/self.kappa)
+        sigma = k2sd(self.kappa)
 
         k_sz_ratio = self.k / trial.set_size
         lower_slot_number = numpy.floor(k_sz_ratio)
@@ -57,7 +60,7 @@ class SlotAveraging(object):
 
         sigma_sz = sigma/numpy.sqrt(lower_slot_number) * lower_slot_precentage + sigma/numpy.sqrt(higher_slot_number) * higher_slot_precentage
 
-        return 1.0/(sigma_sz**2)
+        return sd2k(sigma_sz)
 
     def _getPMemory(self, trial):
         if self.k >= trial.set_size:
@@ -82,6 +85,8 @@ class SlotAveraging(object):
         activation = self._getActivation(trial.target.color, kappa)
         activation /= numpy.sum(activation)
         activation = activation * pm + (1.0-pm) * (1.0 / 360.0)
+
+        activation /= numpy.sum(activation)
 
         return activation
 
@@ -184,6 +189,10 @@ class VariablePrecision(object):
             pred /= numpy.transpose(numpy.tile(numpy.sum(pred, axis = 1), (360, 1)))
 
             return pred
+
+    def getPrediction(self, trial, return_mode = 'aggregated'):
+        return self.getPRecall(trial, return_mode)
+
 
     def _getActivation(self, mu, set_size, return_mode = 'aggregated'):
         if self.updating_distribution:
@@ -311,6 +320,9 @@ class VariablePrecisionBinding(VariablePrecision):
             pred = act
 
         return pred
+
+    def getPrediction(self, trial, return_mode = 'aggregated'):
+        return self.getPRecall(trial, return_mode)
 
     def getPM(self, trial):
         numerator = self._getSpatialActivation(0, 0, trial.set_size)
@@ -444,3 +456,23 @@ class NeuronModel(object):
             color_activation = self._getActivation(mu, self.kappa_color, self.n_color_nodes)
             location_activation = self._getActivation(mu, self.kappa_location, self.n_location_nodes)
             self.neurons += numpy.outer(color_activation, location_activation) / (trial.set_size * self.n_color_nodes * self.n_location_nodes)
+
+
+def k2sd(kappa):
+    if kappa == 0:
+        return numpy.Inf
+
+    if kappa == numpy.Inf:
+        return 0
+
+    return numpy.sqrt(-2.0*numpy.log(scipy.special.i1(kappa) / scipy.special.i0(kappa)))
+
+def sd2k(sd):
+    R = numpy.exp(-sd ** 2 / 2)
+    K = 1 / (R**3 - 4 * R ** 2 + 3 * R)
+    if R < 0.85:
+        K = -0.4 + 1.39 * R + 0.43 / (1-R)
+    if K < 0.53:
+        K = 2 * R + R ** 3 + (5*R**5)/6
+
+    return K
