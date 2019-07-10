@@ -138,7 +138,7 @@ class VariablePrecision(object):
         self.model_name_prefix = 'Variable precision Model'
         self.major_version = 2
         self.middle_version = 1
-        self.minor_version = 1
+        self.minor_version = 2
         self.model_name = self.updateModelName()
         self.n_parameters = 3
 
@@ -195,6 +195,11 @@ class VariablePrecision(object):
 
 
     def _getActivation(self, mu, set_size, return_mode = 'aggregated'):
+        # return_mode:
+        #   "aggregated": return an aggregated distribution
+        #   "trialbytrial": return the entire distribution matrix
+        #   integer: return the distribution at the interger-th row.
+
         if self.updating_distribution:
             self._resimulate_distribution()
 
@@ -204,8 +209,11 @@ class VariablePrecision(object):
             aggregated_distribution = numpy.mean(self.distribution[set_size-1], axis = 0)
             return aggregated_distribution[x_ind]
 
-        else:
+        elif return_mode == 'trialbytrial':
             return self.distribution[set_size-1][:, x_ind]
+
+        else:
+            return self.distribution[set_size-1][return_mode, x_ind]
         
     def _resimulate_distribution(self):
         angs = numpy.arange(0, 360)
@@ -229,7 +237,7 @@ class VariablePrecisionBinding(VariablePrecision):
         self.J_s_scaling = J_s_scaling
 
         self.model_name_prefix = 'Variable Precision Binding Model'
-        self.major_version = 2
+        self.major_version = 3
         self.middle_version = 1
         self.minor_version = 1
         self.model_name = self.updateModelName()
@@ -239,6 +247,8 @@ class VariablePrecisionBinding(VariablePrecision):
         self.max_spatial_distance = numpy.ceil(self.n_spatial_locations / 2)
 
         self.description = 'This is the VP with binding model in IM paper'
+
+        self.n_sims = 5000
 
         self.xmax = [400.0, 400.0, 2.0, 5.0]
         self.xmin = [0.0, 0.000001, 0.0, 0.0]
@@ -262,6 +272,11 @@ class VariablePrecisionBinding(VariablePrecision):
         return numpy.zeros((1, 360))
 
     def _getSpatialActivation(self, location, target_location, set_size, return_mode = 'aggregated'):
+        # return_mode:
+        #   "aggregated": return an aggregated distribution
+        #   "trialbytrial": return the entire distribution matrix
+        #   integer: return the distribution at the interger-th row.
+
         if self.updating_distribution:
             self._resimulate_distribution()
 
@@ -274,9 +289,10 @@ class VariablePrecisionBinding(VariablePrecision):
         if return_mode == 'aggregated':
             aggregated_distribution = numpy.mean(self.spatial_distribution[set_size-1], axis = 0)
             return aggregated_distribution[dist_ind]
-        else:
+        elif return_mode == 'trialbytrial':
             return self.spatial_distribution[set_size-1][:, dist_ind]
-
+        else:
+            return self.spatial_distribution[set_size-1][return_mode, dist_ind]
 
     def _resimulate_distribution(self):
         angs = numpy.arange(0, 360)
@@ -286,9 +302,12 @@ class VariablePrecisionBinding(VariablePrecision):
 
         self.distribution = [numpy.zeros((len(self.quantiles), 360)) for i in range(self.max_set_size)]
         self.spatial_distribution = [numpy.zeros((len(self.quantiles), len(spatial_rads))) for i in range(self.max_set_size)]
+        # self.distribution = [numpy.zeros((self.n_sims, 360)) for i in range(self.max_set_size)]
+        # self.spatial_distribution = [numpy.zeros((self.n_sims, len(spatial_rads))) for i in range(self.max_set_size)]
         for sz in range(self.max_set_size):
             J = self.J1 / ((sz+1) ** self.alpha)
             Js = scipy.stats.gamma.ppf(self.quantiles, J/self.tau, scale = self.tau)
+            # Js = numpy.random.gamma(J/self.tau, scale = self.tau, size = self.n_sims)
             kappas = self.j2k(Js)
             Js_s = Js * self.J_s_scaling
             kappas_s = self.j2k(Js_s)
@@ -306,13 +325,25 @@ class VariablePrecisionBinding(VariablePrecision):
         self.updating_distribution = False
 
     def getPRecall(self, trial, return_mode = 'aggregated'):
-        act = numpy.zeros((len(self.quantiles), 360))
-        for stimulus in trial.stimuli:
-            act += self._getActivation(stimulus.color, trial.set_size, 'trialbytrial') *  \
-                numpy.transpose(numpy.tile(self._getSpatialActivation(stimulus.location, trial.target.location, trial.set_size, 'trialbytrial'), (360, 1)))
+        act = numpy.zeros((self.n_sims, 360))
+
+        t0 = time.time()
+        for sim_index in range(self.n_sims):
+            for stimulus in trial.stimuli:
+                kappa_index = numpy.random.randint(0, len(self.quantiles))
+                act[sim_index] += self._getActivation(stimulus.color, trial.set_size, kappa_index) * \
+                    self._getSpatialActivation(stimulus.location, trial.target.location, trial.set_size, kappa_index)
+
+        print(time.time()-t0)
+        # act = numpy.zeros((len(self.quantiles), 360))
+        # for stimulus in trial.stimuli:
+        #     act += self._getActivation(stimulus.color, trial.set_size, 'trialbytrial') *  \
+        #         numpy.transpose(numpy.tile(self._getSpatialActivation(stimulus.location, trial.target.location, trial.set_size, 'trialbytrial'), (360, 1)))
 
         act = numpy.transpose(numpy.transpose(act) / numpy.sum(act, axis = 1))
 
+        print(time.time()-t0)
+        
         if return_mode == 'aggregated':
             pred = numpy.mean(act, axis = 0)
 
