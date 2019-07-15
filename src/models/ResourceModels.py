@@ -213,7 +213,10 @@ class VariablePrecision(object):
             return self.distribution[set_size-1][:, x_ind]
 
         else:
-            return self.distribution[set_size-1][return_mode, x_ind]
+            if numpy.isscalar(return_mode):
+                return self.distribution[set_size-1][return_mode, x_ind]
+            else:
+                return self.distribution[set_size-1][return_mode, :][:, x_ind]
         
     def _resimulate_distribution(self):
         angs = numpy.arange(0, 360)
@@ -327,24 +330,35 @@ class VariablePrecisionBinding(VariablePrecision):
     def getPRecall(self, trial, return_mode = 'aggregated'):
         act = numpy.zeros((self.n_sims, 360))
 
-        t0 = time.time()
-        for sim_index in range(self.n_sims):
-            for i, stimulus in enumerate(trial.stimuli):
-                kappa_index = numpy.random.randint(0, len(self.quantiles))
-                if i == 0:
-                    target_index = kappa_index
-                act[sim_index] += self._getActivation(stimulus.color, trial.set_size, kappa_index) * \
-                    self._getSpatialActivation(stimulus.location, trial.target.location, trial.set_size, target_index)
+        # t0 = time.time()
+        # for sim_index in range(self.n_sims):
+        #     for i, stimulus in enumerate(trial.stimuli):
+        #         kappa_index = numpy.random.randint(0, len(self.quantiles))
+        #         if i == 0:
+        #             target_kappa_index = kappa_index
+        #         act[sim_index] += self._getActivation(stimulus.color, trial.set_size, kappa_index) * \
+        #             self._getSpatialActivation(stimulus.location, trial.target.location, trial.set_size, target_kappa_index)
 
-        print(time.time()-t0)
+        # t1 = time.time()
+        # print('iterative way: {}'.format(t1-t0))
+
+        for i, stimulus in enumerate(trial.stimuli):
+            kappa_index = numpy.random.randint(0, len(self.quantiles), self.n_sims)
+            if i == 0:
+                target_kappa_index = kappa_index
+            act += self._getActivation(stimulus.color, trial.set_size, kappa_index) * \
+                numpy.transpose(numpy.tile(self._getSpatialActivation(stimulus.location, trial.target.location, trial.set_size, target_kappa_index), (360, 1)))
+        # t2 = time.time()
+        # print('matrix way: {}'.format(t2-t1))
+
+
+        # legacy code
         # act = numpy.zeros((len(self.quantiles), 360))
         # for stimulus in trial.stimuli:
         #     act += self._getActivation(stimulus.color, trial.set_size, 'trialbytrial') *  \
         #         numpy.transpose(numpy.tile(self._getSpatialActivation(stimulus.location, trial.target.location, trial.set_size, 'trialbytrial'), (360, 1)))
 
         act = numpy.transpose(numpy.transpose(act) / numpy.sum(act, axis = 1))
-
-        print(time.time()-t0)
         
         if return_mode == 'aggregated':
             pred = numpy.mean(act, axis = 0)

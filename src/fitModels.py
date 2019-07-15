@@ -303,7 +303,7 @@ def fitExp1():
     # fit(participants[1], 'VP', 'recognition', 'trialbytrial')
      
     for inference_knowledge in inference_knowledges:
-        with Pool(10) as p:
+        with Pool(1) as p:
             p.starmap(fit, [(participants[pID], 'VPBinding', 'recognition', inference_knowledge) for pID in participants.keys()])
         try:
             old_simulation_data = loadExp1SimulationData()
