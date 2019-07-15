@@ -329,10 +329,12 @@ class VariablePrecisionBinding(VariablePrecision):
 
         t0 = time.time()
         for sim_index in range(self.n_sims):
-            for stimulus in trial.stimuli:
+            for i, stimulus in enumerate(trial.stimuli):
                 kappa_index = numpy.random.randint(0, len(self.quantiles))
+                if i == 0:
+                    target_index = kappa_index
                 act[sim_index] += self._getActivation(stimulus.color, trial.set_size, kappa_index) * \
-                    self._getSpatialActivation(stimulus.location, trial.target.location, trial.set_size, kappa_index)
+                    self._getSpatialActivation(stimulus.location, trial.target.location, trial.set_size, target_index)
 
         print(time.time()-t0)
         # act = numpy.zeros((len(self.quantiles), 360))
