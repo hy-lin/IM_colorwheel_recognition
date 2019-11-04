@@ -284,13 +284,13 @@ def merge(simulationData, tmpData):
                 except:
                     print('failed to merge recognition trials')
 
-            if model in tmpData[pID].recall_trials[0].simulation.keys():
-                try:
-                    for i, recall_trial in enumerate(simulationData[pID].recall_trials):
-                        recall_trial.simulation[model] = tmpData[pID].recall_trials[i].simulation[model]
-                except:
-                    print(recall_trial)
-                    print('failed to merge recall trials')
+            # if model in tmpData[pID].recall_trials[0].simulation.keys():
+            #     try:
+            #         for i, recall_trial in enumerate(simulationData[pID].recall_trials):
+            #             recall_trial.simulation[model] = tmpData[pID].recall_trials[i].simulation[model]
+            #     except:
+            #         print(recall_trial)
+            #         print('failed to merge recall trials')
 
     return simulationData
 
@@ -303,7 +303,7 @@ def fitExp1():
     # fit(participants[1], 'VP', 'recognition', 'trialbytrial')
      
     for inference_knowledge in inference_knowledges:
-        with Pool(1) as p:
+        with Pool(20) as p:
             p.starmap(fit, [(participants[pID], 'VPBinding', 'recognition', inference_knowledge) for pID in participants.keys()])
         try:
             old_simulation_data = loadExp1SimulationData()
@@ -322,7 +322,7 @@ def fitExp2():
     participants = loadExp2()
 
     for inference_knowledge in inference_knowledges:
-        with Pool(10) as p:
+        with Pool(20) as p:
             p.starmap(fit, [(participants[pID], 'VPBinding', 'recognition', inference_knowledge) for pID in participants.keys()])
         try:
             old_simulation_data = loadExp2SimulationData()
@@ -418,19 +418,18 @@ def fixingMerges():
     # fit(participants[1], 'IMBayesBias', 'recognition', inference_knowledge)
 
     try:
-        old_simulation_data = loadExp3SimulationData()
+        old_simulation_data = loadExp1SimulationData()
     except:
-        participants = loadExp3()
         old_simulation_data = participants
+    participants = merge(old_simulation_data, loadTmpData(1))
     
-    participants = merge(old_simulation_data, loadTmpData())
-    
-    d = shelve.open('Data/fitting result/Exp3/fitting_results.dat')
+    d = shelve.open('Data/fitting result/Exp1/fitting_results.dat')
     d['participants'] = participants
     d.close()
 
 if __name__ == '__main__':
-    fitExp1()
+    fixingMerges()
+    fitExp2()
     # fitExp3()
     # fitExp3Recognition()
     # fitExp3Recall()

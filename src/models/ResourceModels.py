@@ -344,10 +344,10 @@ class VariablePrecisionBinding(VariablePrecision):
 
         for i, stimulus in enumerate(trial.stimuli):
             kappa_index = numpy.random.randint(0, len(self.quantiles), self.n_sims)
-            if i == 0:
-                target_kappa_index = kappa_index
+            # if i == 0:
+            #     target_kappa_index = kappa_index
             act += self._getActivation(stimulus.color, trial.set_size, kappa_index) * \
-                numpy.transpose(numpy.tile(self._getSpatialActivation(stimulus.location, trial.target.location, trial.set_size, target_kappa_index), (360, 1)))
+                numpy.transpose(numpy.tile(self._getSpatialActivation(stimulus.location, trial.target.location, trial.set_size, kappa_index), (360, 1)))
         # t2 = time.time()
         # print('matrix way: {}'.format(t2-t1))
 
